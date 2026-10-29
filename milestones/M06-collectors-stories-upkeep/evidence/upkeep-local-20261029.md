@@ -1,5 +1,7 @@
 # M06 isolated upkeep policy slice —29 October2026
 
+**Historical helper checkpoint.** The subsequent authorized concrete implementation is recorded in [connected local upkeep](upkeep-connected-local-20261029.md). Its current code, actual SQL integration and pending24 validation plan supersede this document's old development-work list; the original21-test evidence below remains unchanged in meaning.
+
 Branch `m06-upkeep-local`, based on accepted `e8dcee8`. This worktree is isolated from the separately prepared/running story comparison. It reads no credentials, makes no provider/database/Storage request, and carries no campaign runtime binding. The accepted application8aed186/workflow780184f,13 stories/JPEGs, prior media/source results and cleanup are unchanged.
 
 ## Implemented local behavior
@@ -17,7 +19,7 @@ Branch `m06-upkeep-local`, based on accepted `e8dcee8`. This worktree is isolate
 
 Owned ESLint, Prettier and `git diff --check` pass. Tests reuse already installed public dependency directories via ignored local junctions; no package/skill installation, global configuration change or private input occurs. The first health test stopped because this new worktree lacked the package-scoped zod dependency link; the correct existing shared dependency link resolved it. That setup failure is local only, not a product/runtime failure.
 
-Normal required changed-head CI remains to be run through the permitted branch route. The root coordinator owns the narrow CI trigger addition; this slice does not weaken, skip or replace a required job.
+Normal required [CI40851431271](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40851431271) passes all five jobs on pushed `96bf7b9c07132864823aefb8ec9620f1d6bc6bce` (code `2ca32dc`, then the coordinator-authorized explicit branch-trigger addition). No required job is weakened, skipped or replaced. This final CI note remains local to batch with the next substantive delivery rather than another CI-announcement-only commit.
 
 ## Honest remaining boundaries
 

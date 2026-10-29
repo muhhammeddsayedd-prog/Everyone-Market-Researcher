@@ -2182,7 +2182,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      upsert_raw_items: { Args: { p_account_id: string; p_items: Json; p_run_id: string }; Returns: Json };
+      upsert_raw_items: {
+        Args: { p_account_id: string; p_items: Json; p_run_id: string };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;
@@ -3621,12 +3624,37 @@ export type Database = {
     };
     Functions: {
       accrue_fixed_costs: { Args: { p_day: string }; Returns: number };
-      ack_media_batch: { Args: { p_execution_id: string; p_msg_ids: number[] }; Returns: undefined };
-      ack_queue: { Args: { p_msg_ids: number[]; p_queue: string }; Returns: undefined };
-      ack_story_media_batch: { Args: { p_execution_id: string; p_msg_ids: number[] }; Returns: undefined };
+      ack_media_batch: {
+        Args: { p_execution_id: string; p_msg_ids: number[] };
+        Returns: undefined;
+      };
+      ack_queue: {
+        Args: { p_msg_ids: number[]; p_queue: string };
+        Returns: undefined;
+      };
+      ack_story_media_batch: {
+        Args: { p_execution_id: string; p_msg_ids: number[] };
+        Returns: undefined;
+      };
       apify_runs_pending: { Args: { p_run_id: string }; Returns: number };
+      apply_upkeep_observation: {
+        Args: {
+          p_account_id: string;
+          p_metrics_since: string;
+          p_observed_before: string;
+          p_request_id: string;
+          p_rows: Json;
+          p_seen_external_ids: string[];
+          p_since: string;
+          p_skip_reason: string;
+        };
+        Returns: Json;
+      };
       authorize_apify_launch: { Args: { p: Json }; Returns: Json };
-      claim_media_batch: { Args: { p_execution_id: string; p_limit?: number }; Returns: Json };
+      claim_media_batch: {
+        Args: { p_execution_id: string; p_limit?: number };
+        Returns: Json;
+      };
       claim_queue_batch: {
         Args: { p_n: number; p_queue: string; p_vt_seconds?: number };
         Returns: {
@@ -3635,19 +3663,42 @@ export type Database = {
           read_ct: number;
         }[];
       };
-      claim_story_media_batch: { Args: { p_execution_id: string; p_limit?: number }; Returns: Json };
-      collector_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
+      claim_story_media_batch: {
+        Args: { p_execution_id: string; p_limit?: number };
+        Returns: Json;
+      };
+      collector_execute: {
+        Args: { p_args: Json; p_operation: string; p_request_id: string };
+        Returns: Json;
+      };
       collector_finalize: { Args: { p_run_id: string }; Returns: Json };
       complete_apify_run: {
-        Args: { p_apify_run_id: string; p_dataset_id: string; p_status: string; p_usage_usd: number };
+        Args: {
+          p_apify_run_id: string;
+          p_dataset_id: string;
+          p_status: string;
+          p_usage_usd: number;
+        };
         Returns: Json;
       };
       daily_health: { Args: Record<PropertyKey, never>; Returns: Json };
-      diff_website_urls: { Args: { p_account_id: string; p_urls: string[] }; Returns: string[] };
-      error_count_24h: { Args: { p_claim_notify?: boolean; p_workflow: string }; Returns: number };
+      diff_website_urls: {
+        Args: { p_account_id: string; p_urls: string[] };
+        Returns: string[];
+      };
+      error_count_24h: {
+        Args: { p_claim_notify?: boolean; p_workflow: string };
+        Returns: number;
+      };
       finish_media_batch: { Args: { p_execution_id: string }; Returns: Json };
-      finish_run: { Args: { p_error?: string; p_run_id: string; p_status: string }; Returns: Json };
-      finish_story_media_batch: { Args: { p_execution_id: string }; Returns: Json };
+      finish_run: {
+        Args: { p_error?: string; p_run_id: string; p_status: string };
+        Returns: Json;
+      };
+      finish_story_media_batch: {
+        Args: { p_execution_id: string };
+        Returns: Json;
+      };
       foundation_gateway_admit: {
         Args: {
           p_args: Json;
@@ -3659,23 +3710,46 @@ export type Database = {
         Returns: Json;
       };
       foundation_gateway_complete_read: {
-        Args: { p_apify_run_id: string; p_request_id: string; p_result: Json; p_window_id: string };
+        Args: {
+          p_apify_run_id: string;
+          p_request_id: string;
+          p_result: Json;
+          p_window_id: string;
+        };
         Returns: Json;
       };
       foundation_gateway_execute: {
-        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Args: {
+          p_args: Json;
+          p_operation: string;
+          p_request_id: string;
+          p_window_id: string;
+        };
         Returns: Json;
       };
-      foundation_gateway_process: { Args: { p_args: Json; p_window_id: string }; Returns: Json };
+      foundation_gateway_process: {
+        Args: { p_args: Json; p_window_id: string };
+        Returns: Json;
+      };
       foundation_gateway_provision:
         | { Args: { p: Json }; Returns: undefined }
         | { Args: { p: Json; p_window_id: string }; Returns: undefined };
       foundation_gateway_read_context: {
-        Args: { p_apify_run_id: string; p_request_id: string; p_window_id: string };
+        Args: {
+          p_apify_run_id: string;
+          p_request_id: string;
+          p_window_id: string;
+        };
         Returns: Json;
       };
-      foundation_gateway_registered: { Args: { p_apify_run_id: string; p_window_id: string }; Returns: Json };
-      foundation_gateway_replay_costs: { Args: { p_entries: Json; p_window_id: string }; Returns: number };
+      foundation_gateway_registered: {
+        Args: { p_apify_run_id: string; p_window_id: string };
+        Returns: Json;
+      };
+      foundation_gateway_replay_costs: {
+        Args: { p_entries: Json; p_window_id: string };
+        Returns: number;
+      };
       foundation_gateway_response: {
         Args: {
           p_code: string;
@@ -3692,7 +3766,12 @@ export type Database = {
         Returns: Json;
       };
       foundation_gateway_validate: {
-        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Args: {
+          p_args: Json;
+          p_operation: string;
+          p_request_id: string;
+          p_window_id: string;
+        };
         Returns: undefined;
       };
       foundation_gateway_workflow: { Args: { p: string }; Returns: boolean };
@@ -3722,10 +3801,21 @@ export type Database = {
       get_items_for_ai: { Args: { p_item_ids: string[] }; Returns: Json };
       get_media_targets: { Args: { p_item_ids: string[] }; Returns: Json };
       get_price_book: { Args: Record<PropertyKey, never>; Returns: Json };
+      get_removal_targets: {
+        Args: {
+          p_platform: Database['app']['Enums']['platform'];
+          p_window_days: number;
+        };
+        Returns: Json;
+      };
       get_setting: { Args: { p_key: string }; Returns: Json };
+      get_upkeep_source_runs: { Args: { p_account_id: string }; Returns: Json };
       log_cost: { Args: { p_entries: Json }; Returns: number };
       log_workflow_error: { Args: { p: Json }; Returns: undefined };
-      m03_smoke_launch_input: { Args: Record<PropertyKey, never>; Returns: Json };
+      m03_smoke_launch_input: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
       m05_assert_claim: {
         Args: { p_account_id: string; p_run_id: string };
         Returns: Database['app']['Tables']['competitor_accounts']['Row'];
@@ -3736,25 +3826,56 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      m05_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
+      m05_execute: {
+        Args: { p_args: Json; p_operation: string; p_request_id: string };
+        Returns: Json;
+      };
       m05_finalize: { Args: { p_run_id: string }; Returns: Json };
       m05_resolve_youtube: {
-        Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id: string };
+        Args: {
+          p_account_id: string;
+          p_external_id: string;
+          p_uploads_playlist_id: string;
+        };
         Returns: undefined;
       };
       m06_campaign_conflict: {
-        Args: { p_campaign_id: string; p_deployment_id: string; p_event_id: string; p_observed_at: string };
+        Args: {
+          p_campaign_id: string;
+          p_deployment_id: string;
+          p_event_id: string;
+          p_observed_at: string;
+        };
         Returns: Json;
       };
-      m06_campaign_housekeeping: { Args: { p_campaign_id: string }; Returns: Json };
+      m06_campaign_housekeeping: {
+        Args: { p_campaign_id: string };
+        Returns: Json;
+      };
       m06_campaign_install: { Args: { p: Json }; Returns: Json };
       m06_campaign_snapshot: { Args: { p_campaign_id: string }; Returns: Json };
       m06_campaign_stop: { Args: { p_campaign_id: string }; Returns: Json };
       m06_campaign_tick: {
-        Args: { p_campaign_id: string; p_execution_id: string; p_request_id: string };
+        Args: {
+          p_campaign_id: string;
+          p_execution_id: string;
+          p_request_id: string;
+        };
         Returns: Json;
       };
-      m06_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
+      m06_execute: {
+        Args: { p_args: Json; p_operation: string; p_request_id: string };
+        Returns: Json;
+      };
+      mark_removed: {
+        Args: {
+          p_account_id: string;
+          p_request_id: string;
+          p_seen_external_ids: string[];
+          p_since: string;
+        };
+        Returns: Json;
+      };
       mark_website_page: {
         Args: { p_item_id?: string; p_status: string; p_url: string };
         Returns: undefined;
@@ -3770,8 +3891,23 @@ export type Database = {
         Returns: Json;
       };
       reconcile_apify_launch: { Args: { p: Json }; Returns: Json };
-      record_media_outcome: { Args: { p_execution_id: string; p_outcome: Json }; Returns: undefined };
-      record_story_media_outcome: { Args: { p_execution_id: string; p_outcome: Json }; Returns: undefined };
+      record_media_outcome: {
+        Args: { p_execution_id: string; p_outcome: Json };
+        Returns: undefined;
+      };
+      record_story_media_outcome: {
+        Args: { p_execution_id: string; p_outcome: Json };
+        Returns: undefined;
+      };
+      refresh_item_metrics: {
+        Args: {
+          p_account_id: string;
+          p_request_id: string;
+          p_rows: Json;
+          p_since: string;
+        };
+        Returns: Json;
+      };
       register_apify_run: {
         Args: {
           p_account_ids: string[];
@@ -3798,7 +3934,12 @@ export type Database = {
       };
       save_bakeoff_rows: { Args: { p_rows: Json }; Returns: number };
       save_employee_snapshot: {
-        Args: { p_account_id: string; p_coverage?: Json; p_people: Json; p_snapshot_date: string };
+        Args: {
+          p_account_id: string;
+          p_coverage?: Json;
+          p_people: Json;
+          p_snapshot_date: string;
+        };
         Returns: Json;
       };
       save_media_asset: {
@@ -3813,7 +3954,11 @@ export type Database = {
         Returns: undefined;
       };
       set_account_external_id: {
-        Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id?: string };
+        Args: {
+          p_account_id: string;
+          p_external_id: string;
+          p_uploads_playlist_id?: string;
+        };
         Returns: undefined;
       };
       set_stories_cadence: { Args: { p_twice_daily: boolean }; Returns: Json };
@@ -3831,6 +3976,7 @@ export type Database = {
         Args: { p_account_ids: string[]; p_from_day: string; p_to_day: string };
         Returns: Json;
       };
+      upkeep_request_status: { Args: { p_request_id: string }; Returns: Json };
       worker_gateway_admit: {
         Args: {
           p_args: Json;
@@ -3842,16 +3988,34 @@ export type Database = {
         Returns: Json;
       };
       worker_gateway_execute: {
-        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Args: {
+          p_args: Json;
+          p_operation: string;
+          p_request_id: string;
+          p_window_id: string;
+        };
         Returns: Json;
       };
       worker_gateway_response: {
-        Args: { p_code: string; p_result: Json; p_state: string; p_window_id: string };
+        Args: {
+          p_code: string;
+          p_result: Json;
+          p_state: string;
+          p_window_id: string;
+        };
         Returns: Json;
       };
-      worker_gateway_status: { Args: { p_target_request_id: string; p_window_id: string }; Returns: Json };
+      worker_gateway_status: {
+        Args: { p_target_request_id: string; p_window_id: string };
+        Returns: Json;
+      };
       worker_gateway_validate: {
-        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Args: {
+          p_args: Json;
+          p_operation: string;
+          p_request_id: string;
+          p_window_id: string;
+        };
         Returns: undefined;
       };
     };
@@ -3877,7 +4041,9 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
@@ -3900,7 +4066,9 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I;
     }
@@ -3922,7 +4090,9 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U;
     }
@@ -3944,7 +4114,9 @@ export type Enums<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never) = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
     ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
@@ -3958,7 +4130,9 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never) = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
     ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]

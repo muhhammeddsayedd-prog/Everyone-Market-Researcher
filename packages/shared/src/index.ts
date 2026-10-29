@@ -1,4 +1,14 @@
 export { parseEnv } from './env';
+export {
+  upkeepRequest,
+  upkeepTarget,
+  upkeepTargets,
+  upkeepAccountResult,
+  upkeepAccountIds,
+  upkeepStatus,
+  upkeepSourcePins,
+} from './n8n-upkeep-contracts';
+export type { UpkeepRequest, UpkeepTarget, UpkeepOperation, UpkeepDispatch } from './n8n-upkeep-contracts';
 export { toSlug } from './slug';
 export { dispatchSlot, scheduledSlots } from './n8n-schedule';
 export {

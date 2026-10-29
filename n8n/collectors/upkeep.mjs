@@ -178,7 +178,7 @@ function evaluateListingPart(target, receipt, allowEmpty = false) {
   }
   const seen = [...entries.keys()].sort();
   const metrics =
-    receipt.status === 'SUCCEEDED'
+    receipt.status === 'SUCCEEDED' || receipt.observed_entries_validated === true
       ? [...entries.values()]
           .filter((r) => Date.parse(r.published_at) >= Date.parse(target.metrics_since + 'T00:00:00Z'))
           .map((r) => r.external_id)

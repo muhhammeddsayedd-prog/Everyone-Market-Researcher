@@ -1,0 +1,177 @@
+{
+  "key": "WF-91-M06-HEALTH",
+  "kind": "native-json-blueprint",
+  "runnableWorkflow": true,
+  "liveEnabled": false,
+  "hostedAcceptance": false,
+  "definitionProfile": "inactive_native_staging",
+  "bindingManifest": {
+    "ready": false,
+    "environment": "dev",
+    "audience": "https://everyone-market-researcher-unbound.vercel.app",
+    "credential": {
+      "id": "UNBOUND_M06_UPKEEP_AUTH",
+      "name": "UNBOUND M06 upkeep dev",
+      "type": "httpCustomAuth"
+    }
+  },
+  "boundary": {
+    "sourceProof": "derived_by_authenticated_server_adapter_only",
+    "accountPageLimit": 20,
+    "accountProcessing": "serial",
+    "uncertainWrite": "one_status_read_original_id_never_blind_mutation_retry",
+    "notifications": "local_render_only_no_email",
+    "scheduled": false
+  },
+  "workflow": {
+    "name": "WF-91-M06 · Maintained health read [dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "ececd31f-3b9f-45e6-a480-867405bae7ea",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "789f373b-a00f-4097-aae6-8c5cfd3bdf5a",
+        "name": "Prepare maintained health read",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M06_UPKEEP_BINDING_REQUIRED');\nconst rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_UPKEEP_INPUT_INVALID');const j=rows[0].json;\nfunction upkeepNativeObject(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction upkeepNativeUuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction upkeepNativeExact(v, fields) {\n  return upkeepNativeObject(v) && Object.keys(v).sort().join(',') === [...fields].sort().join(',');\n}\n\nfunction upkeepNativeDay(v) {\n  return (\n    typeof v === 'string' &&\n    /^2\\d{3}-\\d{2}-\\d{2}$/.test(v) &&\n    Number.isFinite(Date.parse(v + 'T00:00:00Z')) &&\n    new Date(v + 'T00:00:00Z').toISOString().slice(0, 10) === v\n  );\n}\n\nfunction upkeepNativeCount(v) {\n  return Number.isSafeInteger(v) && v >= 0 && v <= 100000;\n}\n\nfunction upkeepNativeReason(v) {\n  return v === null || (typeof v === 'string' && /^[a-z][a-z0-9_]{0,127}$/.test(v));\n}\n\nfunction upkeepNativeRequestId(execution, sequence, health = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_UPKEEP_EXECUTION_INVALID');\n  return `${health ? 'c0691000' : 'c0640000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction upkeepNativeRequest(state, operation, args) {\n  state.sequence++;\n  state.request = {\n    version: 1,\n    requestId: upkeepNativeRequestId(state.executionId, state.sequence),\n    operation,\n    args,\n  };\n  return state;\n}\n\nfunction initializeM06Upkeep(input, executionId) {\n  if (\n    !upkeepNativeObject(input) ||\n    Object.keys(input).some((k) => !['env', 'platform', 'after'].includes(k)) ||\n    input.env !== 'dev' ||\n    !['vimeo', 'youtube', 'instagram', 'linkedin'].includes(input.platform) ||\n    (input.after !== undefined && input.after !== null && !upkeepNativeUuid(input.after))\n  )\n    throw Error('M06_UPKEEP_INPUT_INVALID');\n  const state = {\n    executionId,\n    platform: input.platform,\n    sequence: 0,\n    targets: [],\n    index: 0,\n    outcomes: [],\n    next_account_id: null,\n    action: 'request',\n  };\n  return upkeepNativeRequest(state, 'targets', {\n    platform: input.platform,\n    ...(input.after ? { after: input.after } : {}),\n    limit: 20,\n  });\n}\n\nfunction upkeepNativeEnvelope(response, prior) {\n  const b = response?.body;\n  return (\n    response?.statusCode === 200 &&\n    upkeepNativeExact(b, ['version', 'requestId', 'operation', 'replayed', 'result']) &&\n    b.version === 1 &&\n    b.requestId === prior.request.requestId &&\n    b.operation === prior.request.operation &&\n    typeof b.replayed === 'boolean'\n  );\n}\n\nfunction upkeepNativeAccountResult(result, target) {\n  if (\n    !upkeepNativeExact(result, [\n      'account_id',\n      'platform',\n      'since',\n      'metrics_since',\n      'metrics_updated',\n      'eligible',\n      'reason',\n      'removal',\n    ]) ||\n    result.account_id !== target.account_id ||\n    result.platform !== target.platform ||\n    result.since !== target.since ||\n    result.metrics_since !== target.metrics_since ||\n    !upkeepNativeCount(result.metrics_updated) ||\n    typeof result.eligible !== 'boolean' ||\n    !upkeepNativeReason(result.reason) ||\n    (result.eligible ? result.reason !== null : result.reason === null)\n  )\n    throw Error('M06_UPKEEP_ACCOUNT_RECEIPT_INVALID');\n  if (result.removal === null) {\n    if (result.eligible) throw Error('M06_UPKEEP_ACCOUNT_RECEIPT_INVALID');\n  } else if (\n    !result.eligible ||\n    !upkeepNativeExact(result.removal, ['removed', 'restored', 'skipped']) ||\n    !upkeepNativeCount(result.removal.removed) ||\n    !upkeepNativeCount(result.removal.restored) ||\n    !upkeepNativeReason(result.removal.skipped)\n  )\n    throw Error('M06_UPKEEP_ACCOUNT_RECEIPT_INVALID');\n  return result;\n}\n\nfunction upkeepNativeNextAccount(state) {\n  if (state.index >= state.targets.length) {\n    state.action = 'done';\n    state.result = {\n      platform: state.platform,\n      processed: state.outcomes.length,\n      next_account_id: state.next_account_id,\n      outcomes: state.outcomes,\n    };\n    return state;\n  }\n  state.action = 'request';\n  return upkeepNativeRequest(state, 'account.process', state.targets[state.index]);\n}\n\nfunction advanceM06Upkeep(state, response) {\n  if (\n    !upkeepNativeObject(state) ||\n    !['request', 'reconcile'].includes(state.action) ||\n    !upkeepNativeObject(state.request)\n  )\n    throw Error('M06_UPKEEP_STATE_INVALID');\n  const operation = state.request.operation;\n  const validEnvelope = upkeepNativeEnvelope(response, state);\n  if (operation === 'targets') {\n    const r = validEnvelope ? response.body.result : null;\n    if (\n      !upkeepNativeExact(r, ['targets', 'next_account_id']) ||\n      !Array.isArray(r.targets) ||\n      r.targets.length > 20 ||\n      !(r.next_account_id === null || upkeepNativeUuid(r.next_account_id)) ||\n      new Set(r.targets.map((t) => t?.account_id)).size !== r.targets.length ||\n      r.targets.some(\n        (t) =>\n          !upkeepNativeObject(t) ||\n          !upkeepNativeUuid(t.account_id) ||\n          t.platform !== state.platform ||\n          !upkeepNativeDay(t.since) ||\n          !upkeepNativeDay(t.metrics_since) ||\n          t.metrics_since < t.since,\n      ) ||\n      (r.next_account_id !== null &&\n        (r.targets.length !== 20 || r.targets.at(-1).account_id !== r.next_account_id))\n    )\n      throw Error('M06_UPKEEP_TARGETS_INVALID');\n    // Do not carry source URLs, raw rows or supplied coverage through Cloud state.\n    state.targets = r.targets.map((t) => ({\n      account_id: t.account_id,\n      platform: t.platform,\n      since: t.since,\n      metrics_since: t.metrics_since,\n    }));\n    state.next_account_id = r.next_account_id;\n    return upkeepNativeNextAccount(state);\n  }\n  const target = state.targets[state.index];\n  if (!target) throw Error('M06_UPKEEP_STATE_INVALID');\n  if (operation === 'account.process') {\n    let result = null;\n    if (validEnvelope) {\n      try {\n        result = upkeepNativeAccountResult(response.body.result, target);\n      } catch {\n        /* reconcile known ID */\n      }\n    }\n    if (result === null) {\n      state.uncertainRequestId = state.request.requestId;\n      state.action = 'reconcile';\n      return upkeepNativeRequest(state, 'request.status', { request_id: state.uncertainRequestId });\n    }\n    state.outcomes.push({ ...result, request_id: state.request.requestId, verified_by: 'direct' });\n  } else if (operation === 'request.status') {\n    const r = validEnvelope ? response.body.result : null;\n    if (\n      !upkeepNativeExact(r, ['state', 'operation', 'result']) ||\n      r.state !== 'completed' ||\n      r.operation !== 'apply_observation'\n    )\n      throw Error('M06_UPKEEP_RECONCILIATION_REQUIRED');\n    let result;\n    try {\n      result = upkeepNativeAccountResult(r.result, target);\n    } catch {\n      throw Error('M06_UPKEEP_RECONCILIATION_REQUIRED');\n    }\n    state.outcomes.push({ ...result, request_id: state.uncertainRequestId, verified_by: 'status' });\n    delete state.uncertainRequestId;\n  } else throw Error('M06_UPKEEP_STATE_INVALID');\n  state.index++;\n  return upkeepNativeNextAccount(state);\n}\n\nfunction initializeM06UpkeepHealth(input, executionId) {\n  if (!upkeepNativeExact(input, ['env']) || input.env !== 'dev')\n    throw Error('M06_UPKEEP_HEALTH_INPUT_INVALID');\n  return {\n    request: {\n      version: 1,\n      requestId: upkeepNativeRequestId(executionId, 1, true),\n      operation: 'health.read',\n      args: {},\n    },\n  };\n}\n\nfunction verifyM06UpkeepHealth(response, prior) {\n  const r = response?.body?.result;\n  const bad = () => {\n    throw Error('M06_UPKEEP_HEALTH_RECEIPT_INVALID');\n  };\n  if (\n    !upkeepNativeEnvelope(response, prior) ||\n    !upkeepNativeExact(r, ['health', 'projection', 'rendered', 'sent', 'delivery']) ||\n    !upkeepNativeObject(r.health) ||\n    r.sent !== false ||\n    r.delivery !== 'local_only'\n  )\n    bad();\n  const p = r.projection;\n  if (\n    !upkeepNativeExact(p, [\n      'version',\n      'failing_accounts',\n      'stale_accounts',\n      'queue_depths',\n      'story_queue_depth',\n      'zero_item_streaks',\n      'story_capture_gap',\n      'media_missing_24h',\n      'm06_signals_observed',\n      'over_budget',\n      'notification_mode',\n      'sent',\n    ]) ||\n    !['m06', 'legacy'].includes(p.version) ||\n    !upkeepNativeCount(p.failing_accounts) ||\n    !upkeepNativeCount(p.stale_accounts) ||\n    !upkeepNativeExact(p.queue_depths, ['ai_extract', 'embed', 'media']) ||\n    !Object.values(p.queue_depths).every(upkeepNativeCount) ||\n    ![p.story_queue_depth, p.zero_item_streaks, p.media_missing_24h].every(\n      (v) => v === null || upkeepNativeCount(v),\n    ) ||\n    !(\n      p.story_capture_gap === null ||\n      (typeof p.story_capture_gap === 'number' &&\n        Number.isFinite(p.story_capture_gap) &&\n        p.story_capture_gap >= 0 &&\n        p.story_capture_gap <= 1)\n    ) ||\n    typeof p.m06_signals_observed !== 'boolean' ||\n    typeof p.over_budget !== 'boolean' ||\n    p.notification_mode !== 'local_only' ||\n    p.sent !== false\n  )\n    bad();\n  if (\n    !upkeepNativeExact(r.rendered, ['subject', 'text', 'html']) ||\n    !Object.entries(r.rendered).every(\n      ([key, v]) => typeof v === 'string' && v.length >= 1 && v.length <= (key === 'subject' ? 160 : 65536),\n    )\n  )\n    bad();\n  // Raw health is validated by the maintained server/shared contract. It is not\n  // rendered in Cloud or forwarded to a notification provider.\n  return { projection: p, rendered: r.rendered, sent: false, delivery: 'local_only' };\n}\nreturn[{json:initializeM06UpkeepHealth(j,String($execution.id))}];"
+        },
+        "position": [
+          250,
+          0
+        ]
+      },
+      {
+        "id": "31182b1b-0e61-4792-af87-652946e63d58",
+        "name": "Read maintained M06 health",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-unbound.vercel.app/api/internal/m06/upkeep",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          500,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "UNBOUND_M06_UPKEEP_AUTH",
+            "name": "UNBOUND M06 upkeep dev"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "55879155-6b69-45fa-a26e-caf14cf3b754",
+        "name": "Verify local health delivery",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_UPKEEP_INPUT_INVALID');const j=rows[0].json;\nfunction upkeepNativeObject(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction upkeepNativeUuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction upkeepNativeExact(v, fields) {\n  return upkeepNativeObject(v) && Object.keys(v).sort().join(',') === [...fields].sort().join(',');\n}\n\nfunction upkeepNativeDay(v) {\n  return (\n    typeof v === 'string' &&\n    /^2\\d{3}-\\d{2}-\\d{2}$/.test(v) &&\n    Number.isFinite(Date.parse(v + 'T00:00:00Z')) &&\n    new Date(v + 'T00:00:00Z').toISOString().slice(0, 10) === v\n  );\n}\n\nfunction upkeepNativeCount(v) {\n  return Number.isSafeInteger(v) && v >= 0 && v <= 100000;\n}\n\nfunction upkeepNativeReason(v) {\n  return v === null || (typeof v === 'string' && /^[a-z][a-z0-9_]{0,127}$/.test(v));\n}\n\nfunction upkeepNativeRequestId(execution, sequence, health = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_UPKEEP_EXECUTION_INVALID');\n  return `${health ? 'c0691000' : 'c0640000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction upkeepNativeRequest(state, operation, args) {\n  state.sequence++;\n  state.request = {\n    version: 1,\n    requestId: upkeepNativeRequestId(state.executionId, state.sequence),\n    operation,\n    args,\n  };\n  return state;\n}\n\nfunction initializeM06Upkeep(input, executionId) {\n  if (\n    !upkeepNativeObject(input) ||\n    Object.keys(input).some((k) => !['env', 'platform', 'after'].includes(k)) ||\n    input.env !== 'dev' ||\n    !['vimeo', 'youtube', 'instagram', 'linkedin'].includes(input.platform) ||\n    (input.after !== undefined && input.after !== null && !upkeepNativeUuid(input.after))\n  )\n    throw Error('M06_UPKEEP_INPUT_INVALID');\n  const state = {\n    executionId,\n    platform: input.platform,\n    sequence: 0,\n    targets: [],\n    index: 0,\n    outcomes: [],\n    next_account_id: null,\n    action: 'request',\n  };\n  return upkeepNativeRequest(state, 'targets', {\n    platform: input.platform,\n    ...(input.after ? { after: input.after } : {}),\n    limit: 20,\n  });\n}\n\nfunction upkeepNativeEnvelope(response, prior) {\n  const b = response?.body;\n  return (\n    response?.statusCode === 200 &&\n    upkeepNativeExact(b, ['version', 'requestId', 'operation', 'replayed', 'result']) &&\n    b.version === 1 &&\n    b.requestId === prior.request.requestId &&\n    b.operation === prior.request.operation &&\n    typeof b.replayed === 'boolean'\n  );\n}\n\nfunction upkeepNativeAccountResult(result, target) {\n  if (\n    !upkeepNativeExact(result, [\n      'account_id',\n      'platform',\n      'since',\n      'metrics_since',\n      'metrics_updated',\n      'eligible',\n      'reason',\n      'removal',\n    ]) ||\n    result.account_id !== target.account_id ||\n    result.platform !== target.platform ||\n    result.since !== target.since ||\n    result.metrics_since !== target.metrics_since ||\n    !upkeepNativeCount(result.metrics_updated) ||\n    typeof result.eligible !== 'boolean' ||\n    !upkeepNativeReason(result.reason) ||\n    (result.eligible ? result.reason !== null : result.reason === null)\n  )\n    throw Error('M06_UPKEEP_ACCOUNT_RECEIPT_INVALID');\n  if (result.removal === null) {\n    if (result.eligible) throw Error('M06_UPKEEP_ACCOUNT_RECEIPT_INVALID');\n  } else if (\n    !result.eligible ||\n    !upkeepNativeExact(result.removal, ['removed', 'restored', 'skipped']) ||\n    !upkeepNativeCount(result.removal.removed) ||\n    !upkeepNativeCount(result.removal.restored) ||\n    !upkeepNativeReason(result.removal.skipped)\n  )\n    throw Error('M06_UPKEEP_ACCOUNT_RECEIPT_INVALID');\n  return result;\n}\n\nfunction upkeepNativeNextAccount(state) {\n  if (state.index >= state.targets.length) {\n    state.action = 'done';\n    state.result = {\n      platform: state.platform,\n      processed: state.outcomes.length,\n      next_account_id: state.next_account_id,\n      outcomes: state.outcomes,\n    };\n    return state;\n  }\n  state.action = 'request';\n  return upkeepNativeRequest(state, 'account.process', state.targets[state.index]);\n}\n\nfunction advanceM06Upkeep(state, response) {\n  if (\n    !upkeepNativeObject(state) ||\n    !['request', 'reconcile'].includes(state.action) ||\n    !upkeepNativeObject(state.request)\n  )\n    throw Error('M06_UPKEEP_STATE_INVALID');\n  const operation = state.request.operation;\n  const validEnvelope = upkeepNativeEnvelope(response, state);\n  if (operation === 'targets') {\n    const r = validEnvelope ? response.body.result : null;\n    if (\n      !upkeepNativeExact(r, ['targets', 'next_account_id']) ||\n      !Array.isArray(r.targets) ||\n      r.targets.length > 20 ||\n      !(r.next_account_id === null || upkeepNativeUuid(r.next_account_id)) ||\n      new Set(r.targets.map((t) => t?.account_id)).size !== r.targets.length ||\n      r.targets.some(\n        (t) =>\n          !upkeepNativeObject(t) ||\n          !upkeepNativeUuid(t.account_id) ||\n          t.platform !== state.platform ||\n          !upkeepNativeDay(t.since) ||\n          !upkeepNativeDay(t.metrics_since) ||\n          t.metrics_since < t.since,\n      ) ||\n      (r.next_account_id !== null &&\n        (r.targets.length !== 20 || r.targets.at(-1).account_id !== r.next_account_id))\n    )\n      throw Error('M06_UPKEEP_TARGETS_INVALID');\n    // Do not carry source URLs, raw rows or supplied coverage through Cloud state.\n    state.targets = r.targets.map((t) => ({\n      account_id: t.account_id,\n      platform: t.platform,\n      since: t.since,\n      metrics_since: t.metrics_since,\n    }));\n    state.next_account_id = r.next_account_id;\n    return upkeepNativeNextAccount(state);\n  }\n  const target = state.targets[state.index];\n  if (!target) throw Error('M06_UPKEEP_STATE_INVALID');\n  if (operation === 'account.process') {\n    let result = null;\n    if (validEnvelope) {\n      try {\n        result = upkeepNativeAccountResult(response.body.result, target);\n      } catch {\n        /* reconcile known ID */\n      }\n    }\n    if (result === null) {\n      state.uncertainRequestId = state.request.requestId;\n      state.action = 'reconcile';\n      return upkeepNativeRequest(state, 'request.status', { request_id: state.uncertainRequestId });\n    }\n    state.outcomes.push({ ...result, request_id: state.request.requestId, verified_by: 'direct' });\n  } else if (operation === 'request.status') {\n    const r = validEnvelope ? response.body.result : null;\n    if (\n      !upkeepNativeExact(r, ['state', 'operation', 'result']) ||\n      r.state !== 'completed' ||\n      r.operation !== 'apply_observation'\n    )\n      throw Error('M06_UPKEEP_RECONCILIATION_REQUIRED');\n    let result;\n    try {\n      result = upkeepNativeAccountResult(r.result, target);\n    } catch {\n      throw Error('M06_UPKEEP_RECONCILIATION_REQUIRED');\n    }\n    state.outcomes.push({ ...result, request_id: state.uncertainRequestId, verified_by: 'status' });\n    delete state.uncertainRequestId;\n  } else throw Error('M06_UPKEEP_STATE_INVALID');\n  state.index++;\n  return upkeepNativeNextAccount(state);\n}\n\nfunction initializeM06UpkeepHealth(input, executionId) {\n  if (!upkeepNativeExact(input, ['env']) || input.env !== 'dev')\n    throw Error('M06_UPKEEP_HEALTH_INPUT_INVALID');\n  return {\n    request: {\n      version: 1,\n      requestId: upkeepNativeRequestId(executionId, 1, true),\n      operation: 'health.read',\n      args: {},\n    },\n  };\n}\n\nfunction verifyM06UpkeepHealth(response, prior) {\n  const r = response?.body?.result;\n  const bad = () => {\n    throw Error('M06_UPKEEP_HEALTH_RECEIPT_INVALID');\n  };\n  if (\n    !upkeepNativeEnvelope(response, prior) ||\n    !upkeepNativeExact(r, ['health', 'projection', 'rendered', 'sent', 'delivery']) ||\n    !upkeepNativeObject(r.health) ||\n    r.sent !== false ||\n    r.delivery !== 'local_only'\n  )\n    bad();\n  const p = r.projection;\n  if (\n    !upkeepNativeExact(p, [\n      'version',\n      'failing_accounts',\n      'stale_accounts',\n      'queue_depths',\n      'story_queue_depth',\n      'zero_item_streaks',\n      'story_capture_gap',\n      'media_missing_24h',\n      'm06_signals_observed',\n      'over_budget',\n      'notification_mode',\n      'sent',\n    ]) ||\n    !['m06', 'legacy'].includes(p.version) ||\n    !upkeepNativeCount(p.failing_accounts) ||\n    !upkeepNativeCount(p.stale_accounts) ||\n    !upkeepNativeExact(p.queue_depths, ['ai_extract', 'embed', 'media']) ||\n    !Object.values(p.queue_depths).every(upkeepNativeCount) ||\n    ![p.story_queue_depth, p.zero_item_streaks, p.media_missing_24h].every(\n      (v) => v === null || upkeepNativeCount(v),\n    ) ||\n    !(\n      p.story_capture_gap === null ||\n      (typeof p.story_capture_gap === 'number' &&\n        Number.isFinite(p.story_capture_gap) &&\n        p.story_capture_gap >= 0 &&\n        p.story_capture_gap <= 1)\n    ) ||\n    typeof p.m06_signals_observed !== 'boolean' ||\n    typeof p.over_budget !== 'boolean' ||\n    p.notification_mode !== 'local_only' ||\n    p.sent !== false\n  )\n    bad();\n  if (\n    !upkeepNativeExact(r.rendered, ['subject', 'text', 'html']) ||\n    !Object.entries(r.rendered).every(\n      ([key, v]) => typeof v === 'string' && v.length >= 1 && v.length <= (key === 'subject' ? 160 : 65536),\n    )\n  )\n    bad();\n  // Raw health is validated by the maintained server/shared contract. It is not\n  // rendered in Cloud or forwarded to a notification provider.\n  return { projection: p, rendered: r.rendered, sent: false, delivery: 'local_only' };\n}\nreturn[{json:verifyM06UpkeepHealth(j,$('Prepare maintained health read').item.json)}];"
+        },
+        "position": [
+          750,
+          0
+        ]
+      }
+    ],
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 60,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Prepare maintained health read",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare maintained health read": {
+        "main": [
+          [
+            {
+              "node": "Read maintained M06 health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read maintained M06 health": {
+        "main": [
+          [
+            {
+              "node": "Verify local health delivery",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

@@ -54,6 +54,12 @@ if [[ "\${0##*/}" == pnpm ]]; then
     node --input-type=module -e 'console.log(JSON.stringify({success:true,numFailedTests:0,numPendingTests:process.env.EMR_TEST_M06_STORIES_APP_SKIPPED?1:0,testResults:[{name:"/repo/apps/web/server/n8n-worker/m06-stories-sql.integration.test.ts",assertionResults:[{status:process.env.EMR_TEST_M06_STORIES_APP_SKIPPED?"pending":"passed"}]}]}));' > "$report"
     exit 0
   fi
+  if [[ "$*" == *'m06-upkeep-sql.integration.test.ts'* ]]; then
+    [[ "\${EMR_TEST_FAIL_PHASE:-}" != m06-upkeep-app ]] || { printf '${marker}\\n'; exit 1; }
+    report=''; while [[ $# -gt 0 ]]; do if [[ "$1" == --outputFile ]]; then report="$2"; break; fi; shift; done
+    node --input-type=module -e 'console.log(JSON.stringify({success:true,numFailedTests:0,numPendingTests:process.env.EMR_TEST_M06_UPKEEP_APP_SKIPPED?1:0,testResults:[{name:"/repo/apps/web/server/m06-upkeep-sql.integration.test.ts",assertionResults:[{status:process.env.EMR_TEST_M06_UPKEEP_APP_SKIPPED?"pending":"passed"}]}]}));' > "$report"
+    exit 0
+  fi
   printf '%s\\n' "\${M02_TEST_DATABASE_URL:-}" > "$EMR_TEST_CAPTURE/m02.target"
   [[ "\${EMR_TEST_FAIL_PHASE:-}" != m02 ]] || { printf '${marker}\\n'; exit 1; }
   report=''
@@ -94,7 +100,7 @@ else
       phase=gw-test
       printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_GW_TAP_FILES:-1}" "\${EMR_TEST_GW_TAP_COUNT:-102}"
     else
-      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-19}" "\${EMR_TEST_TAP_COUNT:-257}"
+      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-20}" "\${EMR_TEST_TAP_COUNT:-257}"
     fi
   fi
   if [[ "$1 $2" == 'db advisors' ]]; then
@@ -219,7 +225,7 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
   fixture((directory) => {
     const child = execute(directory, 'scripts/db/run-local-ci.sh');
     assert.equal(child.status, 0, child.stderr);
-    assert.match(child.stdout, /pgTAP: 19 files, 257 assertions, PASS/);
+    assert.match(child.stdout, /pgTAP: 20 files, 257 assertions, PASS/);
     const commands = readFileSync(join(directory, 'commands'), 'utf8');
     assert.match(
       commands,
@@ -297,6 +303,7 @@ test('CI runner fails closed at each failed phase without leaking captured outpu
       'm05-app',
       'm06-app',
       'm06-stories-app',
+      'm06-upkeep-app',
       'types',
       'security',
       'performance',
@@ -356,6 +363,14 @@ test('CI runner rejects skipped M06 stories SQL assertions', () =>
     const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_M06_STORIES_APP_SKIPPED: '1' });
     assert.equal(child.status, 1);
     assert.match(child.stderr, /M06 stories SQL\/app contract: FAIL/);
+    assert.ok(!child.stdout.includes(marker) && !child.stderr.includes(marker));
+  }));
+
+test('CI runner rejects skipped M06 upkeep SQL assertions', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_M06_UPKEEP_APP_SKIPPED: '1' });
+    assert.equal(child.status, 1);
+    assert.match(child.stderr, /M06 upkeep SQL\/app contract: FAIL/);
     assert.ok(!child.stdout.includes(marker) && !child.stderr.includes(marker));
   }));
 

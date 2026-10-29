@@ -1,0 +1,97 @@
+{
+    "observed_at":  "2026-10-29T12:11:43.6048746+00:00",
+    "environment":  "local synthetic only",
+    "migration":  {
+                      "version":  "20261029114814",
+                      "path":  "supabase/migrations/20261029114814_m06_upkeep_contracts.sql",
+                      "sha256":  "4dfb661015e9a57eca6fcf0bb30a49fa78a6e9dd0a6c6e647edc9e4c9f86e7c2",
+                      "created_with":  "supabase migration new m06_upkeep_contracts",
+                      "hosted_applied":  false
+                  },
+    "qualified_definition_chain":  24,
+    "existing_hosted_chain_preserved":  23,
+    "regular_suites":  20,
+    "regular_assertions":  953,
+    "new_upkeep_assertions":  69,
+    "failed_assertions":  0,
+    "qualifications":  [
+                           {
+                               "suites":  14,
+                               "assertions":  590,
+                               "native_exit":  0,
+                               "method":  "existing local14 plus forward15..24 inside rolled-back transactions"
+                           },
+                           {
+                               "suites":  1,
+                               "assertions":  31,
+                               "native_exit":  0,
+                               "method":  "legacy M05 suite with rollback-only pgTAP initialization"
+                           },
+                           {
+                               "suites":  4,
+                               "assertions":  263,
+                               "native_exit":  0,
+                               "method":  "media,health,stories,campaign suites with rollback-only definitions"
+                           },
+                           {
+                               "suites":  1,
+                               "assertions":  69,
+                               "native_exit":  0,
+                               "method":  "final upkeep suite against empty24-definition schema; fixtures rolled back"
+                           }
+                       ],
+    "generated_types":  {
+                            "path":  "packages/shared/src/db.types.ts",
+                            "generator":  "official postgres-meta v0.100.0 generate-types CLI path",
+                            "native_exit":  0,
+                            "shared_typecheck":  "passed",
+                            "schemas":  [
+                                            "app",
+                                            "ops",
+                                            "ingest",
+                                            "api"
+                                        ]
+                        },
+    "security_advisors":  {
+                              "tool":  "Supabase CLI2.121.0 db advisors",
+                              "native_exit":  0,
+                              "findings":  0
+                          },
+    "performance_advisors":  {
+                                 "tool":  "Supabase CLI2.121.0 db advisors",
+                                 "native_exit":  0,
+                                 "findings":  0
+                             },
+    "source_baseline":  {
+                            "observed":  "14|10|1|f|",
+                            "history_versions":  14,
+                            "items":  10,
+                            "competitors":  1,
+                            "postgres_superuser":  false,
+                            "upkeep_rpc_absent":  true,
+                            "reset":  false
+                        },
+    "qualifiers":  {
+                       "source_id":  "3ea557943d1e010e6874dbd3de21c70cd966b389c2dc96b17a117ced31064ada",
+                       "advisors_id":  "c640bac15e6c65f8f8ad79f536f536ecbdf29477e52bc18aeb596ef08e54cb8f",
+                       "removed":  true,
+                       "owned_snapshot_removed":  true,
+                       "items":  0,
+                       "raw_items":  0,
+                       "postgres_superuser":  false
+                   },
+    "hosted_operations":  0,
+    "provider_operations":  0,
+    "campaign_mutations":  0,
+    "qualification_corrections":  [
+                                      "Fixture corrected the existing AI queue name to ai_extract.",
+                                      "Legacy SQL suites requiring existing pgTAP were initialized inside rollback only.",
+                                      "Schema-only clone initialized the actual required role inventory and existing three queues; no history rows or collected data were fabricated.",
+                                      "Native advisors used a stopped local schema snapshot rebound only to127.0.0.1; both temporary containers and the snapshot were removed."
+                                  ],
+    "limitations":  [
+                        "Source completeness is derived by server source adapters; SQL tests do not establish actual provider history coverage.",
+                        "SQL privilege simulation is not a hosted restricted-login receipt.",
+                        "No pending upkeep migration or removal operation was applied to development or production."
+                    ]
+}
