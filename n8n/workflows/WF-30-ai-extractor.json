@@ -329,9 +329,24 @@
           ]
         ]
       },
-      "node": "Provider admitted?",
-      "type": "main",
-      "index": 0,
+      "Gateway request?": {
+        "main": [
+          [
+            {
+              "node": "Prepare extraction gateway",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Provider admitted?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "Prepare extraction gateway": {
         "main": [
           [
@@ -359,6 +374,24 @@
           [
             {
               "node": "Gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Provider admitted?": {
+        "main": [
+          [
+            {
+              "node": "Prepare admitted model request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return extraction outcome",
               "type": "main",
               "index": 0
             }

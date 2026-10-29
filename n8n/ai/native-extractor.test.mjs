@@ -120,6 +120,43 @@ test('graph uses supported pinned native nodes with one explicit text provider o
   for (const n of graph.workflow.nodes.filter((n) => n.type === 'n8n-nodes-base.code'))
     assert.doesNotMatch(n.parameters.jsCode, /require\(|from ['"]|process\.|OPENAI_API_KEY|sharp/);
 });
+test('assembled extraction connections satisfy native schema and connect both IF outputs and receipt loops', () => {
+  for (const definition of [graph, buildUnboundNativeExtractor(bindings)]) {
+    const { nodes, connections } = definition.workflow;
+    const names = new Set(nodes.map((n) => n.name));
+    for (const [source, outputs] of Object.entries(connections)) {
+      assert.ok(names.has(source), `unknown source ${source}`);
+      assert.equal(typeof outputs, 'object', source);
+      assert.ok(outputs !== null && !Array.isArray(outputs), source);
+      assert.deepEqual(Object.keys(outputs), ['main']);
+      assert.ok(Array.isArray(outputs.main), source);
+      for (const branch of outputs.main) {
+        assert.ok(Array.isArray(branch), source);
+        for (const target of branch) {
+          assert.deepEqual(Object.keys(target).sort(), ['index', 'node', 'type']);
+          assert.ok(names.has(target.node), `unknown target ${target.node}`);
+          assert.equal(target.type, 'main');
+          assert.equal(target.index, 0);
+        }
+      }
+    }
+    const next = (source, output = 0) => connections[source].main[output].map((e) => e.node);
+    assert.deepEqual(next('Gateway request?', 0), ['Prepare extraction gateway']);
+    assert.deepEqual(next('Gateway request?', 1), ['Provider admitted?']);
+    assert.deepEqual(next('Provider admitted?', 0), ['Prepare admitted model request']);
+    assert.deepEqual(next('Provider admitted?', 1), ['Return extraction outcome']);
+    assert.deepEqual(next('Advance extraction receipt'), ['Gateway request?']);
+    assert.deepEqual(next('Advance model receipt'), ['Gateway request?']);
+    const visited = new Set();
+    const visit = (name) => {
+      if (visited.has(name)) return;
+      visited.add(name);
+      for (const branch of connections[name]?.main ?? []) for (const edge of branch) visit(edge.node);
+    };
+    visit('When called');
+    assert.deepEqual([...visited].sort(), [...names].sort());
+  }
+});
 test('transport is loopback only and missing bindings fail construction', () => {
   for (const audience of [
     'https://example.com',

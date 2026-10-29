@@ -379,22 +379,24 @@ function definition(input, transport, ready) {
       pinData: {},
       connections: {
         ...line('When called', 'Initialize local extraction', 'Gateway request?'),
-        ...edge('Gateway request?', 0, 'Prepare extraction gateway'),
+        'Gateway request?': {
+          main: [[edge('Prepare extraction gateway')], [edge('Provider admitted?')]],
+        },
         ...line(
           'Prepare extraction gateway',
           'Restricted extraction gateway',
           'Advance extraction receipt',
           'Gateway request?',
         ),
-        ...edge('Gateway request?', 1, 'Provider admitted?'),
-        ...edge('Provider admitted?', 0, 'Prepare admitted model request'),
+        'Provider admitted?': {
+          main: [[edge('Prepare admitted model request')], [edge('Return extraction outcome')]],
+        },
         ...line(
           'Prepare admitted model request',
           'OpenAI Responses text extraction',
           'Advance model receipt',
           'Gateway request?',
         ),
-        ...edge('Provider admitted?', 1, 'Return extraction outcome'),
       },
     },
   };

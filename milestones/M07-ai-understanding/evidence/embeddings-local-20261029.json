@@ -1,5 +1,5 @@
 {
-  "observed_at": "2026-10-29T16:26:09.030934+00:00",
+  "observed_at": "2026-10-29T16:44:40.601337+00:00",
   "environment": "local and controlled provider responses only",
   "accepted_base": "3dff9f477ab72619d425cf955b60e7fd5de13cff",
   "accepted_ci_carried": 40899862686,
@@ -168,5 +168,52 @@
     "Independent same-project OIDC protection access",
     "Real model output, vectors and usage accounting"
   ],
-  "next_packet": "live-ai-dev-packet-20261029.md"
+  "next_packet": "live-ai-dev-packet-20261029.md",
+  "initial_recorded_at": "2026-10-29T16:26:09.030934+00:00",
+  "required_ci": {
+    "observed_at": "2026-10-29T16:44:40.601337+00:00",
+    "head": "795c3556928f756c146406d415e95ebc5b2473d0",
+    "run": 40913235591,
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "unit",
+        "conclusion": "success",
+        "databaseId": 123586512381,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591/job/123586512381"
+      },
+      {
+        "name": "quality",
+        "conclusion": "success",
+        "databaseId": 123586512792,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591/job/123586512792"
+      },
+      {
+        "name": "build",
+        "conclusion": "success",
+        "databaseId": 123586512999,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591/job/123586512999"
+      },
+      {
+        "name": "db-tests",
+        "conclusion": "success",
+        "databaseId": 123586513020,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591/job/123586513020"
+      },
+      {
+        "name": "e2e",
+        "conclusion": "success",
+        "databaseId": 123586816410,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591/job/123586816410"
+      }
+    ],
+    "full_migration_chain": 26,
+    "regular_sql_files": 22,
+    "regular_sql_assertions": 1142,
+    "m07_actual_sql_cases": "extraction and embeddings both passed, zero skipped",
+    "type_parity": "passed",
+    "advisors": "security no warnings/errors; performance no errors",
+    "note": "Final receipt/header retained locally for the next substantive delivery; no announcement-only commit."
+  }
 }

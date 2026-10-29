@@ -140,6 +140,43 @@ test('validates exact local/dev target bindings and rejects production or malfor
     /M07_EMBED_/,
   );
 });
+test('assembled embedding connections satisfy native schema and connect both IF outputs and receipt loops', () => {
+  for (const definition of [graph, buildUnboundNativeEmbeddings(bindings)]) {
+    const { nodes, connections } = definition.workflow;
+    const names = new Set(nodes.map((n) => n.name));
+    for (const [source, outputs] of Object.entries(connections)) {
+      assert.ok(names.has(source), `unknown source ${source}`);
+      assert.equal(typeof outputs, 'object', source);
+      assert.ok(outputs !== null && !Array.isArray(outputs), source);
+      assert.deepEqual(Object.keys(outputs), ['main']);
+      assert.ok(Array.isArray(outputs.main), source);
+      for (const branch of outputs.main) {
+        assert.ok(Array.isArray(branch), source);
+        for (const target of branch) {
+          assert.deepEqual(Object.keys(target).sort(), ['index', 'node', 'type']);
+          assert.ok(names.has(target.node), `unknown target ${target.node}`);
+          assert.equal(target.type, 'main');
+          assert.equal(target.index, 0);
+        }
+      }
+    }
+    const next = (source, output = 0) => connections[source].main[output].map((e) => e.node);
+    assert.deepEqual(next('Embedding gateway request?', 0), ['Prepare embedding gateway']);
+    assert.deepEqual(next('Embedding gateway request?', 1), ['Embedding provider admitted?']);
+    assert.deepEqual(next('Embedding provider admitted?', 0), ['Prepare admitted embedding request']);
+    assert.deepEqual(next('Embedding provider admitted?', 1), ['Return embedding outcome']);
+    assert.deepEqual(next('Advance embedding receipt'), ['Embedding gateway request?']);
+    assert.deepEqual(next('Advance embedding model receipt'), ['Embedding gateway request?']);
+    const visited = new Set();
+    const visit = (name) => {
+      if (visited.has(name)) return;
+      visited.add(name);
+      for (const branch of connections[name]?.main ?? []) for (const edge of branch) visit(edge.node);
+    };
+    visit('When called');
+    assert.deepEqual([...visited].sort(), [...names].sort());
+  }
+});
 test('serialized generated Code derives stable execution ownership without caller-selected configuration', () => {
   const s = code('Initialize embeddings', { env: 'dev' })[0].json;
   assert.equal(s.request.operation, 'claim');

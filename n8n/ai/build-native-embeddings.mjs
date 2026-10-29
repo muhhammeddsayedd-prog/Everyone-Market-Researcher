@@ -378,22 +378,24 @@ function definition(input, transport, ready) {
       pinData: {},
       connections: {
         ...line('When called', 'Initialize embeddings', 'Embedding gateway request?'),
-        ...edge('Embedding gateway request?', 0, 'Prepare embedding gateway'),
+        'Embedding gateway request?': {
+          main: [[edge('Prepare embedding gateway')], [edge('Embedding provider admitted?')]],
+        },
         ...line(
           'Prepare embedding gateway',
           'Restricted embedding gateway',
           'Advance embedding receipt',
           'Embedding gateway request?',
         ),
-        ...edge('Embedding gateway request?', 1, 'Embedding provider admitted?'),
-        ...edge('Embedding provider admitted?', 0, 'Prepare admitted embedding request'),
+        'Embedding provider admitted?': {
+          main: [[edge('Prepare admitted embedding request')], [edge('Return embedding outcome')]],
+        },
         ...line(
           'Prepare admitted embedding request',
           'OpenAI embeddings',
           'Advance embedding model receipt',
           'Embedding gateway request?',
         ),
-        ...edge('Embedding provider admitted?', 1, 'Return embedding outcome'),
       },
     },
   };

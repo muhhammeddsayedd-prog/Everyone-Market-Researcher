@@ -329,9 +329,24 @@
           ]
         ]
       },
-      "node": "Embedding provider admitted?",
-      "type": "main",
-      "index": 0,
+      "Embedding gateway request?": {
+        "main": [
+          [
+            {
+              "node": "Prepare embedding gateway",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Embedding provider admitted?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "Prepare embedding gateway": {
         "main": [
           [
@@ -359,6 +374,24 @@
           [
             {
               "node": "Embedding gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embedding provider admitted?": {
+        "main": [
+          [
+            {
+              "node": "Prepare admitted embedding request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return embedding outcome",
               "type": "main",
               "index": 0
             }
