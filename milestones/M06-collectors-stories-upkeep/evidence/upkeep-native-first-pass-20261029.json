@@ -1,0 +1,188 @@
+{
+  "observedAt": "2026-10-29T13:49:21.364Z",
+  "source": "6aa6a3ee7b9fe2903af06395b50eb6c96450076d",
+  "ci": 40881560538,
+  "preview": {
+    "id": "dpl_96r2ii3sgB5ooemZW5fhCCFpARcd",
+    "url": "everyone-market-researcher-7th4dcwg8-muhammed-abdelrahman.vercel.app"
+  },
+  "nativeEvidenceMethod": "Manual native execution and displayed successful return receipts; success/manual payload retention disabled",
+  "nativeExecutionMetadata": {
+    "requestedIncludeData": false,
+    "execution31325HttpStatus": 404,
+    "workflowExecutionListEmpty": true,
+    "note": "Native workflow data privacy deletes completed manual record; live editor timer continued despite successful final nodes and enabled Execute. Do not treat timer as unfinished work."
+  },
+  "vimeo": {
+    "executionId": "31325",
+    "request": {
+      "version": 1,
+      "requestId": "c0640000-0002-4000-a000-000000007a5d",
+      "operation": "account.process",
+      "args": {
+        "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+        "platform": "vimeo",
+        "since": "2026-07-31",
+        "metrics_since": "2026-09-29"
+      }
+    },
+    "metadata": {
+      "status": 0
+    },
+    "replay": {
+      "status": 200,
+      "body": {
+        "version": 1,
+        "requestId": "c0640000-0002-4000-a000-000000007a5d",
+        "operation": "account.process",
+        "replayed": true,
+        "result": {
+          "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+          "platform": "vimeo",
+          "since": "2026-07-31",
+          "metrics_since": "2026-09-29",
+          "metrics_updated": 5,
+          "eligible": true,
+          "reason": null,
+          "removal": {
+            "removed": 0,
+            "restored": 0,
+            "skipped": null
+          }
+        }
+      },
+      "closed": true
+    }
+  },
+  "youtube": {
+    "executionId": "31326",
+    "request": {
+      "version": 1,
+      "requestId": "c0640000-0002-4000-a000-000000007a5e",
+      "operation": "account.process",
+      "args": {
+        "account_id": "3dbf4ea2-3eae-4369-89cb-85df8fcd2e03",
+        "platform": "youtube",
+        "since": "2026-07-31",
+        "metrics_since": "2026-09-29"
+      }
+    },
+    "replay": {
+      "status": 200,
+      "body": {
+        "version": 1,
+        "requestId": "c0640000-0002-4000-a000-000000007a5e",
+        "operation": "account.process",
+        "replayed": true,
+        "result": {
+          "account_id": "3dbf4ea2-3eae-4369-89cb-85df8fcd2e03",
+          "platform": "youtube",
+          "since": "2026-07-31",
+          "metrics_since": "2026-09-29",
+          "metrics_updated": 0,
+          "eligible": false,
+          "reason": "empty_listing",
+          "removal": null
+        }
+      },
+      "closed": true
+    }
+  },
+  "instagram": {
+    "executionId": "31327",
+    "request": {
+      "version": 1,
+      "requestId": "c0640000-0002-4000-a000-000000007a5f",
+      "operation": "account.process",
+      "args": {
+        "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+        "platform": "instagram",
+        "since": "2026-09-29",
+        "metrics_since": "2026-09-29"
+      }
+    },
+    "replay": {
+      "status": 200,
+      "body": {
+        "version": 1,
+        "requestId": "c0640000-0002-4000-a000-000000007a5f",
+        "operation": "account.process",
+        "replayed": true,
+        "result": {
+          "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+          "platform": "instagram",
+          "since": "2026-09-29",
+          "metrics_since": "2026-09-29",
+          "metrics_updated": 0,
+          "eligible": false,
+          "reason": "instagram_posts_source_run_not_successful",
+          "removal": null
+        }
+      },
+      "closed": true
+    },
+    "sourceReadStatus": "failed_safe_no_mutation"
+  },
+  "health": {
+    "executionId": "31328",
+    "requestId": "c0691000-0001-4000-a000-000000007a60",
+    "nativeResult": {
+      "projection": {
+        "version": "m06",
+        "failing_accounts": 0,
+        "stale_accounts": 89,
+        "queue_depths": {
+          "embed": 0,
+          "media": 267,
+          "ai_extract": 290
+        },
+        "story_queue_depth": null,
+        "zero_item_streaks": 0,
+        "story_capture_gap": 0.3076923076923077,
+        "media_missing_24h": 31,
+        "m06_signals_observed": true,
+        "over_budget": false,
+        "notification_mode": "local_only",
+        "sent": false
+      },
+      "sent": false,
+      "delivery": "local_only"
+    },
+    "evidenceMethod": "Observed native Verify local health delivery successful output table; no email node or call"
+  },
+  "quiescence": {
+    "selected_live_claims": 0,
+    "campaign_unsettled_jobs": 0,
+    "campaign_running_parents": 0,
+    "selected_running_parents": 0,
+    "active_other_m06_sessions": 0,
+    "global_media_session_locks": 0,
+    "campaign_unprocessed_actors": 0,
+    "campaign_unregistered_launches": 0
+  },
+  "quotaBefore": [
+    {
+      "quota_day": "2026-10-28",
+      "used_units": 4
+    }
+  ],
+  "quotaAfter": [
+    {
+      "quota_day": "2026-10-28",
+      "used_units": 4
+    },
+    {
+      "quota_day": "2026-10-29",
+      "used_units": 2
+    }
+  ],
+  "accountRowsUnchanged": true,
+  "rawAiMediaAndQueuesUnchanged": true,
+  "actorStarts": 0,
+  "actorUsd": 0,
+  "infrastructureUsd": null,
+  "recovery": {
+    "reason": "Authentic retained INPUT can contain collaboration rows from other owners; strict batch check rejected them. Safe fix discards foreign owners only with authentic INPUT attribution and processes selected-owner rows only; prior request stays completed unchanged.",
+    "pending": true
+  }
+}

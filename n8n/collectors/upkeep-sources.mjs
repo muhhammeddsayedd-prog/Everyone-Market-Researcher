@@ -449,10 +449,27 @@ async function readPaidPart(target, pass, ports, settings, signal) {
   let items;
   if (target.platform === 'instagram') {
     instagram.validateInstagramAccounts([{ ...target, id: target.account_id }]);
-    const handles = new Set(urls.map((url) => new URL(url).pathname.split('/')[1].toLowerCase()));
-    if (dataset.items.some((r) => !handles.has(r?.ownerUsername?.toLowerCase())))
+    const selectedOwner = target.handle.toLowerCase();
+    // The registered profile output may include collaboration posts owned by a
+    // different profile. Their authentic INPUT URL establishes why they were in
+    // this dataset, never ownership of their content or metrics. Ignore them
+    // only with exact INPUT attribution; provider errors are still failures.
+    if (
+      dataset.items.some(
+        (r) =>
+          !record(r) ||
+          typeof r.ownerUsername !== 'string' ||
+          !/^[a-z0-9._]{1,30}$/i.test(r.ownerUsername) ||
+          Boolean(r.error) ||
+          Boolean(r.errorDescription) ||
+          r.isPrivate === true ||
+          (r.inputUrl !== undefined && !urls.includes(r.inputUrl)) ||
+          (r.ownerUsername.toLowerCase() !== selectedOwner && !urls.includes(r.inputUrl)),
+      )
+    )
       fail('M06_UPKEEP_PAID_SOURCE_INVALID');
-    const owned = dataset.items.filter((r) => r.ownerUsername.toLowerCase() === target.handle.toLowerCase());
+    const owned = dataset.items.filter((r) => r.ownerUsername.toLowerCase() === selectedOwner);
+    if (dataset.items.length > 0 && owned.length === 0) fail('M06_UPKEEP_PAID_SOURCE_INVALID');
     items = instagram.normalizeInstagramScraper(owned, { result_type: pass });
     if (items.length !== owned.length) fail('M06_UPKEEP_PAID_SOURCE_INVALID');
     receipt.hit_limit ||= owned.length >= cap;

@@ -384,6 +384,88 @@ test('Instagram capped results still refresh observed metrics without absence cl
   assert.equal(evaluateRemovalListing(instagramTarget, receipt).eligible, false);
 });
 
+test('Instagram contains attributed collaboration rows without transferring their metrics', async () => {
+  const receipt = await readUpkeepListing(
+    instagramTarget,
+    {
+      actorSnapshot: async (r) =>
+        snapshot(instagramTarget, r.pass, [
+          igRow('Owned' + r.pass, undefined, { inputUrl: instagramTarget.url }),
+          igRow('Collaboration' + r.pass, undefined, {
+            ownerUsername: 'collaborator.studio',
+            inputUrl: instagramTarget.url,
+            likesCount: 999,
+          }),
+        ]),
+    },
+    options,
+  );
+  assert.equal(receipt.status, 'SUCCEEDED');
+  assert.deepEqual(
+    receipt.entries.map((r) => r.external_id),
+    ['Ownedposts', 'Ownedreels'],
+  );
+  assert.ok(receipt.entries.every((r) => r.account_id === id && r.metrics.likes === 5));
+  assert.ok(receipt.passes.every((r) => !r.range_complete && !r.source_exhausted));
+  assert.equal(evaluateRemovalListing(instagramTarget, receipt).eligible, false);
+});
+
+test('Instagram rejects unattributed, spoofed or error collaboration output and preserves the independent pass', async () => {
+  for (const extra of [
+    {},
+    { inputUrl: 'https://www.instagram.com/unregistered.studio/' },
+    { inputUrl: instagramTarget.url + '?unproved=1' },
+    { inputUrl: instagramTarget.url, error: 'source failed' },
+    { inputUrl: instagramTarget.url, errorDescription: 'source failed' },
+    { inputUrl: instagramTarget.url, isPrivate: true },
+  ]) {
+    const receipt = await readUpkeepListing(
+      instagramTarget,
+      {
+        actorSnapshot: async (r) =>
+          snapshot(
+            instagramTarget,
+            r.pass,
+            r.pass === 'posts'
+              ? [
+                  igRow('Owned'),
+                  igRow('Foreign', undefined, { ownerUsername: 'collaborator.studio', ...extra }),
+                ]
+              : [igRow('Reel')],
+          ),
+      },
+      options,
+    );
+    assert.equal(receipt.status, 'FAILED');
+    assert.equal(receipt.passes[0].reason, 'M06_UPKEEP_PAID_SOURCE_INVALID');
+    assert.deepEqual(
+      receipt.entries.map((r) => r.external_id),
+      ['Reel'],
+    );
+    assert.equal(evaluateRemovalListing(instagramTarget, receipt).eligible, false);
+  }
+});
+
+test('Instagram nonempty all-foreign output cannot establish an attributable selected-owner observation', async () => {
+  const receipt = await readUpkeepListing(
+    instagramTarget,
+    {
+      actorSnapshot: async (r) =>
+        snapshot(instagramTarget, r.pass, [
+          igRow('Foreign', undefined, {
+            ownerUsername: 'collaborator.studio',
+            inputUrl: instagramTarget.url,
+          }),
+        ]),
+    },
+    options,
+  );
+  assert.equal(receipt.status, 'FAILED');
+  assert.ok(receipt.passes.every((r) => r.reason === 'M06_UPKEEP_PAID_SOURCE_INVALID'));
+  assert.deepEqual(receipt.entries, []);
+  assert.equal(evaluateRemovalListing(instagramTarget, receipt).eligible, false);
+});
+
 test('Instagram rejects wrong run/build/owner or login inputs and retains independent safe pass metrics', async () => {
   for (const mutate of [
     (s) => {
@@ -469,7 +551,10 @@ test('multi-account registered Instagram datasets refresh exactly the selected o
       actorSnapshot: async (r) => {
         const value = snapshot(instagramTarget, r.pass, [
           igRow(r.pass),
-          igRow('Other', undefined, { ownerUsername: 'other.films' }),
+          igRow('Other', undefined, {
+            ownerUsername: 'other.films',
+            inputUrl: 'https://www.instagram.com/other.films/',
+          }),
         ]);
         value.input.directUrls.push('https://www.instagram.com/other.films/');
         return value;
