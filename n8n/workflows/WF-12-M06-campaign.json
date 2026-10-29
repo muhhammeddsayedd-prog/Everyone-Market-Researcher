@@ -1,0 +1,975 @@
+{
+  "key": "WF-12-CAMPAIGN",
+  "kind": "native-json-blueprint",
+  "runnableWorkflow": true,
+  "hostedAcceptance": false,
+  "liveEnabled": false,
+  "definitionProfile": "inactive_native_staging",
+  "campaign": {
+    "campaign_id": "63000000-0000-4000-8000-000000000001",
+    "start_date": "2026-10-31",
+    "end_date": "2026-11-06",
+    "account_ids": [
+      "63000000-0000-4000-8000-000000000064",
+      "63000000-0000-4000-8000-000000000065",
+      "63000000-0000-4000-8000-000000000066",
+      "63000000-0000-4000-8000-000000000067",
+      "63000000-0000-4000-8000-000000000068",
+      "63000000-0000-4000-8000-000000000069",
+      "63000000-0000-4000-8000-00000000006a",
+      "63000000-0000-4000-8000-00000000006b",
+      "63000000-0000-4000-8000-00000000006c",
+      "63000000-0000-4000-8000-00000000006d",
+      "63000000-0000-4000-8000-00000000006e",
+      "63000000-0000-4000-8000-00000000006f",
+      "63000000-0000-4000-8000-000000000070",
+      "63000000-0000-4000-8000-000000000071",
+      "63000000-0000-4000-8000-000000000072",
+      "63000000-0000-4000-8000-000000000073",
+      "63000000-0000-4000-8000-000000000074",
+      "63000000-0000-4000-8000-000000000075",
+      "63000000-0000-4000-8000-000000000076",
+      "63000000-0000-4000-8000-000000000077"
+    ],
+    "timezone": "Africa/Cairo",
+    "freshStartHours": [
+      6,
+      12
+    ],
+    "recoveryHours": [
+      6,
+      18
+    ],
+    "maxMediaBatches": 6,
+    "cutoff": "calendar_rules_and_native_guard_plus_authoritative_SQL_launch_fence",
+    "cleanup": "separate_owned_resource_shutdown"
+  },
+  "bindingManifest": {
+    "ready": false,
+    "environment": "dev",
+    "audience": "https://everyone-market-researcher-unbound.vercel.app",
+    "credential": {
+      "id": "UNBOUND_EMR_CAMPAIGN_AUTH",
+      "name": "UNBOUND EMR campaign dev",
+      "type": "httpCustomAuth"
+    },
+    "workflows": {
+      "collector": "UNBOUND_EMR_CAMPAIGN_COLLECTOR",
+      "callback": "UNBOUND_EMR_CAMPAIGN_CALLBACK",
+      "media": "UNBOUND_EMR_CAMPAIGN_MEDIA"
+    }
+  },
+  "workflow": {
+    "name": "WF-12-M06 · Seven-day story comparison [dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "3dbc389a-c2b6-4072-a380-83daba6c29b8",
+        "name": "Seven-day dev story slots",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 */5 6-17 31 10 *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 */5 6-17 1-7 11 *"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "0e36228d-2939-41a3-aaca-6ed96cd3bce6",
+        "name": "Guard finite campaign",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M06_CAMPAIGN_BINDING_REQUIRED');\nconst r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nfunction validateStoryAccounts(accounts) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Array.isArray(accounts) || accounts.length > 100 || !accounts.length)\n    throw Error('M06_STORIES_ACCOUNTS_INVALID');\n  const ids = new Set(),\n    handles = new Set();\n  return accounts.map((account) => {\n    if (!account || typeof account !== 'object' || Array.isArray(account))\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    const id = account.account_id ?? account.id;\n    const handle = account.handle_norm ?? account.handle;\n    if (\n      !uuid(id) ||\n      !uuid(account.competitor_id) ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      account.platform !== 'instagram_stories' ||\n      typeof handle !== 'string' ||\n      !/^[a-z0-9._]{1,30}$/.test(handle) ||\n      (account.handle !== undefined && account.handle !== handle) ||\n      (account.url !== undefined && account.url !== `https://www.instagram.com/${handle}/`) ||\n      (account.backfill_status !== undefined && account.backfill_status !== 'not_applicable') ||\n      ids.has(id) ||\n      handles.has(handle)\n    )\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    ids.add(id);\n    handles.add(handle);\n    return { ...account, id, handle };\n  });\n}\n\nfunction buildStoryBatches(accounts, options) {\n  const actors = {\n    'data-slayer/instagram-stories-scraper': 100,\n    'igview-owner/instagram-story-viewer': 50,\n    'louisdeconinck/instagram-story-details-scraper': 100,\n  };\n  if (\n    !options ||\n    Object.keys(options).some((k) => !['actor_id', 'collection_mode', 'results_limit'].includes(k)) ||\n    !Object.hasOwn(actors, options.actor_id) ||\n    !['ingest', 'bakeoff'].includes(options.collection_mode) ||\n    (options.collection_mode === 'ingest' && options.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Number.isSafeInteger(options.results_limit) ||\n    options.results_limit < 1 ||\n    options.results_limit > 1000\n  )\n    throw Error('M06_STORIES_PLAN_INVALID');\n  const rows = validateStoryAccounts(accounts).sort((a, b) => a.handle.localeCompare(b.handle)),\n    result = [];\n  const chunkSize = Math.min(actors[options.actor_id], Math.floor(1000 / options.results_limit));\n  for (let offset = 0; offset < rows.length; offset += chunkSize) {\n    const chunk = rows.slice(offset, offset + chunkSize);\n    result.push({\n      actor: options.actor_id,\n      platform: 'instagram_stories',\n      purpose: 'daily',\n      pass: 'primary',\n      collection_mode: options.collection_mode,\n      account_ids: chunk.map((a) => a.id),\n      resultsLimit: options.results_limit,\n      input: { usernames: chunk.map((a) => a.handle) },\n      coverage: { complete: false, reason: 'ephemeral_point_in_time_observation' },\n    });\n  }\n  return result;\n}\n\nfunction storyRegistrationCompletion(receipt, runId) {\n  if (\n    !receipt ||\n    typeof receipt !== 'object' ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M06_STORIES_REGISTRATION_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !receipt.summary ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction advanceM06StoryActor(state, response) {\n  const data = response?.body?.data,\n    id = data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M06_STORIES_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorStarts++;\n  const d = state.launchDescriptor;\n  // Save any known provider ID before refusing further starts on changed caps,\n  // build or identity. A lost/invalid start is never replaced automatically.\n  state.actorAcknowledged =\n    data.actId === d.actorId &&\n    data.userId === d.ownerId &&\n    data.buildId === d.buildId &&\n    data.buildNumber === d.build &&\n    data.options?.maxTotalChargeUsd === d.maxTotalChargeUsd &&\n    data.options?.memoryMbytes === d.memory &&\n    data.options?.timeoutSecs === d.timeout;\n  const batch = state.batches[state.batchIndex];\n  return m06StoryGateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n  });\n}\n\nfunction advanceM06StoryGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M06_STORIES_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm06.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M06_STORIES_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    return m06StoryGateway(state, 'claim', {\n      run_id: state.runId,\n      platform: 'instagram_stories',\n      mode: 'daily',\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm06.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((a) => a?.account_id ?? a?.id)).size !== result.length ||\n      result.some((a) => !state.accountIds.includes(a?.account_id ?? a?.id))\n    )\n      throw Error('M06_STORIES_CLAIM_INVALID');\n    state.batches = buildStoryBatches(result, {\n      actor_id: state.actorId,\n      collection_mode: state.collectionMode,\n      results_limit: state.resultsLimit,\n    });\n    if (state.batches.length > state.maxActorStarts) throw Error('M06_STORIES_OPERATIONAL_START_BOUND');\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.launch') {\n    if (!result || result.launch_id !== state.launchId || typeof result.permit !== 'boolean')\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    if (result.permit === false) {\n      if (!/^[A-Za-z0-9_-]{1,128}$/.test(result.apify_run_id ?? ''))\n        throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n      state.startedActorId = result.apify_run_id;\n      // A known ID only reconciles identity. It does not establish that the\n      // previous native launch acknowledged its authentic build/options.\n      // Preserve registration, then stop for authoritative reconciliation.\n      state.actorAcknowledged = false;\n      const batch = state.batches[state.batchIndex];\n      return m06StoryGateway(state, 'register', {\n        run_id: state.runId,\n        launch_id: state.launchId,\n        apify_run_id: state.startedActorId,\n        actor_id: batch.actor,\n        pass: 'primary',\n        account_ids: batch.account_ids,\n        purpose: 'daily',\n      });\n    }\n    const d = result.descriptor,\n      batch = state.batches[state.batchIndex];\n    if (\n      body.replayed ||\n      result.replayed !== false ||\n      !d ||\n      typeof d !== 'object' ||\n      Array.isArray(d) ||\n      Object.keys(d).length !== 10 ||\n      Object.keys(d).some(\n        (k) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'actorId',\n            'ownerId',\n            'build',\n            'buildId',\n            'maxTotalChargeUsd',\n            'maxOutputItems',\n            'memory',\n            'timeout',\n          ].includes(k),\n      ) ||\n      !['PPE', 'PPU'].includes(d.billingModel) ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.actorId ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.ownerId ?? '') ||\n      !/^\\d+\\.\\d+\\.\\d+$/.test(d.build ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.buildId ?? '') ||\n      typeof d.maxTotalChargeUsd !== 'number' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      d.maxOutputItems !== batch.account_ids.length * batch.resultsLimit ||\n      !Number.isSafeInteger(d.memory) ||\n      d.memory < 128 ||\n      d.memory > 32768 ||\n      (d.memory & (d.memory - 1)) !== 0 ||\n      !Number.isSafeInteger(d.timeout) ||\n      d.timeout < 30 ||\n      d.timeout > 600\n    )\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm06.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M06_STORIES_REGISTER_RECONCILIATION_REQUIRED');\n    if (!state.actorAcknowledged) throw Error('M06_STORIES_PROVIDER_OPTIONS_RECONCILIATION_REQUIRED');\n    if (!state.actorIds.includes(state.startedActorId)) state.actorIds.push(state.startedActorId);\n    state.batchIndex++;\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.close_registration') {\n    const completion = storyRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorStarts,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n      collection_mode: state.collectionMode,\n    };\n    return state;\n  }\n  throw Error('M06_STORIES_OPERATION_INVALID');\n}\n\nfunction initializeM06Stories(input, executionId, now) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  const actors = [\n    'data-slayer/instagram-stories-scraper',\n    'igview-owner/instagram-story-viewer',\n    'louisdeconinck/instagram-story-details-scraper',\n  ];\n  if (\n    !input ||\n    typeof input !== 'object' ||\n    Array.isArray(input) ||\n    Object.keys(input).length !== 7 ||\n    Object.keys(input).some(\n      (k) =>\n        ![\n          'env',\n          'mode',\n          'actor_id',\n          'collection_mode',\n          'account_ids',\n          'results_limit',\n          'max_actor_starts',\n        ].includes(k),\n    ) ||\n    input.env !== 'dev' ||\n    input.mode !== 'daily' ||\n    !actors.includes(input.actor_id) ||\n    !['ingest', 'bakeoff'].includes(input.collection_mode) ||\n    (input.collection_mode === 'ingest' && input.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 100 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > 1000 ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    typeof now !== 'string' ||\n    !Number.isFinite(Date.parse(now))\n  )\n    throw Error('M06_STORIES_INPUT_INVALID');\n  const state = {\n    executionId,\n    now,\n    accountIds: input.account_ids,\n    actorId: input.actor_id,\n    collectionMode: input.collection_mode,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n    actorStarts: 0,\n  };\n  return m06StoryGateway(state, 'start', {\n    workflow: 'WF-12',\n    platform: 'instagram_stories',\n    mode: 'daily',\n    env: 'dev',\n    execution_id: executionId,\n    collection_mode: state.collectionMode,\n  });\n}\n\nfunction m06StoryGateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m06StoryRequestId(state.executionId, state.sequence),\n    operation: 'm06.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction nextM06StoryLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m06StoryGateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m06StoryRequestId(state.executionId, state.sequence + 1);\n  return m06StoryGateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    collection_mode: batch.collection_mode,\n  });\n}\nfunction initializeM06CampaignLaunch(tick, executionId, pin, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  if (\n    tick?.action !== 'launch' ||\n    tick.campaign_id !== pin.campaign_id ||\n    tick.day !== clock.day ||\n    clock.day < pin.start_date ||\n    clock.day > pin.end_date ||\n    clock.hour < 6 ||\n    clock.hour >= 12 ||\n    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tick.run_id ?? '')\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  const selection = tick.selection;\n  const state = initializeM06Stories(selection, executionId, now);\n  if (\n    selection.max_actor_starts !== 1 ||\n    selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n    (selection.collection_mode === 'bakeoff' &&\n      selection.actor_id === 'data-slayer/instagram-stories-scraper') ||\n    (selection.collection_mode === 'ingest'\n      ? selection.account_ids.length !== 20 || selection.results_limit !== 30\n      : selection.account_ids.length !== 20 || selection.results_limit !== 50)\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  state.runId = tick.run_id;\n  state.batches = buildStoryBatches(tick.accounts, {\n    actor_id: state.actorId,\n    collection_mode: state.collectionMode,\n    results_limit: state.resultsLimit,\n  });\n  if (\n    state.batches.length !== 1 ||\n    state.batches[0].account_ids.length !== selection.account_ids.length ||\n    state.batches[0].account_ids.some((id) => !selection.account_ids.includes(id))\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  return nextM06StoryLaunch(state);\n}\n\nfunction m06CampaignClock(now) {\n  if (typeof now !== 'string' || !Number.isFinite(Date.parse(now))) throw Error('M06_CAMPAIGN_CLOCK_INVALID');\n  const parts = Object.fromEntries(\n    new Intl.DateTimeFormat('en-CA', {\n      timeZone: 'Africa/Cairo',\n      year: 'numeric',\n      month: '2-digit',\n      day: '2-digit',\n      hour: '2-digit',\n      hourCycle: 'h23',\n    })\n      .formatToParts(new Date(now))\n      .map((p) => [p.type, p.value]),\n  );\n  return { day: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour) };\n}\n\nfunction prepareM06CampaignRecoveryClose(callback, tick, executionId) {\n  if (\n    !callback ||\n    callback.accepted !== true ||\n    callback.state !== 'completed' ||\n    callback.apify_run_id !== tick.apify_run_id ||\n    typeof callback.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return tick.registration_closed\n    ? { action: 'done', apify_run_id: tick.apify_run_id }\n    : {\n        action: 'gateway',\n        request: {\n          version: 1,\n          requestId: m06StoryRequestId(executionId, 2),\n          operation: 'm06.close_registration',\n          args: { run_id: tick.run_id },\n        },\n      };\n}\n\nfunction prepareM06CampaignTick(pin, executionId, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  const shutdownDay = new Date(Date.parse(pin.end_date) + 86400000).toISOString().slice(0, 10);\n  if (clock.day > shutdownDay || (clock.day === shutdownDay && clock.hour >= 18))\n    return { action: 'closed', campaign_id: pin.campaign_id, reason: 'campaign_cutoff' };\n  if (clock.day < pin.start_date || clock.hour < 6 || clock.hour >= 18)\n    return { action: 'idle', campaign_id: pin.campaign_id, reason: 'outside_observation_window' };\n  return {\n    action: 'gateway',\n    request: {\n      version: 1,\n      requestId: m06StoryRequestId(executionId, 1),\n      operation: 'm06.campaign_tick',\n      args: { campaign_id: pin.campaign_id, execution_id: executionId },\n    },\n  };\n}\n\nfunction validateM06CampaignPin(pin) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (\n    !pin ||\n    Object.keys(pin).sort().join(',') !== 'account_ids,campaign_id,end_date,start_date' ||\n    !uuid(pin.campaign_id) ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.start_date ?? '') ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.end_date ?? '') ||\n    !Number.isFinite(Date.parse(pin.start_date)) ||\n    new Date(Date.parse(pin.start_date)).toISOString().slice(0, 10) !== pin.start_date ||\n    !Number.isFinite(Date.parse(pin.end_date)) ||\n    new Date(Date.parse(pin.end_date)).toISOString().slice(0, 10) !== pin.end_date ||\n    Date.parse(pin.end_date) - Date.parse(pin.start_date) !== 6 * 86400000 ||\n    !Array.isArray(pin.account_ids) ||\n    pin.account_ids.length !== 20 ||\n    pin.account_ids.some((x) => !uuid(x)) ||\n    new Set(pin.account_ids).size !== 20\n  )\n    throw Error('M06_CAMPAIGN_PIN_INVALID');\n  return pin;\n}\n\nfunction verifyM06CampaignRecoveryClose(response, prior) {\n  const b = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    b?.version !== 1 ||\n    b.requestId !== prior?.request?.requestId ||\n    b.operation !== 'm06.close_registration' ||\n    typeof b.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return storyRegistrationCompletion(b.result, prior.request.args.run_id);\n}\n\nfunction verifyM06CampaignTick(response, prior, pin) {\n  validateM06CampaignPin(pin);\n  const body = response?.body,\n    r = body?.result;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== prior?.request?.requestId ||\n    body.operation !== 'm06.campaign_tick' ||\n    typeof body.replayed !== 'boolean' ||\n    !r ||\n    typeof r !== 'object' ||\n    Array.isArray(r) ||\n    r.campaign_id !== pin.campaign_id\n  )\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  const shapes = {\n    launch: 'accounts,action,campaign_id,day,group_key,run_id,selection',\n    recover: 'action,apify_run_id,campaign_id,registration_closed,run_id',\n    media: 'action,campaign_id,max_batches',\n    idle: 'action,campaign_id,reason',\n    closed: 'action,campaign_id,reason',\n    blocked: 'action,campaign_id,reason',\n  };\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Object.hasOwn(shapes, r.action) || Object.keys(r).sort().join(',') !== shapes[r.action])\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  if (r.action === 'launch') {\n    if (\n      body.replayed ||\n      !uuid(r.run_id) ||\n      typeof r.day !== 'string' ||\n      r.day < pin.start_date ||\n      r.day > pin.end_date ||\n      !/^[a-z0-9_-]{1,100}$/.test(r.group_key ?? '') ||\n      !r.selection ||\n      !Array.isArray(r.selection.account_ids) ||\n      r.selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n      !Array.isArray(r.accounts) ||\n      r.accounts.length !== r.selection.account_ids.length\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'recover') {\n    if (\n      !uuid(r.run_id) ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(r.apify_run_id ?? '') ||\n      typeof r.registration_closed !== 'boolean'\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'media') {\n    if (r.max_batches !== 6) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (!/^[a-z0-9_]{1,100}$/.test(r.reason ?? '')) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  return r;\n}\nreturn[{json:prepareM06CampaignTick({\"campaign_id\":\"63000000-0000-4000-8000-000000000001\",\"start_date\":\"2026-10-31\",\"end_date\":\"2026-11-06\",\"account_ids\":[\"63000000-0000-4000-8000-000000000064\",\"63000000-0000-4000-8000-000000000065\",\"63000000-0000-4000-8000-000000000066\",\"63000000-0000-4000-8000-000000000067\",\"63000000-0000-4000-8000-000000000068\",\"63000000-0000-4000-8000-000000000069\",\"63000000-0000-4000-8000-00000000006a\",\"63000000-0000-4000-8000-00000000006b\",\"63000000-0000-4000-8000-00000000006c\",\"63000000-0000-4000-8000-00000000006d\",\"63000000-0000-4000-8000-00000000006e\",\"63000000-0000-4000-8000-00000000006f\",\"63000000-0000-4000-8000-000000000070\",\"63000000-0000-4000-8000-000000000071\",\"63000000-0000-4000-8000-000000000072\",\"63000000-0000-4000-8000-000000000073\",\"63000000-0000-4000-8000-000000000074\",\"63000000-0000-4000-8000-000000000075\",\"63000000-0000-4000-8000-000000000076\",\"63000000-0000-4000-8000-000000000077\"]},String($execution.id),new Date().toISOString())}];"
+        },
+        "position": [
+          200,
+          0
+        ]
+      },
+      {
+        "id": "c57bef93-82d7-4fb7-ac2d-070864d7eeb6",
+        "name": "Campaign tick required?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "76ae6ab3-2581-406b-ace1-73737100e6f9",
+                "leftValue": "={{ $json.action === \"gateway\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          400,
+          0
+        ]
+      },
+      {
+        "id": "ce97944c-1151-4584-a73f-f01ed4190ebf",
+        "name": "Prepare campaign tick",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nreturn[{json:j}];"
+        },
+        "position": [
+          600,
+          -150
+        ]
+      },
+      {
+        "id": "edbd1a23-d209-45f1-ab35-f427aedabb82",
+        "name": "Admit next campaign operation",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-unbound.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          800,
+          -150
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "UNBOUND_EMR_CAMPAIGN_AUTH",
+            "name": "UNBOUND EMR campaign dev"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "f45a9f73-d5c7-4cdc-a9e6-6175a2870ecf",
+        "name": "Verify claimed campaign operation",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nfunction validateStoryAccounts(accounts) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Array.isArray(accounts) || accounts.length > 100 || !accounts.length)\n    throw Error('M06_STORIES_ACCOUNTS_INVALID');\n  const ids = new Set(),\n    handles = new Set();\n  return accounts.map((account) => {\n    if (!account || typeof account !== 'object' || Array.isArray(account))\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    const id = account.account_id ?? account.id;\n    const handle = account.handle_norm ?? account.handle;\n    if (\n      !uuid(id) ||\n      !uuid(account.competitor_id) ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      account.platform !== 'instagram_stories' ||\n      typeof handle !== 'string' ||\n      !/^[a-z0-9._]{1,30}$/.test(handle) ||\n      (account.handle !== undefined && account.handle !== handle) ||\n      (account.url !== undefined && account.url !== `https://www.instagram.com/${handle}/`) ||\n      (account.backfill_status !== undefined && account.backfill_status !== 'not_applicable') ||\n      ids.has(id) ||\n      handles.has(handle)\n    )\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    ids.add(id);\n    handles.add(handle);\n    return { ...account, id, handle };\n  });\n}\n\nfunction buildStoryBatches(accounts, options) {\n  const actors = {\n    'data-slayer/instagram-stories-scraper': 100,\n    'igview-owner/instagram-story-viewer': 50,\n    'louisdeconinck/instagram-story-details-scraper': 100,\n  };\n  if (\n    !options ||\n    Object.keys(options).some((k) => !['actor_id', 'collection_mode', 'results_limit'].includes(k)) ||\n    !Object.hasOwn(actors, options.actor_id) ||\n    !['ingest', 'bakeoff'].includes(options.collection_mode) ||\n    (options.collection_mode === 'ingest' && options.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Number.isSafeInteger(options.results_limit) ||\n    options.results_limit < 1 ||\n    options.results_limit > 1000\n  )\n    throw Error('M06_STORIES_PLAN_INVALID');\n  const rows = validateStoryAccounts(accounts).sort((a, b) => a.handle.localeCompare(b.handle)),\n    result = [];\n  const chunkSize = Math.min(actors[options.actor_id], Math.floor(1000 / options.results_limit));\n  for (let offset = 0; offset < rows.length; offset += chunkSize) {\n    const chunk = rows.slice(offset, offset + chunkSize);\n    result.push({\n      actor: options.actor_id,\n      platform: 'instagram_stories',\n      purpose: 'daily',\n      pass: 'primary',\n      collection_mode: options.collection_mode,\n      account_ids: chunk.map((a) => a.id),\n      resultsLimit: options.results_limit,\n      input: { usernames: chunk.map((a) => a.handle) },\n      coverage: { complete: false, reason: 'ephemeral_point_in_time_observation' },\n    });\n  }\n  return result;\n}\n\nfunction storyRegistrationCompletion(receipt, runId) {\n  if (\n    !receipt ||\n    typeof receipt !== 'object' ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M06_STORIES_REGISTRATION_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !receipt.summary ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction advanceM06StoryActor(state, response) {\n  const data = response?.body?.data,\n    id = data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M06_STORIES_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorStarts++;\n  const d = state.launchDescriptor;\n  // Save any known provider ID before refusing further starts on changed caps,\n  // build or identity. A lost/invalid start is never replaced automatically.\n  state.actorAcknowledged =\n    data.actId === d.actorId &&\n    data.userId === d.ownerId &&\n    data.buildId === d.buildId &&\n    data.buildNumber === d.build &&\n    data.options?.maxTotalChargeUsd === d.maxTotalChargeUsd &&\n    data.options?.memoryMbytes === d.memory &&\n    data.options?.timeoutSecs === d.timeout;\n  const batch = state.batches[state.batchIndex];\n  return m06StoryGateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n  });\n}\n\nfunction advanceM06StoryGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M06_STORIES_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm06.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M06_STORIES_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    return m06StoryGateway(state, 'claim', {\n      run_id: state.runId,\n      platform: 'instagram_stories',\n      mode: 'daily',\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm06.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((a) => a?.account_id ?? a?.id)).size !== result.length ||\n      result.some((a) => !state.accountIds.includes(a?.account_id ?? a?.id))\n    )\n      throw Error('M06_STORIES_CLAIM_INVALID');\n    state.batches = buildStoryBatches(result, {\n      actor_id: state.actorId,\n      collection_mode: state.collectionMode,\n      results_limit: state.resultsLimit,\n    });\n    if (state.batches.length > state.maxActorStarts) throw Error('M06_STORIES_OPERATIONAL_START_BOUND');\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.launch') {\n    if (!result || result.launch_id !== state.launchId || typeof result.permit !== 'boolean')\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    if (result.permit === false) {\n      if (!/^[A-Za-z0-9_-]{1,128}$/.test(result.apify_run_id ?? ''))\n        throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n      state.startedActorId = result.apify_run_id;\n      // A known ID only reconciles identity. It does not establish that the\n      // previous native launch acknowledged its authentic build/options.\n      // Preserve registration, then stop for authoritative reconciliation.\n      state.actorAcknowledged = false;\n      const batch = state.batches[state.batchIndex];\n      return m06StoryGateway(state, 'register', {\n        run_id: state.runId,\n        launch_id: state.launchId,\n        apify_run_id: state.startedActorId,\n        actor_id: batch.actor,\n        pass: 'primary',\n        account_ids: batch.account_ids,\n        purpose: 'daily',\n      });\n    }\n    const d = result.descriptor,\n      batch = state.batches[state.batchIndex];\n    if (\n      body.replayed ||\n      result.replayed !== false ||\n      !d ||\n      typeof d !== 'object' ||\n      Array.isArray(d) ||\n      Object.keys(d).length !== 10 ||\n      Object.keys(d).some(\n        (k) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'actorId',\n            'ownerId',\n            'build',\n            'buildId',\n            'maxTotalChargeUsd',\n            'maxOutputItems',\n            'memory',\n            'timeout',\n          ].includes(k),\n      ) ||\n      !['PPE', 'PPU'].includes(d.billingModel) ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.actorId ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.ownerId ?? '') ||\n      !/^\\d+\\.\\d+\\.\\d+$/.test(d.build ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.buildId ?? '') ||\n      typeof d.maxTotalChargeUsd !== 'number' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      d.maxOutputItems !== batch.account_ids.length * batch.resultsLimit ||\n      !Number.isSafeInteger(d.memory) ||\n      d.memory < 128 ||\n      d.memory > 32768 ||\n      (d.memory & (d.memory - 1)) !== 0 ||\n      !Number.isSafeInteger(d.timeout) ||\n      d.timeout < 30 ||\n      d.timeout > 600\n    )\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm06.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M06_STORIES_REGISTER_RECONCILIATION_REQUIRED');\n    if (!state.actorAcknowledged) throw Error('M06_STORIES_PROVIDER_OPTIONS_RECONCILIATION_REQUIRED');\n    if (!state.actorIds.includes(state.startedActorId)) state.actorIds.push(state.startedActorId);\n    state.batchIndex++;\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.close_registration') {\n    const completion = storyRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorStarts,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n      collection_mode: state.collectionMode,\n    };\n    return state;\n  }\n  throw Error('M06_STORIES_OPERATION_INVALID');\n}\n\nfunction initializeM06Stories(input, executionId, now) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  const actors = [\n    'data-slayer/instagram-stories-scraper',\n    'igview-owner/instagram-story-viewer',\n    'louisdeconinck/instagram-story-details-scraper',\n  ];\n  if (\n    !input ||\n    typeof input !== 'object' ||\n    Array.isArray(input) ||\n    Object.keys(input).length !== 7 ||\n    Object.keys(input).some(\n      (k) =>\n        ![\n          'env',\n          'mode',\n          'actor_id',\n          'collection_mode',\n          'account_ids',\n          'results_limit',\n          'max_actor_starts',\n        ].includes(k),\n    ) ||\n    input.env !== 'dev' ||\n    input.mode !== 'daily' ||\n    !actors.includes(input.actor_id) ||\n    !['ingest', 'bakeoff'].includes(input.collection_mode) ||\n    (input.collection_mode === 'ingest' && input.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 100 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > 1000 ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    typeof now !== 'string' ||\n    !Number.isFinite(Date.parse(now))\n  )\n    throw Error('M06_STORIES_INPUT_INVALID');\n  const state = {\n    executionId,\n    now,\n    accountIds: input.account_ids,\n    actorId: input.actor_id,\n    collectionMode: input.collection_mode,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n    actorStarts: 0,\n  };\n  return m06StoryGateway(state, 'start', {\n    workflow: 'WF-12',\n    platform: 'instagram_stories',\n    mode: 'daily',\n    env: 'dev',\n    execution_id: executionId,\n    collection_mode: state.collectionMode,\n  });\n}\n\nfunction m06StoryGateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m06StoryRequestId(state.executionId, state.sequence),\n    operation: 'm06.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction nextM06StoryLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m06StoryGateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m06StoryRequestId(state.executionId, state.sequence + 1);\n  return m06StoryGateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    collection_mode: batch.collection_mode,\n  });\n}\nfunction initializeM06CampaignLaunch(tick, executionId, pin, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  if (\n    tick?.action !== 'launch' ||\n    tick.campaign_id !== pin.campaign_id ||\n    tick.day !== clock.day ||\n    clock.day < pin.start_date ||\n    clock.day > pin.end_date ||\n    clock.hour < 6 ||\n    clock.hour >= 12 ||\n    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tick.run_id ?? '')\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  const selection = tick.selection;\n  const state = initializeM06Stories(selection, executionId, now);\n  if (\n    selection.max_actor_starts !== 1 ||\n    selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n    (selection.collection_mode === 'bakeoff' &&\n      selection.actor_id === 'data-slayer/instagram-stories-scraper') ||\n    (selection.collection_mode === 'ingest'\n      ? selection.account_ids.length !== 20 || selection.results_limit !== 30\n      : selection.account_ids.length !== 20 || selection.results_limit !== 50)\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  state.runId = tick.run_id;\n  state.batches = buildStoryBatches(tick.accounts, {\n    actor_id: state.actorId,\n    collection_mode: state.collectionMode,\n    results_limit: state.resultsLimit,\n  });\n  if (\n    state.batches.length !== 1 ||\n    state.batches[0].account_ids.length !== selection.account_ids.length ||\n    state.batches[0].account_ids.some((id) => !selection.account_ids.includes(id))\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  return nextM06StoryLaunch(state);\n}\n\nfunction m06CampaignClock(now) {\n  if (typeof now !== 'string' || !Number.isFinite(Date.parse(now))) throw Error('M06_CAMPAIGN_CLOCK_INVALID');\n  const parts = Object.fromEntries(\n    new Intl.DateTimeFormat('en-CA', {\n      timeZone: 'Africa/Cairo',\n      year: 'numeric',\n      month: '2-digit',\n      day: '2-digit',\n      hour: '2-digit',\n      hourCycle: 'h23',\n    })\n      .formatToParts(new Date(now))\n      .map((p) => [p.type, p.value]),\n  );\n  return { day: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour) };\n}\n\nfunction prepareM06CampaignRecoveryClose(callback, tick, executionId) {\n  if (\n    !callback ||\n    callback.accepted !== true ||\n    callback.state !== 'completed' ||\n    callback.apify_run_id !== tick.apify_run_id ||\n    typeof callback.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return tick.registration_closed\n    ? { action: 'done', apify_run_id: tick.apify_run_id }\n    : {\n        action: 'gateway',\n        request: {\n          version: 1,\n          requestId: m06StoryRequestId(executionId, 2),\n          operation: 'm06.close_registration',\n          args: { run_id: tick.run_id },\n        },\n      };\n}\n\nfunction prepareM06CampaignTick(pin, executionId, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  const shutdownDay = new Date(Date.parse(pin.end_date) + 86400000).toISOString().slice(0, 10);\n  if (clock.day > shutdownDay || (clock.day === shutdownDay && clock.hour >= 18))\n    return { action: 'closed', campaign_id: pin.campaign_id, reason: 'campaign_cutoff' };\n  if (clock.day < pin.start_date || clock.hour < 6 || clock.hour >= 18)\n    return { action: 'idle', campaign_id: pin.campaign_id, reason: 'outside_observation_window' };\n  return {\n    action: 'gateway',\n    request: {\n      version: 1,\n      requestId: m06StoryRequestId(executionId, 1),\n      operation: 'm06.campaign_tick',\n      args: { campaign_id: pin.campaign_id, execution_id: executionId },\n    },\n  };\n}\n\nfunction validateM06CampaignPin(pin) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (\n    !pin ||\n    Object.keys(pin).sort().join(',') !== 'account_ids,campaign_id,end_date,start_date' ||\n    !uuid(pin.campaign_id) ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.start_date ?? '') ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.end_date ?? '') ||\n    !Number.isFinite(Date.parse(pin.start_date)) ||\n    new Date(Date.parse(pin.start_date)).toISOString().slice(0, 10) !== pin.start_date ||\n    !Number.isFinite(Date.parse(pin.end_date)) ||\n    new Date(Date.parse(pin.end_date)).toISOString().slice(0, 10) !== pin.end_date ||\n    Date.parse(pin.end_date) - Date.parse(pin.start_date) !== 6 * 86400000 ||\n    !Array.isArray(pin.account_ids) ||\n    pin.account_ids.length !== 20 ||\n    pin.account_ids.some((x) => !uuid(x)) ||\n    new Set(pin.account_ids).size !== 20\n  )\n    throw Error('M06_CAMPAIGN_PIN_INVALID');\n  return pin;\n}\n\nfunction verifyM06CampaignRecoveryClose(response, prior) {\n  const b = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    b?.version !== 1 ||\n    b.requestId !== prior?.request?.requestId ||\n    b.operation !== 'm06.close_registration' ||\n    typeof b.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return storyRegistrationCompletion(b.result, prior.request.args.run_id);\n}\n\nfunction verifyM06CampaignTick(response, prior, pin) {\n  validateM06CampaignPin(pin);\n  const body = response?.body,\n    r = body?.result;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== prior?.request?.requestId ||\n    body.operation !== 'm06.campaign_tick' ||\n    typeof body.replayed !== 'boolean' ||\n    !r ||\n    typeof r !== 'object' ||\n    Array.isArray(r) ||\n    r.campaign_id !== pin.campaign_id\n  )\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  const shapes = {\n    launch: 'accounts,action,campaign_id,day,group_key,run_id,selection',\n    recover: 'action,apify_run_id,campaign_id,registration_closed,run_id',\n    media: 'action,campaign_id,max_batches',\n    idle: 'action,campaign_id,reason',\n    closed: 'action,campaign_id,reason',\n    blocked: 'action,campaign_id,reason',\n  };\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Object.hasOwn(shapes, r.action) || Object.keys(r).sort().join(',') !== shapes[r.action])\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  if (r.action === 'launch') {\n    if (\n      body.replayed ||\n      !uuid(r.run_id) ||\n      typeof r.day !== 'string' ||\n      r.day < pin.start_date ||\n      r.day > pin.end_date ||\n      !/^[a-z0-9_-]{1,100}$/.test(r.group_key ?? '') ||\n      !r.selection ||\n      !Array.isArray(r.selection.account_ids) ||\n      r.selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n      !Array.isArray(r.accounts) ||\n      r.accounts.length !== r.selection.account_ids.length\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'recover') {\n    if (\n      !uuid(r.run_id) ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(r.apify_run_id ?? '') ||\n      typeof r.registration_closed !== 'boolean'\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'media') {\n    if (r.max_batches !== 6) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (!/^[a-z0-9_]{1,100}$/.test(r.reason ?? '')) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  return r;\n}\nreturn[{json:verifyM06CampaignTick(j,$('Prepare campaign tick').item.json,{\"campaign_id\":\"63000000-0000-4000-8000-000000000001\",\"start_date\":\"2026-10-31\",\"end_date\":\"2026-11-06\",\"account_ids\":[\"63000000-0000-4000-8000-000000000064\",\"63000000-0000-4000-8000-000000000065\",\"63000000-0000-4000-8000-000000000066\",\"63000000-0000-4000-8000-000000000067\",\"63000000-0000-4000-8000-000000000068\",\"63000000-0000-4000-8000-000000000069\",\"63000000-0000-4000-8000-00000000006a\",\"63000000-0000-4000-8000-00000000006b\",\"63000000-0000-4000-8000-00000000006c\",\"63000000-0000-4000-8000-00000000006d\",\"63000000-0000-4000-8000-00000000006e\",\"63000000-0000-4000-8000-00000000006f\",\"63000000-0000-4000-8000-000000000070\",\"63000000-0000-4000-8000-000000000071\",\"63000000-0000-4000-8000-000000000072\",\"63000000-0000-4000-8000-000000000073\",\"63000000-0000-4000-8000-000000000074\",\"63000000-0000-4000-8000-000000000075\",\"63000000-0000-4000-8000-000000000076\",\"63000000-0000-4000-8000-000000000077\"]})}];"
+        },
+        "position": [
+          1000,
+          -150
+        ]
+      },
+      {
+        "id": "13756a80-df71-4ef4-ae73-4d4014a312f5",
+        "name": "Launch claimed group?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "0347c458-eabe-4c4d-ab3d-0669ef8af652",
+                "leftValue": "={{ $json.action === \"launch\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1200,
+          -150
+        ]
+      },
+      {
+        "id": "9c926990-97d8-4bca-a23b-fc5691630067",
+        "name": "Dispatch one claimed story group",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "UNBOUND_EMR_CAMPAIGN_COLLECTOR"
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          1400,
+          -300
+        ],
+        "retryOnFail": false,
+        "onError": "stopWorkflow"
+      },
+      {
+        "id": "d56cb809-c019-42f9-a9c7-c111efbab272",
+        "name": "Verify one story dispatch",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nif(!['awaiting_callbacks','completed'].includes(j.state)||j.registration_closed!==true||j.actor_starts!==1||!Array.isArray(j.actor_run_ids)||j.actor_run_ids.length!==1)throw Error('M06_CAMPAIGN_DISPATCH_UNCERTAIN');return[{json:{action:'done',state:j.state,actor_run_ids:j.actor_run_ids}}];"
+        },
+        "position": [
+          1600,
+          -300
+        ]
+      },
+      {
+        "id": "d2f6f3e7-562c-4312-a02b-4e3a3bce6e80",
+        "name": "Recover known callback?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "15f1157f-fafb-4347-a37b-70914e40ed91",
+                "leftValue": "={{ $json.action === \"recover\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1200,
+          0
+        ]
+      },
+      {
+        "id": "5d31a357-1173-45bd-a1cf-f4223625a896",
+        "name": "Reconcile known story callback",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "UNBOUND_EMR_CAMPAIGN_CALLBACK"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "apify_run_id": "={{ $json.apify_run_id }}",
+              "env": "dev",
+              "transport": "recovery"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "apify_run_id",
+                "displayName": "apify_run_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "transport",
+                "displayName": "transport",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          1400,
+          0
+        ],
+        "retryOnFail": false,
+        "onError": "stopWorkflow"
+      },
+      {
+        "id": "c664094c-5909-40c8-a8c8-4e99799515af",
+        "name": "Prepare recovery registration close",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nfunction validateStoryAccounts(accounts) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Array.isArray(accounts) || accounts.length > 100 || !accounts.length)\n    throw Error('M06_STORIES_ACCOUNTS_INVALID');\n  const ids = new Set(),\n    handles = new Set();\n  return accounts.map((account) => {\n    if (!account || typeof account !== 'object' || Array.isArray(account))\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    const id = account.account_id ?? account.id;\n    const handle = account.handle_norm ?? account.handle;\n    if (\n      !uuid(id) ||\n      !uuid(account.competitor_id) ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      account.platform !== 'instagram_stories' ||\n      typeof handle !== 'string' ||\n      !/^[a-z0-9._]{1,30}$/.test(handle) ||\n      (account.handle !== undefined && account.handle !== handle) ||\n      (account.url !== undefined && account.url !== `https://www.instagram.com/${handle}/`) ||\n      (account.backfill_status !== undefined && account.backfill_status !== 'not_applicable') ||\n      ids.has(id) ||\n      handles.has(handle)\n    )\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    ids.add(id);\n    handles.add(handle);\n    return { ...account, id, handle };\n  });\n}\n\nfunction buildStoryBatches(accounts, options) {\n  const actors = {\n    'data-slayer/instagram-stories-scraper': 100,\n    'igview-owner/instagram-story-viewer': 50,\n    'louisdeconinck/instagram-story-details-scraper': 100,\n  };\n  if (\n    !options ||\n    Object.keys(options).some((k) => !['actor_id', 'collection_mode', 'results_limit'].includes(k)) ||\n    !Object.hasOwn(actors, options.actor_id) ||\n    !['ingest', 'bakeoff'].includes(options.collection_mode) ||\n    (options.collection_mode === 'ingest' && options.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Number.isSafeInteger(options.results_limit) ||\n    options.results_limit < 1 ||\n    options.results_limit > 1000\n  )\n    throw Error('M06_STORIES_PLAN_INVALID');\n  const rows = validateStoryAccounts(accounts).sort((a, b) => a.handle.localeCompare(b.handle)),\n    result = [];\n  const chunkSize = Math.min(actors[options.actor_id], Math.floor(1000 / options.results_limit));\n  for (let offset = 0; offset < rows.length; offset += chunkSize) {\n    const chunk = rows.slice(offset, offset + chunkSize);\n    result.push({\n      actor: options.actor_id,\n      platform: 'instagram_stories',\n      purpose: 'daily',\n      pass: 'primary',\n      collection_mode: options.collection_mode,\n      account_ids: chunk.map((a) => a.id),\n      resultsLimit: options.results_limit,\n      input: { usernames: chunk.map((a) => a.handle) },\n      coverage: { complete: false, reason: 'ephemeral_point_in_time_observation' },\n    });\n  }\n  return result;\n}\n\nfunction storyRegistrationCompletion(receipt, runId) {\n  if (\n    !receipt ||\n    typeof receipt !== 'object' ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M06_STORIES_REGISTRATION_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !receipt.summary ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction advanceM06StoryActor(state, response) {\n  const data = response?.body?.data,\n    id = data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M06_STORIES_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorStarts++;\n  const d = state.launchDescriptor;\n  // Save any known provider ID before refusing further starts on changed caps,\n  // build or identity. A lost/invalid start is never replaced automatically.\n  state.actorAcknowledged =\n    data.actId === d.actorId &&\n    data.userId === d.ownerId &&\n    data.buildId === d.buildId &&\n    data.buildNumber === d.build &&\n    data.options?.maxTotalChargeUsd === d.maxTotalChargeUsd &&\n    data.options?.memoryMbytes === d.memory &&\n    data.options?.timeoutSecs === d.timeout;\n  const batch = state.batches[state.batchIndex];\n  return m06StoryGateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n  });\n}\n\nfunction advanceM06StoryGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M06_STORIES_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm06.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M06_STORIES_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    return m06StoryGateway(state, 'claim', {\n      run_id: state.runId,\n      platform: 'instagram_stories',\n      mode: 'daily',\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm06.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((a) => a?.account_id ?? a?.id)).size !== result.length ||\n      result.some((a) => !state.accountIds.includes(a?.account_id ?? a?.id))\n    )\n      throw Error('M06_STORIES_CLAIM_INVALID');\n    state.batches = buildStoryBatches(result, {\n      actor_id: state.actorId,\n      collection_mode: state.collectionMode,\n      results_limit: state.resultsLimit,\n    });\n    if (state.batches.length > state.maxActorStarts) throw Error('M06_STORIES_OPERATIONAL_START_BOUND');\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.launch') {\n    if (!result || result.launch_id !== state.launchId || typeof result.permit !== 'boolean')\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    if (result.permit === false) {\n      if (!/^[A-Za-z0-9_-]{1,128}$/.test(result.apify_run_id ?? ''))\n        throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n      state.startedActorId = result.apify_run_id;\n      // A known ID only reconciles identity. It does not establish that the\n      // previous native launch acknowledged its authentic build/options.\n      // Preserve registration, then stop for authoritative reconciliation.\n      state.actorAcknowledged = false;\n      const batch = state.batches[state.batchIndex];\n      return m06StoryGateway(state, 'register', {\n        run_id: state.runId,\n        launch_id: state.launchId,\n        apify_run_id: state.startedActorId,\n        actor_id: batch.actor,\n        pass: 'primary',\n        account_ids: batch.account_ids,\n        purpose: 'daily',\n      });\n    }\n    const d = result.descriptor,\n      batch = state.batches[state.batchIndex];\n    if (\n      body.replayed ||\n      result.replayed !== false ||\n      !d ||\n      typeof d !== 'object' ||\n      Array.isArray(d) ||\n      Object.keys(d).length !== 10 ||\n      Object.keys(d).some(\n        (k) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'actorId',\n            'ownerId',\n            'build',\n            'buildId',\n            'maxTotalChargeUsd',\n            'maxOutputItems',\n            'memory',\n            'timeout',\n          ].includes(k),\n      ) ||\n      !['PPE', 'PPU'].includes(d.billingModel) ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.actorId ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.ownerId ?? '') ||\n      !/^\\d+\\.\\d+\\.\\d+$/.test(d.build ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.buildId ?? '') ||\n      typeof d.maxTotalChargeUsd !== 'number' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      d.maxOutputItems !== batch.account_ids.length * batch.resultsLimit ||\n      !Number.isSafeInteger(d.memory) ||\n      d.memory < 128 ||\n      d.memory > 32768 ||\n      (d.memory & (d.memory - 1)) !== 0 ||\n      !Number.isSafeInteger(d.timeout) ||\n      d.timeout < 30 ||\n      d.timeout > 600\n    )\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm06.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M06_STORIES_REGISTER_RECONCILIATION_REQUIRED');\n    if (!state.actorAcknowledged) throw Error('M06_STORIES_PROVIDER_OPTIONS_RECONCILIATION_REQUIRED');\n    if (!state.actorIds.includes(state.startedActorId)) state.actorIds.push(state.startedActorId);\n    state.batchIndex++;\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.close_registration') {\n    const completion = storyRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorStarts,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n      collection_mode: state.collectionMode,\n    };\n    return state;\n  }\n  throw Error('M06_STORIES_OPERATION_INVALID');\n}\n\nfunction initializeM06Stories(input, executionId, now) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  const actors = [\n    'data-slayer/instagram-stories-scraper',\n    'igview-owner/instagram-story-viewer',\n    'louisdeconinck/instagram-story-details-scraper',\n  ];\n  if (\n    !input ||\n    typeof input !== 'object' ||\n    Array.isArray(input) ||\n    Object.keys(input).length !== 7 ||\n    Object.keys(input).some(\n      (k) =>\n        ![\n          'env',\n          'mode',\n          'actor_id',\n          'collection_mode',\n          'account_ids',\n          'results_limit',\n          'max_actor_starts',\n        ].includes(k),\n    ) ||\n    input.env !== 'dev' ||\n    input.mode !== 'daily' ||\n    !actors.includes(input.actor_id) ||\n    !['ingest', 'bakeoff'].includes(input.collection_mode) ||\n    (input.collection_mode === 'ingest' && input.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 100 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > 1000 ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    typeof now !== 'string' ||\n    !Number.isFinite(Date.parse(now))\n  )\n    throw Error('M06_STORIES_INPUT_INVALID');\n  const state = {\n    executionId,\n    now,\n    accountIds: input.account_ids,\n    actorId: input.actor_id,\n    collectionMode: input.collection_mode,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n    actorStarts: 0,\n  };\n  return m06StoryGateway(state, 'start', {\n    workflow: 'WF-12',\n    platform: 'instagram_stories',\n    mode: 'daily',\n    env: 'dev',\n    execution_id: executionId,\n    collection_mode: state.collectionMode,\n  });\n}\n\nfunction m06StoryGateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m06StoryRequestId(state.executionId, state.sequence),\n    operation: 'm06.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction nextM06StoryLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m06StoryGateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m06StoryRequestId(state.executionId, state.sequence + 1);\n  return m06StoryGateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    collection_mode: batch.collection_mode,\n  });\n}\nfunction initializeM06CampaignLaunch(tick, executionId, pin, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  if (\n    tick?.action !== 'launch' ||\n    tick.campaign_id !== pin.campaign_id ||\n    tick.day !== clock.day ||\n    clock.day < pin.start_date ||\n    clock.day > pin.end_date ||\n    clock.hour < 6 ||\n    clock.hour >= 12 ||\n    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tick.run_id ?? '')\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  const selection = tick.selection;\n  const state = initializeM06Stories(selection, executionId, now);\n  if (\n    selection.max_actor_starts !== 1 ||\n    selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n    (selection.collection_mode === 'bakeoff' &&\n      selection.actor_id === 'data-slayer/instagram-stories-scraper') ||\n    (selection.collection_mode === 'ingest'\n      ? selection.account_ids.length !== 20 || selection.results_limit !== 30\n      : selection.account_ids.length !== 20 || selection.results_limit !== 50)\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  state.runId = tick.run_id;\n  state.batches = buildStoryBatches(tick.accounts, {\n    actor_id: state.actorId,\n    collection_mode: state.collectionMode,\n    results_limit: state.resultsLimit,\n  });\n  if (\n    state.batches.length !== 1 ||\n    state.batches[0].account_ids.length !== selection.account_ids.length ||\n    state.batches[0].account_ids.some((id) => !selection.account_ids.includes(id))\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  return nextM06StoryLaunch(state);\n}\n\nfunction m06CampaignClock(now) {\n  if (typeof now !== 'string' || !Number.isFinite(Date.parse(now))) throw Error('M06_CAMPAIGN_CLOCK_INVALID');\n  const parts = Object.fromEntries(\n    new Intl.DateTimeFormat('en-CA', {\n      timeZone: 'Africa/Cairo',\n      year: 'numeric',\n      month: '2-digit',\n      day: '2-digit',\n      hour: '2-digit',\n      hourCycle: 'h23',\n    })\n      .formatToParts(new Date(now))\n      .map((p) => [p.type, p.value]),\n  );\n  return { day: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour) };\n}\n\nfunction prepareM06CampaignRecoveryClose(callback, tick, executionId) {\n  if (\n    !callback ||\n    callback.accepted !== true ||\n    callback.state !== 'completed' ||\n    callback.apify_run_id !== tick.apify_run_id ||\n    typeof callback.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return tick.registration_closed\n    ? { action: 'done', apify_run_id: tick.apify_run_id }\n    : {\n        action: 'gateway',\n        request: {\n          version: 1,\n          requestId: m06StoryRequestId(executionId, 2),\n          operation: 'm06.close_registration',\n          args: { run_id: tick.run_id },\n        },\n      };\n}\n\nfunction prepareM06CampaignTick(pin, executionId, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  const shutdownDay = new Date(Date.parse(pin.end_date) + 86400000).toISOString().slice(0, 10);\n  if (clock.day > shutdownDay || (clock.day === shutdownDay && clock.hour >= 18))\n    return { action: 'closed', campaign_id: pin.campaign_id, reason: 'campaign_cutoff' };\n  if (clock.day < pin.start_date || clock.hour < 6 || clock.hour >= 18)\n    return { action: 'idle', campaign_id: pin.campaign_id, reason: 'outside_observation_window' };\n  return {\n    action: 'gateway',\n    request: {\n      version: 1,\n      requestId: m06StoryRequestId(executionId, 1),\n      operation: 'm06.campaign_tick',\n      args: { campaign_id: pin.campaign_id, execution_id: executionId },\n    },\n  };\n}\n\nfunction validateM06CampaignPin(pin) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (\n    !pin ||\n    Object.keys(pin).sort().join(',') !== 'account_ids,campaign_id,end_date,start_date' ||\n    !uuid(pin.campaign_id) ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.start_date ?? '') ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.end_date ?? '') ||\n    !Number.isFinite(Date.parse(pin.start_date)) ||\n    new Date(Date.parse(pin.start_date)).toISOString().slice(0, 10) !== pin.start_date ||\n    !Number.isFinite(Date.parse(pin.end_date)) ||\n    new Date(Date.parse(pin.end_date)).toISOString().slice(0, 10) !== pin.end_date ||\n    Date.parse(pin.end_date) - Date.parse(pin.start_date) !== 6 * 86400000 ||\n    !Array.isArray(pin.account_ids) ||\n    pin.account_ids.length !== 20 ||\n    pin.account_ids.some((x) => !uuid(x)) ||\n    new Set(pin.account_ids).size !== 20\n  )\n    throw Error('M06_CAMPAIGN_PIN_INVALID');\n  return pin;\n}\n\nfunction verifyM06CampaignRecoveryClose(response, prior) {\n  const b = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    b?.version !== 1 ||\n    b.requestId !== prior?.request?.requestId ||\n    b.operation !== 'm06.close_registration' ||\n    typeof b.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return storyRegistrationCompletion(b.result, prior.request.args.run_id);\n}\n\nfunction verifyM06CampaignTick(response, prior, pin) {\n  validateM06CampaignPin(pin);\n  const body = response?.body,\n    r = body?.result;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== prior?.request?.requestId ||\n    body.operation !== 'm06.campaign_tick' ||\n    typeof body.replayed !== 'boolean' ||\n    !r ||\n    typeof r !== 'object' ||\n    Array.isArray(r) ||\n    r.campaign_id !== pin.campaign_id\n  )\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  const shapes = {\n    launch: 'accounts,action,campaign_id,day,group_key,run_id,selection',\n    recover: 'action,apify_run_id,campaign_id,registration_closed,run_id',\n    media: 'action,campaign_id,max_batches',\n    idle: 'action,campaign_id,reason',\n    closed: 'action,campaign_id,reason',\n    blocked: 'action,campaign_id,reason',\n  };\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Object.hasOwn(shapes, r.action) || Object.keys(r).sort().join(',') !== shapes[r.action])\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  if (r.action === 'launch') {\n    if (\n      body.replayed ||\n      !uuid(r.run_id) ||\n      typeof r.day !== 'string' ||\n      r.day < pin.start_date ||\n      r.day > pin.end_date ||\n      !/^[a-z0-9_-]{1,100}$/.test(r.group_key ?? '') ||\n      !r.selection ||\n      !Array.isArray(r.selection.account_ids) ||\n      r.selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n      !Array.isArray(r.accounts) ||\n      r.accounts.length !== r.selection.account_ids.length\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'recover') {\n    if (\n      !uuid(r.run_id) ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(r.apify_run_id ?? '') ||\n      typeof r.registration_closed !== 'boolean'\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'media') {\n    if (r.max_batches !== 6) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (!/^[a-z0-9_]{1,100}$/.test(r.reason ?? '')) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  return r;\n}\nreturn[{json:prepareM06CampaignRecoveryClose(j,$('Recover known callback?').item.json,String($execution.id))}];"
+        },
+        "position": [
+          1600,
+          0
+        ]
+      },
+      {
+        "id": "ec1bfda6-2eb0-4395-ae1d-395a837e45fa",
+        "name": "Close recovered registration?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "ecd84e09-d8ca-4d4a-af3c-433b6a1d15e6",
+                "leftValue": "={{ $json.action === \"gateway\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1800,
+          0
+        ]
+      },
+      {
+        "id": "8a232621-27e8-40e2-a38a-7aa8d4ef25b7",
+        "name": "Prepare recovered close request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nreturn[{json:j}];"
+        },
+        "position": [
+          2000,
+          -100
+        ]
+      },
+      {
+        "id": "808d4c0d-f095-4015-ade8-567d13cc8d38",
+        "name": "Close recovered registration",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-unbound.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          2200,
+          -100
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "UNBOUND_EMR_CAMPAIGN_AUTH",
+            "name": "UNBOUND EMR campaign dev"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "33994f9b-5576-4d62-aa99-08cd62defff8",
+        "name": "Verify recovered registration",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nfunction validateStoryAccounts(accounts) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Array.isArray(accounts) || accounts.length > 100 || !accounts.length)\n    throw Error('M06_STORIES_ACCOUNTS_INVALID');\n  const ids = new Set(),\n    handles = new Set();\n  return accounts.map((account) => {\n    if (!account || typeof account !== 'object' || Array.isArray(account))\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    const id = account.account_id ?? account.id;\n    const handle = account.handle_norm ?? account.handle;\n    if (\n      !uuid(id) ||\n      !uuid(account.competitor_id) ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      account.platform !== 'instagram_stories' ||\n      typeof handle !== 'string' ||\n      !/^[a-z0-9._]{1,30}$/.test(handle) ||\n      (account.handle !== undefined && account.handle !== handle) ||\n      (account.url !== undefined && account.url !== `https://www.instagram.com/${handle}/`) ||\n      (account.backfill_status !== undefined && account.backfill_status !== 'not_applicable') ||\n      ids.has(id) ||\n      handles.has(handle)\n    )\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    ids.add(id);\n    handles.add(handle);\n    return { ...account, id, handle };\n  });\n}\n\nfunction buildStoryBatches(accounts, options) {\n  const actors = {\n    'data-slayer/instagram-stories-scraper': 100,\n    'igview-owner/instagram-story-viewer': 50,\n    'louisdeconinck/instagram-story-details-scraper': 100,\n  };\n  if (\n    !options ||\n    Object.keys(options).some((k) => !['actor_id', 'collection_mode', 'results_limit'].includes(k)) ||\n    !Object.hasOwn(actors, options.actor_id) ||\n    !['ingest', 'bakeoff'].includes(options.collection_mode) ||\n    (options.collection_mode === 'ingest' && options.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Number.isSafeInteger(options.results_limit) ||\n    options.results_limit < 1 ||\n    options.results_limit > 1000\n  )\n    throw Error('M06_STORIES_PLAN_INVALID');\n  const rows = validateStoryAccounts(accounts).sort((a, b) => a.handle.localeCompare(b.handle)),\n    result = [];\n  const chunkSize = Math.min(actors[options.actor_id], Math.floor(1000 / options.results_limit));\n  for (let offset = 0; offset < rows.length; offset += chunkSize) {\n    const chunk = rows.slice(offset, offset + chunkSize);\n    result.push({\n      actor: options.actor_id,\n      platform: 'instagram_stories',\n      purpose: 'daily',\n      pass: 'primary',\n      collection_mode: options.collection_mode,\n      account_ids: chunk.map((a) => a.id),\n      resultsLimit: options.results_limit,\n      input: { usernames: chunk.map((a) => a.handle) },\n      coverage: { complete: false, reason: 'ephemeral_point_in_time_observation' },\n    });\n  }\n  return result;\n}\n\nfunction storyRegistrationCompletion(receipt, runId) {\n  if (\n    !receipt ||\n    typeof receipt !== 'object' ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M06_STORIES_REGISTRATION_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !receipt.summary ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction advanceM06StoryActor(state, response) {\n  const data = response?.body?.data,\n    id = data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M06_STORIES_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorStarts++;\n  const d = state.launchDescriptor;\n  // Save any known provider ID before refusing further starts on changed caps,\n  // build or identity. A lost/invalid start is never replaced automatically.\n  state.actorAcknowledged =\n    data.actId === d.actorId &&\n    data.userId === d.ownerId &&\n    data.buildId === d.buildId &&\n    data.buildNumber === d.build &&\n    data.options?.maxTotalChargeUsd === d.maxTotalChargeUsd &&\n    data.options?.memoryMbytes === d.memory &&\n    data.options?.timeoutSecs === d.timeout;\n  const batch = state.batches[state.batchIndex];\n  return m06StoryGateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n  });\n}\n\nfunction advanceM06StoryGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M06_STORIES_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm06.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M06_STORIES_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    return m06StoryGateway(state, 'claim', {\n      run_id: state.runId,\n      platform: 'instagram_stories',\n      mode: 'daily',\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm06.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((a) => a?.account_id ?? a?.id)).size !== result.length ||\n      result.some((a) => !state.accountIds.includes(a?.account_id ?? a?.id))\n    )\n      throw Error('M06_STORIES_CLAIM_INVALID');\n    state.batches = buildStoryBatches(result, {\n      actor_id: state.actorId,\n      collection_mode: state.collectionMode,\n      results_limit: state.resultsLimit,\n    });\n    if (state.batches.length > state.maxActorStarts) throw Error('M06_STORIES_OPERATIONAL_START_BOUND');\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.launch') {\n    if (!result || result.launch_id !== state.launchId || typeof result.permit !== 'boolean')\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    if (result.permit === false) {\n      if (!/^[A-Za-z0-9_-]{1,128}$/.test(result.apify_run_id ?? ''))\n        throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n      state.startedActorId = result.apify_run_id;\n      // A known ID only reconciles identity. It does not establish that the\n      // previous native launch acknowledged its authentic build/options.\n      // Preserve registration, then stop for authoritative reconciliation.\n      state.actorAcknowledged = false;\n      const batch = state.batches[state.batchIndex];\n      return m06StoryGateway(state, 'register', {\n        run_id: state.runId,\n        launch_id: state.launchId,\n        apify_run_id: state.startedActorId,\n        actor_id: batch.actor,\n        pass: 'primary',\n        account_ids: batch.account_ids,\n        purpose: 'daily',\n      });\n    }\n    const d = result.descriptor,\n      batch = state.batches[state.batchIndex];\n    if (\n      body.replayed ||\n      result.replayed !== false ||\n      !d ||\n      typeof d !== 'object' ||\n      Array.isArray(d) ||\n      Object.keys(d).length !== 10 ||\n      Object.keys(d).some(\n        (k) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'actorId',\n            'ownerId',\n            'build',\n            'buildId',\n            'maxTotalChargeUsd',\n            'maxOutputItems',\n            'memory',\n            'timeout',\n          ].includes(k),\n      ) ||\n      !['PPE', 'PPU'].includes(d.billingModel) ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.actorId ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.ownerId ?? '') ||\n      !/^\\d+\\.\\d+\\.\\d+$/.test(d.build ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.buildId ?? '') ||\n      typeof d.maxTotalChargeUsd !== 'number' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      d.maxOutputItems !== batch.account_ids.length * batch.resultsLimit ||\n      !Number.isSafeInteger(d.memory) ||\n      d.memory < 128 ||\n      d.memory > 32768 ||\n      (d.memory & (d.memory - 1)) !== 0 ||\n      !Number.isSafeInteger(d.timeout) ||\n      d.timeout < 30 ||\n      d.timeout > 600\n    )\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm06.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M06_STORIES_REGISTER_RECONCILIATION_REQUIRED');\n    if (!state.actorAcknowledged) throw Error('M06_STORIES_PROVIDER_OPTIONS_RECONCILIATION_REQUIRED');\n    if (!state.actorIds.includes(state.startedActorId)) state.actorIds.push(state.startedActorId);\n    state.batchIndex++;\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.close_registration') {\n    const completion = storyRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorStarts,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n      collection_mode: state.collectionMode,\n    };\n    return state;\n  }\n  throw Error('M06_STORIES_OPERATION_INVALID');\n}\n\nfunction initializeM06Stories(input, executionId, now) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  const actors = [\n    'data-slayer/instagram-stories-scraper',\n    'igview-owner/instagram-story-viewer',\n    'louisdeconinck/instagram-story-details-scraper',\n  ];\n  if (\n    !input ||\n    typeof input !== 'object' ||\n    Array.isArray(input) ||\n    Object.keys(input).length !== 7 ||\n    Object.keys(input).some(\n      (k) =>\n        ![\n          'env',\n          'mode',\n          'actor_id',\n          'collection_mode',\n          'account_ids',\n          'results_limit',\n          'max_actor_starts',\n        ].includes(k),\n    ) ||\n    input.env !== 'dev' ||\n    input.mode !== 'daily' ||\n    !actors.includes(input.actor_id) ||\n    !['ingest', 'bakeoff'].includes(input.collection_mode) ||\n    (input.collection_mode === 'ingest' && input.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 100 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > 1000 ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    typeof now !== 'string' ||\n    !Number.isFinite(Date.parse(now))\n  )\n    throw Error('M06_STORIES_INPUT_INVALID');\n  const state = {\n    executionId,\n    now,\n    accountIds: input.account_ids,\n    actorId: input.actor_id,\n    collectionMode: input.collection_mode,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n    actorStarts: 0,\n  };\n  return m06StoryGateway(state, 'start', {\n    workflow: 'WF-12',\n    platform: 'instagram_stories',\n    mode: 'daily',\n    env: 'dev',\n    execution_id: executionId,\n    collection_mode: state.collectionMode,\n  });\n}\n\nfunction m06StoryGateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m06StoryRequestId(state.executionId, state.sequence),\n    operation: 'm06.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction nextM06StoryLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m06StoryGateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m06StoryRequestId(state.executionId, state.sequence + 1);\n  return m06StoryGateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    collection_mode: batch.collection_mode,\n  });\n}\nfunction initializeM06CampaignLaunch(tick, executionId, pin, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  if (\n    tick?.action !== 'launch' ||\n    tick.campaign_id !== pin.campaign_id ||\n    tick.day !== clock.day ||\n    clock.day < pin.start_date ||\n    clock.day > pin.end_date ||\n    clock.hour < 6 ||\n    clock.hour >= 12 ||\n    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tick.run_id ?? '')\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  const selection = tick.selection;\n  const state = initializeM06Stories(selection, executionId, now);\n  if (\n    selection.max_actor_starts !== 1 ||\n    selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n    (selection.collection_mode === 'bakeoff' &&\n      selection.actor_id === 'data-slayer/instagram-stories-scraper') ||\n    (selection.collection_mode === 'ingest'\n      ? selection.account_ids.length !== 20 || selection.results_limit !== 30\n      : selection.account_ids.length !== 20 || selection.results_limit !== 50)\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  state.runId = tick.run_id;\n  state.batches = buildStoryBatches(tick.accounts, {\n    actor_id: state.actorId,\n    collection_mode: state.collectionMode,\n    results_limit: state.resultsLimit,\n  });\n  if (\n    state.batches.length !== 1 ||\n    state.batches[0].account_ids.length !== selection.account_ids.length ||\n    state.batches[0].account_ids.some((id) => !selection.account_ids.includes(id))\n  )\n    throw Error('M06_CAMPAIGN_LAUNCH_INVALID');\n  return nextM06StoryLaunch(state);\n}\n\nfunction m06CampaignClock(now) {\n  if (typeof now !== 'string' || !Number.isFinite(Date.parse(now))) throw Error('M06_CAMPAIGN_CLOCK_INVALID');\n  const parts = Object.fromEntries(\n    new Intl.DateTimeFormat('en-CA', {\n      timeZone: 'Africa/Cairo',\n      year: 'numeric',\n      month: '2-digit',\n      day: '2-digit',\n      hour: '2-digit',\n      hourCycle: 'h23',\n    })\n      .formatToParts(new Date(now))\n      .map((p) => [p.type, p.value]),\n  );\n  return { day: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour) };\n}\n\nfunction prepareM06CampaignRecoveryClose(callback, tick, executionId) {\n  if (\n    !callback ||\n    callback.accepted !== true ||\n    callback.state !== 'completed' ||\n    callback.apify_run_id !== tick.apify_run_id ||\n    typeof callback.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return tick.registration_closed\n    ? { action: 'done', apify_run_id: tick.apify_run_id }\n    : {\n        action: 'gateway',\n        request: {\n          version: 1,\n          requestId: m06StoryRequestId(executionId, 2),\n          operation: 'm06.close_registration',\n          args: { run_id: tick.run_id },\n        },\n      };\n}\n\nfunction prepareM06CampaignTick(pin, executionId, now) {\n  validateM06CampaignPin(pin);\n  const clock = m06CampaignClock(now);\n  const shutdownDay = new Date(Date.parse(pin.end_date) + 86400000).toISOString().slice(0, 10);\n  if (clock.day > shutdownDay || (clock.day === shutdownDay && clock.hour >= 18))\n    return { action: 'closed', campaign_id: pin.campaign_id, reason: 'campaign_cutoff' };\n  if (clock.day < pin.start_date || clock.hour < 6 || clock.hour >= 18)\n    return { action: 'idle', campaign_id: pin.campaign_id, reason: 'outside_observation_window' };\n  return {\n    action: 'gateway',\n    request: {\n      version: 1,\n      requestId: m06StoryRequestId(executionId, 1),\n      operation: 'm06.campaign_tick',\n      args: { campaign_id: pin.campaign_id, execution_id: executionId },\n    },\n  };\n}\n\nfunction validateM06CampaignPin(pin) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (\n    !pin ||\n    Object.keys(pin).sort().join(',') !== 'account_ids,campaign_id,end_date,start_date' ||\n    !uuid(pin.campaign_id) ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.start_date ?? '') ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(pin.end_date ?? '') ||\n    !Number.isFinite(Date.parse(pin.start_date)) ||\n    new Date(Date.parse(pin.start_date)).toISOString().slice(0, 10) !== pin.start_date ||\n    !Number.isFinite(Date.parse(pin.end_date)) ||\n    new Date(Date.parse(pin.end_date)).toISOString().slice(0, 10) !== pin.end_date ||\n    Date.parse(pin.end_date) - Date.parse(pin.start_date) !== 6 * 86400000 ||\n    !Array.isArray(pin.account_ids) ||\n    pin.account_ids.length !== 20 ||\n    pin.account_ids.some((x) => !uuid(x)) ||\n    new Set(pin.account_ids).size !== 20\n  )\n    throw Error('M06_CAMPAIGN_PIN_INVALID');\n  return pin;\n}\n\nfunction verifyM06CampaignRecoveryClose(response, prior) {\n  const b = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    b?.version !== 1 ||\n    b.requestId !== prior?.request?.requestId ||\n    b.operation !== 'm06.close_registration' ||\n    typeof b.replayed !== 'boolean'\n  )\n    throw Error('M06_CAMPAIGN_RECOVERY_UNSETTLED');\n  return storyRegistrationCompletion(b.result, prior.request.args.run_id);\n}\n\nfunction verifyM06CampaignTick(response, prior, pin) {\n  validateM06CampaignPin(pin);\n  const body = response?.body,\n    r = body?.result;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== prior?.request?.requestId ||\n    body.operation !== 'm06.campaign_tick' ||\n    typeof body.replayed !== 'boolean' ||\n    !r ||\n    typeof r !== 'object' ||\n    Array.isArray(r) ||\n    r.campaign_id !== pin.campaign_id\n  )\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  const shapes = {\n    launch: 'accounts,action,campaign_id,day,group_key,run_id,selection',\n    recover: 'action,apify_run_id,campaign_id,registration_closed,run_id',\n    media: 'action,campaign_id,max_batches',\n    idle: 'action,campaign_id,reason',\n    closed: 'action,campaign_id,reason',\n    blocked: 'action,campaign_id,reason',\n  };\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Object.hasOwn(shapes, r.action) || Object.keys(r).sort().join(',') !== shapes[r.action])\n    throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  if (r.action === 'launch') {\n    if (\n      body.replayed ||\n      !uuid(r.run_id) ||\n      typeof r.day !== 'string' ||\n      r.day < pin.start_date ||\n      r.day > pin.end_date ||\n      !/^[a-z0-9_-]{1,100}$/.test(r.group_key ?? '') ||\n      !r.selection ||\n      !Array.isArray(r.selection.account_ids) ||\n      r.selection.account_ids.some((id) => !pin.account_ids.includes(id)) ||\n      !Array.isArray(r.accounts) ||\n      r.accounts.length !== r.selection.account_ids.length\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'recover') {\n    if (\n      !uuid(r.run_id) ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(r.apify_run_id ?? '') ||\n      typeof r.registration_closed !== 'boolean'\n    )\n      throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (r.action === 'media') {\n    if (r.max_batches !== 6) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  } else if (!/^[a-z0-9_]{1,100}$/.test(r.reason ?? '')) throw Error('M06_CAMPAIGN_RECEIPT_INVALID');\n  return r;\n}\nreturn[{json:verifyM06CampaignRecoveryClose(j,$('Prepare recovered close request').item.json)}];"
+        },
+        "position": [
+          2400,
+          -100
+        ]
+      },
+      {
+        "id": "768ae76b-ba13-440d-a4f8-a3a3f6c84b93",
+        "name": "Recover story media?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "334a5227-d057-44d2-ac9b-a299de280a2f",
+                "leftValue": "={{ $json.action === \"media\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1200,
+          200
+        ]
+      },
+      {
+        "id": "c107a9c3-cb6a-4ad4-a6fb-8f35438edb11",
+        "name": "Prepare finite story media recovery",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nif(j.action!=='media'||j.max_batches!==6)throw Error('M06_CAMPAIGN_MEDIA_INVALID');return[{json:{action:'execute',remaining:6,batches:0,itemsNew:0}}];"
+        },
+        "position": [
+          1400,
+          300
+        ]
+      },
+      {
+        "id": "348a7b04-fef4-49f2-a629-03eeca427645",
+        "name": "More story media recovery?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "a5b018c3-fdd2-4373-a0f8-7f51f0972120",
+                "leftValue": "={{ $json.action === \"execute\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1600,
+          500
+        ]
+      },
+      {
+        "id": "88b8c920-ade9-4a5d-acc6-929500bad579",
+        "name": "Prepare empty story recovery input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nif(j.action!=='execute')throw Error('M06_CAMPAIGN_MEDIA_INVALID');return[{json:{},pairedItem:{item:0}}];"
+        },
+        "position": [
+          1800,
+          300
+        ]
+      },
+      {
+        "id": "87dcb5c2-3cba-43df-ace4-975f605dabbd",
+        "name": "Reconcile one story media batch",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "UNBOUND_EMR_CAMPAIGN_MEDIA"
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          1600,
+          300
+        ],
+        "retryOnFail": false,
+        "onError": "stopWorkflow"
+      },
+      {
+        "id": "85ddf425-9685-4344-ab05-1da845d12ae1",
+        "name": "Verify recovered story media",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nfunction advanceM06StoryMediaHandoff(state, receipt) {\n  if (\n    state?.action !== 'execute' ||\n    !Number.isSafeInteger(state.remaining) ||\n    state.remaining < 1 ||\n    state.remaining > 1000 ||\n    !receipt ||\n    receipt.version !== 1 ||\n    !/^[1-9][0-9]{0,19}$/.test(receipt.execution_id ?? '') ||\n    receipt.state !== 'completed' ||\n    receipt.held !== 0 ||\n    receipt.retryable !== 0 ||\n    receipt.reconciliation_required !== 0 ||\n    receipt.infrastructure_cost_usd !== null ||\n    !['claimed', 'processed', 'stored', 'skipped', 'expired'].every(\n      (k) => Number.isSafeInteger(receipt[k]) && receipt[k] >= 0 && receipt[k] <= 50,\n    ) ||\n    receipt.processed !== receipt.claimed ||\n    receipt.stored + receipt.skipped + receipt.expired !== receipt.processed\n  )\n    throw Error('M06_STORY_MEDIA_RECONCILIATION_REQUIRED');\n  return {\n    action: state.remaining === 1 || receipt.claimed === 0 ? 'done' : 'execute',\n    remaining: state.remaining - 1,\n    batches: state.batches + 1,\n    itemsNew: state.itemsNew,\n    ...(state.deferredBatches === undefined ? {} : { deferredBatches: state.deferredBatches }),\n  };\n}\nreturn[{json:advanceM06StoryMediaHandoff($('More story media recovery?').item.json,j)}];"
+        },
+        "position": [
+          2000,
+          300
+        ]
+      },
+      {
+        "id": "ee5601d9-5c97-4231-a776-716b1626fc2d",
+        "name": "Return finite campaign operation",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||!r[0].json||typeof r[0].json!=='object'||Array.isArray(r[0].json)||r[0].binary)throw Error('M06_CAMPAIGN_INPUT_INVALID');const j=r[0].json;\nif(j.action==='blocked')throw Error('M06_CAMPAIGN_RECONCILIATION_REQUIRED');return[{json:j}];"
+        },
+        "position": [
+          2600,
+          500
+        ]
+      }
+    ],
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 2400,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "9N3BQMVj0uqaD0p1",
+        "name": "platform:ig_stories"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "Seven-day dev story slots": {
+        "main": [
+          [
+            {
+              "node": "Guard finite campaign",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guard finite campaign": {
+        "main": [
+          [
+            {
+              "node": "Campaign tick required?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Campaign tick required?": {
+        "main": [
+          [
+            {
+              "node": "Prepare campaign tick",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return finite campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare campaign tick": {
+        "main": [
+          [
+            {
+              "node": "Admit next campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Admit next campaign operation": {
+        "main": [
+          [
+            {
+              "node": "Verify claimed campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify claimed campaign operation": {
+        "main": [
+          [
+            {
+              "node": "Launch claimed group?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Launch claimed group?": {
+        "main": [
+          [
+            {
+              "node": "Dispatch one claimed story group",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Recover known callback?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dispatch one claimed story group": {
+        "main": [
+          [
+            {
+              "node": "Verify one story dispatch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify one story dispatch": {
+        "main": [
+          [
+            {
+              "node": "Return finite campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recover known callback?": {
+        "main": [
+          [
+            {
+              "node": "Reconcile known story callback",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Recover story media?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reconcile known story callback": {
+        "main": [
+          [
+            {
+              "node": "Prepare recovery registration close",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare recovery registration close": {
+        "main": [
+          [
+            {
+              "node": "Close recovered registration?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Close recovered registration?": {
+        "main": [
+          [
+            {
+              "node": "Prepare recovered close request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return finite campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare recovered close request": {
+        "main": [
+          [
+            {
+              "node": "Close recovered registration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Close recovered registration": {
+        "main": [
+          [
+            {
+              "node": "Verify recovered registration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify recovered registration": {
+        "main": [
+          [
+            {
+              "node": "Return finite campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recover story media?": {
+        "main": [
+          [
+            {
+              "node": "Prepare finite story media recovery",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return finite campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare finite story media recovery": {
+        "main": [
+          [
+            {
+              "node": "More story media recovery?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "More story media recovery?": {
+        "main": [
+          [
+            {
+              "node": "Prepare empty story recovery input",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return finite campaign operation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare empty story recovery input": {
+        "main": [
+          [
+            {
+              "node": "Reconcile one story media batch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reconcile one story media batch": {
+        "main": [
+          [
+            {
+              "node": "Verify recovered story media",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify recovered story media": {
+        "main": [
+          [
+            {
+              "node": "More story media recovery?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "fixture": {
+    "synthetic": true,
+    "description": "Synthetic roster and calendar illustrate native shape only; runtime guard refuses every execution before I/O."
+  }
+}

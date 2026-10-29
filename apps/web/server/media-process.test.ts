@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
-import { createMediaProcessHandler } from './media-process';
+import { createMediaProcessHandler, mediaProcessConfig } from './media-process';
 import { createMediaUploadReadinessHandler } from './media-upload';
 
 const audience = 'https://everyone-market-researcher-local-test.vercel.app';
@@ -20,6 +20,26 @@ const environment = {
   EMR_MEDIA_WRITER_PASSWORD: 'synthetic-writer-only',
   EMR_MEDIA_PROTECTION_BYPASS: 'synthetic-bypass-only',
 };
+
+it('isolates the pinned campaign media runtime from parallel upkeep and Production', () => {
+  expect(
+    mediaProcessConfig({
+      ...environment,
+      VERCEL_GIT_COMMIT_REF: 'm06-stories-campaign',
+      EMR_MEDIA_QUEUE: 'stories',
+    }).lane,
+  ).toBe('stories');
+  expect(() => mediaProcessConfig({ ...environment, VERCEL_GIT_COMMIT_REF: 'm06-upkeep-local' })).toThrow(
+    'unavailable',
+  );
+  expect(() =>
+    mediaProcessConfig({
+      ...environment,
+      VERCEL_GIT_COMMIT_REF: 'm06-stories-campaign',
+      VERCEL_ENV: 'production',
+    }),
+  ).toThrow('unavailable');
+});
 const summary = {
   state: 'completed' as const,
   claimed: 0,

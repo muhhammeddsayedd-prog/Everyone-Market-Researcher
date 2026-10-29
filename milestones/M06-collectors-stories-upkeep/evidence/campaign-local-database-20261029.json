@@ -1,0 +1,46 @@
+{
+    "observed_at":  "2026-10-29T10:01:59.1166024+00:00",
+    "environment":  "local synthetic only",
+    "schema_versions":  23,
+    "regular_suites":  19,
+    "regular_assertions":  884,
+    "failed_suites":  [
+
+                      ],
+    "campaign_focused_assertions":  75,
+    "maximum_settlement_rows":  600,
+    "maximum_sql_deadline_ms":  8000,
+    "maximum_settlement_passed":  true,
+    "security_advisors":  {
+                              "native_exit":  0,
+                              "findings":  0
+                          },
+    "performance_advisors":  {
+                                 "native_exit":  0,
+                                 "findings":  0
+                             },
+    "generated_types":  {
+                            "native_exit":  0,
+                            "formatted":  true,
+                            "shared_typecheck":  "passed",
+                            "path":  "packages/shared/src/db.types.ts"
+                        },
+    "qualifier":  {
+                      "postgres_superuser":  false,
+                      "name":  "emr-m06-campaign-schema",
+                      "exact_id":  "98c3aea51f0f264fdd1984ba32316ef8b45243370ea1b0e4cb43d114a4053617",
+                      "removed":  true,
+                      "items":  0,
+                      "raw_items":  0
+                  },
+    "hosted_operations":  0,
+    "limitations":  [
+                        "Synthetic clock tests use inaccessible private functions; public RPCs always use server time.",
+                        "No native Cloud schedule or real provider execution is proved here."
+                    ],
+    "qualification_corrections":  [
+                                      "Schema-only extension dump required initializing its three existing queue tables before forward migrations.",
+                                      "Canonical empty loopback fixture authentication was initialized; no real credential or hosted TLS setting changed.",
+                                      "Native Windows redirected types were converted from UTF16 to UTF8 before formatting."
+                                  ]
+}

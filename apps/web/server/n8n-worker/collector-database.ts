@@ -118,23 +118,32 @@ export async function dispatchCollectorDatabase(
       await query('commit');
       return { replayed: false, result: { logged: true, reconciliation_required: true } };
     }
+    const conflict = operation === 'm06.campaign_conflict';
     const result = (
       await query(
-        operation.startsWith('m06.') ||
-          (_config.scope === 'm06' && ['classify', 'status'].includes(operation))
-          ? 'select ops.m06_execute($1::uuid,$2::text,$3::jsonb) as receipt'
-          : operation.startsWith('m05.')
-            ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
-            : operation === 'classify' && _config.scope === 'm05'
-              ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
-              : 'select ops.collector_execute($1::uuid,$2::text,$3::jsonb) as receipt',
-        [
-          requestId,
-          _config.scope === 'm06' && ['classify', 'status'].includes(operation)
-            ? 'm06.' + operation
-            : operation,
-          JSON.stringify(args),
-        ],
+        conflict
+          ? "select jsonb_build_object('replayed',false,'result',ops.m06_campaign_conflict($1::uuid,$2::text,$3::text,$4::timestamptz)) as receipt"
+          : operation === 'm06.campaign_tick'
+            ? 'select ops.m06_campaign_tick($1::uuid,$2::uuid,$3::text) as receipt'
+            : operation.startsWith('m06.') ||
+                (_config.scope === 'm06' && ['classify', 'status'].includes(operation))
+              ? 'select ops.m06_execute($1::uuid,$2::text,$3::jsonb) as receipt'
+              : operation.startsWith('m05.')
+                ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
+                : operation === 'classify' && _config.scope === 'm05'
+                  ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
+                  : 'select ops.collector_execute($1::uuid,$2::text,$3::jsonb) as receipt',
+        conflict
+          ? [args.campaign_id, args.event_id, args.deployment_id, args.observed_at]
+          : [
+              requestId,
+              operation === 'm06.campaign_tick'
+                ? args.campaign_id
+                : _config.scope === 'm06' && ['classify', 'status'].includes(operation)
+                  ? 'm06.' + operation
+                  : operation,
+              operation === 'm06.campaign_tick' ? args.execution_id : JSON.stringify(args),
+            ],
       )
     ).rows[0]?.receipt;
     if (

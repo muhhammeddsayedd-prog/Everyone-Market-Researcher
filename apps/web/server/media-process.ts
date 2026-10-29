@@ -23,7 +23,7 @@ export function mediaProcessConfig(env: Record<string, string | undefined>): Med
     env.EMR_MEDIA_UPLOAD_ENABLED !== 'true' ||
     env.VERCEL_ENV !== 'preview' ||
     env.VERCEL_PROJECT_ID !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
-    env.VERCEL_GIT_COMMIT_REF !== 'm06-collectors-stories-upkeep' ||
+    !['m06-collectors-stories-upkeep', 'm06-stories-campaign'].includes(env.VERCEL_GIT_COMMIT_REF ?? '') ||
     !/^everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(env.VERCEL_URL ?? '') ||
     !/^[a-f0-9]{40}$/.test(env.VERCEL_GIT_COMMIT_SHA ?? '') ||
     env.VERCEL_GIT_COMMIT_SHA !== env.EMR_MEDIA_COMMIT_SHA ||

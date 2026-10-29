@@ -151,6 +151,31 @@ function fixture(
   return { fn, calls, reads };
 }
 describe('M06 source-authoritative story callback', () => {
+  it.each([
+    ['Instagram login required; private diagnostic omitted', 'stories_actor_login_required'],
+    ['Cookie missing', 'stories_actor_login_required'],
+    ['Checkpoint detected', 'stories_actor_login_required'],
+    ['Provider network failure', 'stories_actor_failed'],
+    ['No login required; provider network failure', 'stories_actor_failed'],
+  ])('records only the controlled failed-source classification', async (statusMessage, error) => {
+    const f = fixture({ metadata: { data: { ...snapshot.data, status: 'FAILED', statusMessage } } });
+    await f.fn(
+      {
+        version: 1,
+        requestId: approval,
+        operation: 'callback.process',
+        args: { apify_run_id: 'SyntheticRun' },
+      },
+      config,
+      new AbortController().signal,
+    );
+    const settle = f.calls.find((c) => c.operation === 'm06.settle')!;
+    expect(settle.args.groups).toMatchObject([
+      { error, status: 'failed', items: [], observation: 'error', source_evidence: false },
+    ]);
+    expect(JSON.stringify(settle)).not.toContain(statusMessage);
+    expect(f.reads.some((p) => p.startsWith('/v2/datasets/'))).toBe(false);
+  });
   it('connects all three retained real source contracts, actor-specific resources and honest missing-account results', async () => {
     const selection = JSON.parse(
       readFileSync(

@@ -243,6 +243,82 @@ export function buildBakeoffReport(value: unknown) {
   };
 }
 
+/** Campaign snapshots are already restricted by registered slot/run identity in
+ * SQL. Recheck the report boundary here so old fixtures/accepted observations
+ * cannot silently count as campaign days. Missing media remains in denominator. */
+export function buildCampaignBakeoffReport(value: unknown) {
+  const snapshot = z
+    .object({
+      campaign_id: z.uuid(),
+      from_day: z.iso.date(),
+      to_day: z.iso.date(),
+      run_ids: z.array(z.uuid()).max(10000),
+      actor_run_ids: z.array(runId).max(10000),
+      thumbnail_items: z
+        .array(
+          z.object({
+            item_id: z.uuid(),
+            apify_run_id: runId,
+            eligible: z.boolean(),
+            first_seen_at: z.iso.datetime({ offset: true }),
+            published_at: z.iso.datetime({ offset: true }),
+            stored_at: z.iso.datetime({ offset: true }).nullable(),
+          }),
+        )
+        .max(100000),
+    })
+    .parse(value);
+  const raw = value as Record<string, unknown>;
+  const reportInput = Object.fromEntries(Object.keys(inputSchema.shape).map((k) => [k, raw[k]]));
+  const report = inputSchema.parse(reportInput);
+  if (
+    Date.parse(snapshot.to_day) - Date.parse(snapshot.from_day) !== 6 * 86400000 ||
+    new Set(snapshot.run_ids).size !== snapshot.run_ids.length
+  )
+    throw invalid();
+  // Snapshot run_ids are product parent UUIDs; provider IDs are taken from the
+  // authoritative observations. Every media row must belong to those sources.
+  const observed = new Set(report.observations.map((o) => o.apify_run_id));
+  if (
+    report.observations.some((o) => !snapshot.actor_run_ids.includes(o.apify_run_id)) ||
+    report.rows.some((r) => !observed.has(r.apify_run_id)) ||
+    report.costs.some((c) => !observed.has(c.apify_run_id)) ||
+    snapshot.thumbnail_items.some((i) => !observed.has(i.apify_run_id))
+  )
+    throw invalid();
+  const items = new Map<string, (typeof snapshot.thumbnail_items)[number]>();
+  for (const item of snapshot.thumbnail_items) {
+    const prior = items.get(item.item_id);
+    if (prior && JSON.stringify(prior) !== JSON.stringify(item)) throw invalid();
+    items.set(item.item_id, item);
+  }
+  const eligible = [...items.values()].filter((i) => i.eligible);
+  const missing = eligible.filter((i) => i.stored_at === null).length;
+  const late = eligible.filter(
+    (i) => i.stored_at !== null && Date.parse(i.stored_at) > Date.parse(i.first_seen_at) + 6 * 3600000,
+  ).length;
+  const timely = eligible.length - missing - late;
+  return {
+    campaign_id: snapshot.campaign_id,
+    run_ids: snapshot.run_ids,
+    comparison: buildBakeoffReport(report),
+    thumbnails: {
+      eligible_captured_stories: eligible.length,
+      timely,
+      missing,
+      late,
+      failed: missing + late,
+      timely_percent: percent(timely, eligible.length),
+      ineligible_no_source: items.size - eligible.length,
+    },
+    discovery_lag_seconds: eligible.map((i) => ({
+      item_id: i.item_id,
+      seconds: (Date.parse(i.first_seen_at) - Date.parse(i.published_at)) / 1000,
+    })),
+    final_actor_and_cadence_decision: 'MA-16 owner decision',
+  };
+}
+
 export function renderBakeoffMarkdown(value: unknown): string {
   const report = buildBakeoffReport(value);
   const cell = (n: number | null) => (n === null ? 'unknown' : String(n));
@@ -263,6 +339,23 @@ export function renderBakeoffMarkdown(value: unknown): string {
   ].join('\n');
 }
 
+export function renderCampaignBakeoffMarkdown(value: unknown): string {
+  const report = buildCampaignBakeoffReport(value);
+  const raw = value as Record<string, unknown>;
+  const input = Object.fromEntries(Object.keys(inputSchema.shape).map((k) => [k, raw[k]]));
+  return (
+    renderBakeoffMarkdown(input) +
+    [
+      `Campaign: ${report.campaign_id}. Parent run IDs: ${report.run_ids.join(', ') || 'none yet'}.`,
+      '',
+      `Eligible captured stories: ${report.thumbnails.eligible_captured_stories}; timely within six hours: ${report.thumbnails.timely}; missing: ${report.thumbnails.missing}; late: ${report.thumbnails.late}; failed: ${report.thumbnails.failed}.`,
+      'Missing media remains in the denominator. Source discovery lag is reported separately from post-ingestion thumbnail delivery. Earlier fixture/accepted observation runs are excluded.',
+      'The actor/cadence recommendation is advisory; MA-16 remains the owner decision.',
+      '',
+    ].join('\n')
+  );
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     if (process.argv.length !== 3) throw invalid();
@@ -270,7 +363,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const stat = lstatSync(path);
     if (!stat.isFile() || stat.isSymbolicLink() || stat.size < 1 || stat.size > 5 * 1024 * 1024)
       throw invalid();
-    process.stdout.write(renderBakeoffMarkdown(JSON.parse(readFileSync(path, 'utf8'))));
+    const input: unknown = JSON.parse(readFileSync(path, 'utf8'));
+    process.stdout.write(
+      input && typeof input === 'object' && 'campaign_id' in input
+        ? renderCampaignBakeoffMarkdown(input)
+        : renderBakeoffMarkdown(input),
+    );
   } catch {
     process.stderr.write('M06_BAKEOFF_INPUT_INVALID\n');
     process.exitCode = 1;

@@ -14,6 +14,7 @@ import { parseCollectorTransport } from './build-native-collectors.mjs';
 import { nativeM05Http } from './build-native-m05.mjs';
 import { validateStoryAccounts, buildStoryBatches, storyRegistrationCompletion } from './stories.mjs';
 import * as runtime from './native-m06-stories.mjs';
+import * as campaignRuntime from './native-m06-campaign.mjs';
 
 export const m06StoriesCloudSource = [
   validateStoryAccounts,
@@ -28,11 +29,12 @@ const one =
 
 /** Inactive local product blueprint. No scheduler or historical callback graph is
  * modified; this dispatches asynchronously through the existing restricted route. */
-function definition(input, transport, selection, ready) {
+function definition(input, transport, selection, ready, campaign = null) {
   const b = parseN8nBindings(input),
     c = ready ? parseCollectorTransport(transport) : transport,
     key = 'WF-12';
-  runtime.initializeM06Stories(selection, '1', '2026-10-29T00:00:00Z');
+  if (campaign) campaignRuntime.validateM06CampaignPin(campaign);
+  else runtime.initializeM06Stories(selection, '1', '2026-10-29T00:00:00Z');
   const workflowSettings = settings(b, key);
   delete workflowSettings.errorWorkflow;
   Object.assign(workflowSettings, {
@@ -53,15 +55,25 @@ function definition(input, transport, selection, ready) {
     'utf8',
   ).toString('base64');
   const nodes = [
-    node(key, 'Manual dev stories check', 'manualTrigger', {}, [0, -200]),
-    trigger(key, [['env', 'string']]),
+    ...(!campaign ? [node(key, 'Manual dev stories check', 'manualTrigger', {}, [0, -200])] : []),
+    ...(campaign
+      ? [node(key, 'When called', 'executeWorkflowTrigger', { inputSource: 'passthrough' }, [0, 0])]
+      : [trigger(key, [['env', 'string']])]),
     code(
       key,
       'Initialize fixed stories selection',
       (ready ? '' : "throw Error('M06_STORIES_BINDING_REQUIRED');\n") +
         one +
         m06StoriesCloudSource +
-        `\nreturn[{json:initializeM06Stories(${JSON.stringify(selection)},String($execution.id),new Date().toISOString())}];`,
+        (campaign
+          ? '\n' +
+            Object.values(campaignRuntime)
+              .map((fn) => fn.toString())
+              .join('\n\n')
+          : '') +
+        (campaign
+          ? `\nreturn[{json:initializeM06CampaignLaunch(j,String($execution.id),${JSON.stringify(campaign)},new Date().toISOString())}];`
+          : `\nreturn[{json:initializeM06Stories(${JSON.stringify(selection)},String($execution.id),new Date().toISOString())}];`),
       [200, 0],
     ),
     booleanIf(key, 'Stories gateway action?', "={{ $json.action === 'gateway' }}", [400, 0]),
@@ -122,10 +134,10 @@ function definition(input, transport, selection, ready) {
     bindingManifest: { ready, environment: 'dev', audience: c.audience, credential: { ...c.credential } },
     definitionProfile: 'inactive_native_staging',
     sourceProfile: {
-      actor: selection.actor_id,
+      actor: selection?.actor_id ?? 'server_selected_campaign_actor',
       publicOnly: true,
       inputContract: 'usernames:string[]',
-      collectionMode: selection.collection_mode,
+      collectionMode: selection?.collection_mode ?? 'server_selected_campaign_mode',
     },
     callbackIntegration: {
       state: 'local_server_contract_only',
@@ -140,7 +152,7 @@ function definition(input, transport, selection, ready) {
       tags: tags(b, ['env:dev', 'layer:collector', 'platform:instagram_stories']),
       pinData: {},
       connections: {
-        ...line('Manual dev stories check', 'Initialize fixed stories selection'),
+        ...(!campaign ? line('Manual dev stories check', 'Initialize fixed stories selection') : {}),
         ...line('When called', 'Initialize fixed stories selection', 'Stories gateway action?'),
         'Stories gateway action?': {
           main: [[edge('Prepare stories gateway')], [edge('Stories actor action?')]],
@@ -167,6 +179,9 @@ function definition(input, transport, selection, ready) {
 
 export function buildNativeStories(input, transport, selection) {
   return definition(input, transport, selection, true);
+}
+export function buildNativeCampaignStories(input, transport, campaign) {
+  return definition(input, transport, null, true, campaign);
 }
 export function buildUnboundNativeStories(input, selection) {
   return definition(
