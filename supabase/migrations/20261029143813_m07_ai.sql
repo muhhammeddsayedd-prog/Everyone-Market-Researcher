@@ -36,7 +36,7 @@ alter table ops.m07_ai_attempts enable row level security;
 revoke all on ops.m07_ai_attempts from public,anon,authenticated,n8n_writer,api_agent;
 
 alter table ops.ai_extractions add column attempt_id uuid references ops.m07_ai_attempts(id);
-create unique index ai_extractions_attempt_unique on ops.ai_extractions(attempt_id) where attempt_id is not null;
+create unique index ai_extractions_attempt_unique on ops.ai_extractions(attempt_id);
 create unique index cost_ledger_ai_attempt_unique on ops.cost_ledger((meta->>'ai_attempt_id'))
   where provider='openai' and category='ai_extract' and meta ? 'ai_attempt_id';
 
@@ -226,9 +226,9 @@ begin
       nonce:=(q.message->>'reextract_nonce')::uuid;
     end if;
     perform pg_advisory_xact_lock(hashtextextended('m07-item:'||item::text,0));
-    select * into old from ops.m07_ai_attempts x where (x.msg_id=q.msg_id and x.state='completed') or
+    select * into old from ops.m07_ai_attempts x where (x.msg_id=q.msg_id and x.state in('completed','failed')) or
       (x.item_id=item and (x.state in('claimed','prepared','dispatched','unknown') or
-        (nonce is null and x.state='completed') or (nonce is not null and x.reextract_nonce=nonce)))
+        (nonce is null and x.state in('completed','failed')) or (nonce is not null and x.reextract_nonce=nonce)))
       order by x.created_at desc,x.id limit 1 for update;
     if found then
       if old.state='completed' then

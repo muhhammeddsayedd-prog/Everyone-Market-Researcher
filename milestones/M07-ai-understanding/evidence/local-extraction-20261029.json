@@ -6,15 +6,15 @@
   "migration": {
     "version": "20261029143813",
     "file": "supabase/migrations/20261029143813_m07_ai.sql",
-    "sha256": "60a69c3be423298cec5cbab3bee000f22b7166dde424882afdd8b26bfba1324a",
+    "sha256": "66060d4e3078c7ffd822c9719257bfe433ac67b4a5ef23f143c2a04f34ecebb3",
     "created_with": "Supabase CLI2.121.0 migration new m07_ai",
     "hosted_applied": false
   },
   "checks": {
     "new_pgtap": {
       "files": 1,
-      "assertions": 94,
-      "passed": 94
+      "assertions": 101,
+      "passed": 101
     },
     "normalizer": {
       "passed": 16,
@@ -46,6 +46,10 @@
     "performance_advisors": {
       "tool": "Supabase CLI2.121.0",
       "findings": 0
+    },
+    "legacy_schema": {
+      "assertions": 21,
+      "passed": 21
     }
   },
   "local_baseline": {
@@ -80,5 +84,17 @@
     "Controlled model responses establish implementation, not model accuracy, actual billing or hosted native execution.",
     "The inactive unbound export blocks before IO; n8n Cloud cannot access the loopback local gateway.",
     "Vision, embeddings provider, Batch, evaluation and backlog remain open."
+  ],
+  "historical_qualification": [
+    {
+      "head": "afd06db",
+      "run": 40897890748,
+      "result": "cancelled after quality secret scan flagged dummy fixture URLs; corrected to password-free URLs, no real credential"
+    },
+    {
+      "head": "9ba8dc2",
+      "run": 40898010713,
+      "result": "quality/unit/build/e2e passed; db-tests failed at regular pgTAP; corrected exact schema count35 and full FK index"
+    }
   ]
 }

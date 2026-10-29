@@ -240,6 +240,37 @@ select extensions.is((select count(*)::int from ops.cost_ledger where item_id in
 select extensions.is((select count(*)::int from pgmq.q_embed where message->>'entity_id' in(pg_temp.m07_item(10)::text,pg_temp.m07_item(11)::text,pg_temp.m07_item(12)::text)),0,'failed settlement schedules no embeddings');
 select extensions.ok((select bool_and(acked_at is null) from ops.m07_ai_attempts where item_id in(pg_temp.m07_item(8),pg_temp.m07_item(9),pg_temp.m07_item(10))),'held/failed work remains identifiable and unacknowledged');
 
+-- Known provider failures are terminal receipts, not automatic retry permits.
+-- Neither expiry of queue visibility nor a second ordinary delivery may turn
+-- them into another paid attempt. Remediation needs explicit fresh intent.
+update pgmq.q_ai_extract set vt=now() where msg_id=(select msg_id from ops.m07_ai_attempts where id=pg_temp.m07_attempt(9));
+set local role n8n_writer;
+select set_config('test.m07.failed_redelivery',ops.m07_claim_ai('25000000-0000-4000-8000-000000009008',1,600)::text,true);
+select extensions.is(current_setting('test.m07.failed_redelivery')::jsonb#>>'{messages,0,state}',
+ 'held','known refusal redelivery cannot implicitly authorize another provider call');
+select extensions.is(current_setting('test.m07.failed_redelivery')::jsonb#>>'{messages,0,attempt_id}',
+ pg_temp.m07_attempt(9)::text,'failed redelivery preserves original attempt identity');
+reset role;
+select pgmq.send('ai_extract',jsonb_build_object('item_id',pg_temp.m07_item(9)));
+set local role n8n_writer;
+select extensions.is(ops.m07_claim_ai('25000000-0000-4000-8000-000000009009',1,600)#>>'{messages,0,state}',
+ 'held','ordinary duplicate item after refusal also cannot authorize another provider call');
+reset role;
+select extensions.is((select count(*)::int from ops.m07_ai_attempts where item_id=pg_temp.m07_item(9)),1,'failed redelivery and duplicate keep one charged attempt');
+select extensions.is((select count(*)::int from ops.cost_ledger where item_id=pg_temp.m07_item(9) and category='ai_extract'),1,'failed redelivery does not reset or add cost');
+select pgmq.send('ai_extract',jsonb_build_object('item_id',pg_temp.m07_item(9),'reextract',true,
+ 'reextract_nonce','25000000-0000-4000-8000-000000007009'));
+set local role n8n_writer;
+select extensions.is(ops.m07_claim_ai('25000000-0000-4000-8000-000000009010',1,600)#>>'{messages,0,state}',
+ 'claimed','explicit new intent can remediate a known failed attempt');
+reset role;
+select pgmq.send('ai_extract',jsonb_build_object('item_id',pg_temp.m07_item(8),'reextract',true,
+ 'reextract_nonce','25000000-0000-4000-8000-000000007008'));
+set local role n8n_writer;
+select extensions.is(ops.m07_claim_ai('25000000-0000-4000-8000-000000009011',1,600)#>>'{messages,0,state}',
+ 'held','even explicit new intent cannot replace an unresolved provider outcome');
+reset role;
+
 -- A duplicate delivery is different from a deliberate, uniquely identified
 -- re-extraction request. Neither queue redelivery nor an owner retry grants a
 -- second paid start for the original attempt.

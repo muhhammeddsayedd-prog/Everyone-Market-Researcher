@@ -321,6 +321,14 @@ describe.skipIf(process.env.EMR_M07_LOCAL_SQL_TEST !== 'true')('M07 generated ex
       expect((await execute(malformed)).state.result.status).toBe('failed');
       expect((await effects(badId)).extractions).toBe('0');
       expect((await effects(badId)).costs).toBe('1');
+      const callsBeforeFailedReplay = providerCalls;
+      const failedEffects = await effects(badId);
+      await inspect("update pgmq.q_ai_extract set vt=clock_timestamp() where message->>'item_id'=$1", [
+        badId,
+      ]);
+      expect((await execute(malformed)).state.result.status).toBe('held');
+      expect(providerCalls).toBe(callsBeforeFailedReplay);
+      expect(await effects(badId)).toEqual(failedEffects);
       // Failed queue delivery is held for explicit retry policy, so make only
       // its local fixture invisible before testing the next controlled item.
       await inspect(

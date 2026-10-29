@@ -16,7 +16,7 @@ select ok((select rolcanlogin and not rolbypassrls and not rolsuper and not rolc
   and not rolcreatedb from pg_roles where rolname = 'api_agent'), 'agent is a bounded login role');
 select is((select count(*)::int from pg_tables where schemaname = 'app'), 25, '25 app tables');
 select is((select count(*)::int from pg_tables where schemaname = 'ingest'), 1, 'one ingest table');
-select is((select count(*)::int from pg_tables where schemaname = 'ops'), 33, '33 ops tables including private M06 story/comparison and finite campaign tables');
+select is((select count(*)::int from pg_tables where schemaname = 'ops'), 35, '35 ops tables including private M06 campaign and replay-safe M07 extraction tables');
 select is((select count(*)::int from pg_class c join pg_namespace n on n.oid = c.relnamespace
   where n.nspname in ('app','ingest','ops') and c.relkind = 'r' and not c.relrowsecurity),
   0, 'every project table has RLS');
