@@ -18,7 +18,7 @@ const env: Record<string, string> = {
   EMR_M07_LOCAL_ENABLED: 'true',
   EMR_M07_LOCAL_AUDIENCE: origin,
   EMR_M07_LOCAL_TOKEN_SHA256: createHash('sha256').update(token).digest('hex'),
-  EMR_M07_LOCAL_DATABASE_URL: 'postgresql://n8n_writer:localonly@127.0.0.1:54322/postgres',
+  EMR_M07_LOCAL_DATABASE_URL: 'postgresql://n8n_writer@127.0.0.1:54322/postgres',
   OPENAI_MODEL_EXTRACT: 'controlled-model',
 };
 const tax = {
@@ -122,9 +122,9 @@ describe('M07 local extraction adapter', () => {
       expect(s.database).not.toHaveBeenCalled();
     }
     for (const url of [
-      'postgresql://postgres:x@127.0.0.1:54322/postgres',
-      'postgresql://n8n_writer:x@host.supabase.co:5432/postgres',
-      'postgresql://n8n_writer:x@127.0.0.1:54322/postgres?sslmode=disable',
+      'postgresql://postgres@127.0.0.1:54322/postgres',
+      'postgresql://n8n_writer@host.supabase.co:5432/postgres',
+      'postgresql://n8n_writer@127.0.0.1:54322/postgres?sslmode=disable',
     ])
       expect(() => localExtractionDatabaseUrl(url)).toThrow();
     expect(() => extractionConfig({ ...env, EMR_M07_LOCAL_AUDIENCE: 'http://127.0.0.1:3037/x' })).toThrow();
