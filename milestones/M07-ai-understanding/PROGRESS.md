@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress - authorized bounded hosted extraction/embedding validation.** `a551f9a` / CI40932926977 passed all five jobs. Native31409 returned the correct model, then settled known failed invalid_response (credit `colorist` versus catalog `colourist` caused ninth-tag overflow). One request1992in/674out, USD0.004527 ledger60; no product AI write/vector. Original failed attempt/snapshot/cost remain immutable. Narrow alias fix35 focused tests including actual local SQL pass; changed-head CI and the packet-reserved known-fix observation remain pending. Third temporary cleanup verified19:07:44UTC; campaign preserved. Full/bounded M07 remain open.
+**In progress - bounded real text/embedding development checkpoint completed and safely closed; full M07 open.** Application3f29b276/CI40937812673 passed all five jobs. Native31426 published one selected item (confidence0.97);31427 stored item/competitor vectors;31428 skipped both unchanged. Settlement/status/ACK replay added no durable effect or model request. Three provider requests including the retained known failure cost recordedUSD0.007197. Final runtime cleanup, unrelated queues and frozen campaign are verified. This sample proves integration, not accuracy/eval, vision or production acceptance.
 
 | Field | Value |
 |---|---|
@@ -12,16 +12,16 @@
 | Last updated | 2026-10-29 |
 | Finished | â€” |
 | Branch / PR | `m07-ai-understanding`, isolated worktree based on `701cd93dafd881280ff246fdcb487b48f2a44f3f` / separate ordinary branch delivery; existing draft-creation403 boundary retained |
-| Current task | Qualify the narrow canonical credit-role alias fix; preserve original terminal failed attempt/provider response/cost once. After changed-head CI, execute the packet-reserved deliberate known-failure/fix observation via trusted new reextract nonce, then remaining embeddings/replay/unchanged checks. |
-| Next step | Commit/push alias regression and actual31409/cleanup records; verify required changed-head CI before any new paid observation. Queue14 archive/new nonce are reviewed but not executed. No migration replay or new routine approval. |
+| Current task | Bounded owner-authorized extraction/embedding validation closed. Preserve accepted live outcomes, original known-failure cost and all historical attempts. Full milestone criteria remain open where unproved. |
+| Next step | Remaining M07: vision/media v2, evaluation tooling/200 labels and model decision (MA-17), reporting and separately gated production backlog/optional Batch. Do not repeat the accepted smoke. [Actual evidence](evidence/live-ai-dev-20261029.md). |
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
 - [x] T1 - Local text prompt/schema/request/parser/cost contract complete; vision later
 - [ ] T2 - Extraction and embedding SQL complete locally; optional Batch functions remain
-- [ ] T3 - Frozen WF-30 and default-disabled dev-hosted gateway qualified locally; actual hosted run, vision and schedules remain
+- [ ] T3 - Frozen WF-30/restricted dev gateway and bounded selected native text extraction observed; vision and schedules remain
 - [ ] T4 â€” WF-31 Â· Media v2 (dev)
-- [x] T5 - Connected inactive/unbound WF-33 complete locally; actual hosted execution and schedules remain unverified
+- [x] T5 - Connected inactive/unbound WF-33 plus bounded real selected item/competitor embeddings, replay and unchanged skip qualified; broader organization observation/schedules remain outside this checkpoint
 - [ ] T6 â€” Dev end-to-end test
 - [ ] T7 â€” Eval set (MA-17)
 - [ ] T8 â€” Eval run + model choice
@@ -42,14 +42,15 @@
 - [ ] AC9 â€” Safety â€” evidence:
 
 ## Blockers
-- The native workflow connection-shape defect is fixed in maintained builders/exports and passes29 focused tests/review. Two earlier HTTP400 attempts created no M07 workflows. Required changed-head CI is pending before resumed live execution; first-attempt owned setup cleanup is verified.
-- Existing draft-PR creation403 remains separate; branch/CI delivery is independent. No route around that denial. Protection and actual migration preflight now have hosted evidence; successful restricted runtime/model behavior remains pending.
+- No unresolved technical or credential blocker for the completed bounded text/embedding checkpoint. Earlier native connection/Cloud clone/taxonomy-alias failures are preserved with tested fixes and actual subsequent outcomes; they are not current prerequisites.
+- Full M07 remains open: vision/media v2,200-item evaluation/model choice (MA-17), broader reporting and separately approved production backlog/optional Batch are unverified. One published sample is not accuracy acceptance.
+- Existing draft-PR creation403 and specific denied M05 action remain separate; neither was bypassed. Branch/CI delivery remains available.
 
 ## Manual actions needed from the owner
 <!-- Exact steps, why, and where to paste results. The owner ticks them; Codex verifies. Steps: docs/MANUAL_ACTIONS.md + MILESTONE.md Â§11. -->
 | # | Action | Why | Status |
 |---|---|---|---|
-| MA-12 | Reuse existing OpenAI integration at a later explicitly authorized live validation; ask only for actual missing access then | Live WF-30 / WF-33 | Not needed or requested for controlled local responses |
+| MA-12 | Existing native OpenAI integration reused successfully; no key extraction or owner input needed | Bounded live WF-30 / WF-33 | Verified model responses; original native credential preserved |
 | MA-17 | Confirm/correct the 200 eval labels; approve the extraction model; approve backlog cost + standard vs Batch path | Eval (T7â€“T8) and prod backlog (T9) | Not requested yet |
 
 ## Decisions & deviations
@@ -62,7 +63,7 @@
 - Protected stale root/M03 records and the specifically denied M05 action are unchanged. The current milestone record carries this exception without a new approval/credential framework.
 
 ## Risks / notes for the owner
-- Controlled responses establish implementation, not model accuracy or actual billing. Native Cloud/live extraction, vision, embedding execution, evaluation and production remain open.
+- Native Cloud extraction and two selected item/competitor embeddings are now observed for the bounded scope, with recorded provider usage/cost. Controlled tests remain separate. Model accuracy, vision, evaluation, broader entity/source coverage and production remain open.
 - The finite M06 campaign and its shutdown dates remain binding. No campaign inspection or mutation was performed by this local slice.
 - [Local evidence and exact boundaries](evidence/local-extraction-20261029.md); [machine receipt](evidence/local-extraction-20261029.json).
 
@@ -96,7 +97,12 @@ Execution31406 on `6e7ee98`/CI40930532066 is terminal: `structuredClone is not d
 
 Native31409 on a551f9a/CI40932926977 returned the admitted gpt-5.4-mini snapshot:1992 input/674 output/cached0, knownUSD0.004527 ledger60. Original attempt `aaea2e49-fbff-42b0-9652-f8a01465c0ff` settled failed invalid_response (`AI_TAXONOMY_TAG_LIMIT`); no extraction/vector/product AI update. Same-owner guarded resume audit144 had preserved q14 read count/body. The failure is terminal/known, not an uncertain provider start. Narrow colorist-to-colourist alias preserves all tags/genuine-unknown limits;35 focused tests including actual local SQL pass. Changed-head CI and one reserved explicit known-fix observation remain pending. Original snapshot/response/cost remain immutable. Third cleanup verified19:07:44UTC; native layout-only autosave snapshot retained before owned deletion. Known cumulative49n8n/113Vercel/9root+4nativegateway/16AdminDB,3OIDC+3cleanupcommands; internal OIDC requests and infrastructure unknown. [Actual evidence](evidence/live-ai-dev-20261029.md).
 
+## Completed bounded development checkpoint
+
+[Actual evidence](evidence/live-ai-dev-20261029.md) and [machine record/final SQL/runtime projections](evidence/live-ai-dev-20261029.json). Qualified3f29b276/CI40937812673 all5. Native31426: extraction1/published0.97;31427: two1536-dimensional selected item/competitor vectors;31428: two unchanged skips/no dispatch. Six settlement/status/ACK replay calls preserved one extraction/eight sightings/seven credits/eight reviews/two vectors/three costs. RecordedUSD0.007197 across three provider requests includes original known-failedUSD0.004527; infrastructure/invoice adjustments unknown. Audit145/message291/new nonce preserved failed original; selected14+291 archived,289 unrelated AI deliveries and267 generic media unchanged. Final DB has0 unsettled AI/embed/active M07 sessions. Cleanup verified19:26:23.433UTC; campaign five versions/bindings unchanged at19:26:36.638UTC, READY8ba0eb7. Persistent credentials/data/costs retained; all owned temporary resources removed. Closed-runtime19:28:06UTC confirms no pending intent/Machine/OIDC and replay scratch absent. Original failed ACK stays NULL/q14 explicitly archived. Successful31426 did not contain colourist; that alias branch is local-regression/SQL evidence, not a claimed live branch. Full M07/MA-17 remain open; no accuracy or production claim.
+
 ## Session log
+- 2026-10-29 - Completed authorized bounded live text/embedding at3f29b276/CI40937812673:31426 applied/published,31427 two vectors,31428 unchanged/no provider. Replay preserves all durable counts/costs. Three provider calls total recordedUSD0.007197 including original known failure. Final SQL/queue/campaign and owned cleanup verified; full M07 stays open. No accepted collection/media/campaign observation repeated.
 - 2026-10-29 - a551f9a/CI40932926977 all5 passed. Guarded same-owner audit144 resumed original unstarted q14; native31409 returned correct model then known-failed tag-limit role spelling.1992in/674out/USD0.004527 once, no product AI write/vector. Narrow alias regression35 tests/local SQL pass; changed-head CI pending. Third temporary cleanup verified19:07:44UTC; campaign unchanged. Reserved known-fix/new nonce not started.
 - 2026-10-29 - Connection fix6e7ee98/CI40930532066 all5 green; second owned native setup saved successfully. Execution31406 claimed selected message then failed before provider because structuredClone is unavailable in Cloud. Exact original unstarted attempt retained; supported clone fix31 tests/format/lint pass. Second setup cleanup verified18:37:39.816UTC; original unstarted claim retained for reconciliation. Changed-head CI pending. No model request/cost or campaign change.
 - 2026-10-29 - Owner authorized accepted795c355 live packet. Verified actual24 history, exact dry-run/applied25-26 once, preserved original hashes; price34-to37/hosted advisors0. Independent protection path worked. Two native workflow saves rejected root connections shape before model I/O; preserving failures; maintained connection fix29 tests/review pass, owned temporary setup cleanup verified18:21:51UTC. Preparing commit/push and required changed-head CI before authorized continuation. No model/paid request, USD0; campaign remains frozen.

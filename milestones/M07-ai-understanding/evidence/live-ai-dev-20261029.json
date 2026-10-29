@@ -1,16 +1,17 @@
 {
   "version": 1,
-  "observedAt": "2026-10-29T19:07:44Z",
+  "observedAt": "2026-10-29T19:26:36.7442959+00:00",
   "environment": "dev",
   "projectRef": "zmotjsbzhzjvpelxvxlf",
-  "status": "known_cost_first_model_failed_third_setup_cleanup_verified_alias_fix_awaiting_ci",
-  "boundedCheckpointComplete": false,
+  "status": "bounded_dev_text_embedding_validation_closed",
+  "boundedCheckpointComplete": true,
   "fullM07Complete": false,
   "qualifiedApplication": {
     "commit": "795c3556928f756c146406d415e95ebc5b2473d0",
     "ciRunId": "40913235591",
     "ciStatus": "success",
-    "qualificationReused": true
+    "qualificationReused": true,
+    "scope": "Accepted original local checkpoint; actual final runtime is qualifiedApplicationAfterAliasFix."
   },
   "migration": {
     "status": "exact_two_applied_verified",
@@ -174,42 +175,82 @@
     }
   ],
   "modelObservation": {
-    "providerRequests": 1,
-    "nativeModelExecutions": 1,
-    "incrementalProviderCostUsd": 0.004527,
-    "cumulativeM07ProviderCostUsd": 0.004527,
-    "usage": {
-      "inputTokens": 1992,
-      "outputTokens": 674,
-      "cachedInputTokens": 0
-    },
-    "actualModel": "gpt-5.4-mini-2026-03-17",
+    "providerRequests": 3,
+    "nativeModelExecutions": 3,
+    "incrementalProviderCostUsd": 0.007197,
+    "cumulativeM07ProviderCostUsd": 0.007197,
+    "unroundedUsageCostUsd": 0.0071967,
+    "recordedCostRows": 3,
+    "costRows": [
+      {
+        "id": 60,
+        "kind": "known_failed_extraction",
+        "costUsd": 0.004527
+      },
+      {
+        "id": 61,
+        "kind": "successful_extraction",
+        "costUsd": 0.002665
+      },
+      {
+        "id": 62,
+        "kind": "two_vector_embedding",
+        "costUsd": 5e-06
+      }
+    ],
     "infrastructureCharges": "unknown",
-    "extraction": "known_failed_invalid_response",
-    "embeddings": "pending",
-    "replay": "pending",
-    "unchangedSkip": "pending",
-    "restrictedApplicationLogin": "claim/resume/known-failure settlement through restricted gateway observed",
-    "knownUnstartedClaimRetained": false,
-    "originalKnownFailedAttemptRetained": true
+    "invoiceAdjustments": "unknown",
+    "extraction": "completed/published .97; one sample is not accuracy evidence",
+    "embeddings": "two1536-dimensional vectors stored for selected item/competitor",
+    "replay": "passed/no repeated durable effects or provider calls",
+    "unchangedSkip": "two unchanged entities/no dispatch/no added ledger or charge; stored null usage/cost preserved",
+    "restrictedApplicationLogin": "native claim, preparation, dispatch, settlement and ACK through strict-TLS restricted gateway observed",
+    "originalKnownFailedAttemptRetained": true,
+    "uncertainProviderOutcomes": 0
   },
   "cleanup": {
-    "status": "verified",
+    "status": "completed",
+    "phase": "cleanup",
+    "cleanup": {
+      "workflows": [
+        "4UaP7QWjrDt4o3TN",
+        "16nTQbI9afwg3l29"
+      ],
+      "env": [
+        "RTwZ9PB3Wes7gH9p",
+        "jNN291VPmP3NlZ48",
+        "9vffbheKDn77Ch09",
+        "AEnlYMDzies01Cte",
+        "9cFyAi3H0gzWgWvU",
+        "DApqlPbR2ANMWved",
+        "KNrFVKX8KzP6ge5c",
+        "dqoaZnQDXfe05iMF",
+        "xxZIzEVI5NxAwpQr",
+        "2cfLPDWjK1P9eZzk",
+        "zVK2NLrSn4uzvyzX",
+        "Gw4sdyFtF3f6RX5I",
+        "UaNv96fBUYTkWM4T",
+        "rFU3I6vpWcp1ue2o"
+      ],
+      "credentialAbsent": true,
+      "deploymentAbsent": true,
+      "credentialProof": "supported exact-ID DELETE acknowledgment"
+    },
+    "campaignDeploymentUnchanged": true,
+    "bypassRead": false,
+    "bypassChanged": false,
+    "usage": {
+      "vercel": 151,
+      "n8n": 63,
+      "gateway": 18,
+      "vercelNativeOidcCommands": 4,
+      "nativeOidcRequestCountUnknown": true,
+      "vercelNativeCleanupCommands": 4
+    },
+    "observedAt": "2026-10-29T19:26:23.433Z",
     "verifiedComplete": true,
-    "observedAt": "2026-10-29T18:21:51Z",
-    "environmentEntriesRemoved": 14,
-    "freshMetadataAbsent": true,
-    "ownedMachineCredentialId": "pO09c5Gx8ed2Sprn",
-    "ownedMachineCredentialDeleteAcknowledged": true,
-    "nativeCredentialSearchNoResults": true,
-    "previewDeploymentId": "dpl_HhH4z9H8dHBrd2uiVp61ZJPEuTtE",
-    "previewDeleteAcknowledged": true,
-    "previewReadHttpAfterDelete": 404,
-    "machineAndOidcClearedFromRuntimeState": true,
-    "nativeWorkflowsCreated": 0,
-    "providerRequests": 0,
-    "campaignDeploymentStillReady": true,
-    "campaignCommit": "8ba0eb7"
+    "verificationScope": "fourth/final temporary M07 setup; all earlier attempts retain their own cleanup receipts",
+    "acceptedReplayDpapiAbsent": true
   },
   "campaignPreservation": {
     "applicationCommit": "8ba0eb7",
@@ -219,29 +260,26 @@
     "stopNewCairo": "2026-11-06T12:00:00+02:00",
     "shutdownDeadlineCairo": "2026-11-07T18:00:00+02:00"
   },
-  "next": "Commit/push the narrow alias fix and records, verify required changed-head CI, then execute at most the packet-reserved one known-failure/fix observation using a new trusted reextract nonce. Preserve original failed attempt/snapshot/provider response/cost once. Reviewed queue14 archival/new deliberate reextract have not yet executed. Embedding/replay/unchanged checks remain pending.",
+  "next": "Bounded real text/embedding checkpoint closed. Full M07 remains open: vision/media v2, labeled evaluation/model choice (MA-17), reporting and separately authorized production backlog/optional Batch remain. Preserve all accepted live results; no repeated smoke or M08 advancement.",
   "localCorrection": {
     "maintainedBuildersAndExportsFixed": true,
     "defect": "Two conditional connections were spread as edge descriptors at root; required named node main arrays were missing.",
     "focusedNativeTests": 29,
     "focusedReview": "passed",
-    "requiredChangedHeadCi": "pending"
+    "requiredChangedHeadCi": "passed:6e7ee98/40930532066; historical connection-shape fix"
   },
   "actualOperations": {
-    "n8nManagementRequests": 49,
-    "includesPriorCharges": true,
-    "vercelControlledApiRequests": 113,
-    "nativeOidcCommands": 3,
+    "n8nManagementRequests": 68,
+    "includesAllPriorCharges": true,
+    "vercelControlledApiRequests": 151,
+    "nativeOidcCommands": 4,
     "nativeOidcInternalRequestCount": "unknown",
-    "nativeCleanupCommands": 3,
-    "rootGatewayChecks": 9,
-    "nativeGatewayRequests": 4,
-    "nativeGatewayBreakdown": {
-      "claim": 1,
-      "sameOwnerRecovery": 3
-    },
-    "administrativeDatabaseCommands": 16,
-    "modelRequests": 1
+    "nativeCleanupCommands": 4,
+    "nativeCleanupInternalRequestCount": "unknown",
+    "rootGatewayCalls": 18,
+    "nativeGatewayCalls": 17,
+    "administrativeDatabaseCommands": 24,
+    "modelRequests": 3
   },
   "qualifiedApplicationAfterConnectionFix": {
     "commit": "6e7ee98",
@@ -310,7 +348,7 @@
     "assembledGeneratedCodeVmWithoutStructuredClone": true,
     "format": "passed",
     "lint": "passed",
-    "changedHeadCi": "pending"
+    "changedHeadCi": "passed:a551f9a/40932926977; historical Cloud clone fix"
   },
   "qualifiedApplicationAfterCloudFix": {
     "commit": "a551f9a",
@@ -367,7 +405,1292 @@
     "change": "Narrow canonical credit-role spelling alias colorist to existing colourist, preserving all eight tags and genuine unknown-role limits.",
     "focusedTestsIncludingActualLocalSql": 35,
     "status": "local_tests_passed",
-    "requiredChangedHeadCi": "pending",
-    "liveKnownFixObservation": "not_started"
+    "requiredChangedHeadCi": "passed:40937812673",
+    "liveKnownFixObservation": "completed:31426"
+  },
+  "qualifiedApplicationAfterAliasFix": {
+    "commit": "3f29b276eddb62a286900fded09362876fb69b68",
+    "ciRunId": "40937812673",
+    "requiredJobsPassed": 5,
+    "status": "success"
+  },
+  "fourthAttempt": {
+    "applicationCommit": "3f29b276eddb62a286900fded09362876fb69b68",
+    "previewDeploymentId": "dpl_3w4A11CMtCyXtGbVov9zjGhNVAd6",
+    "extractionWorkflowId": "4UaP7QWjrDt4o3TN",
+    "extractionWorkflowVersion": "661b7f3d-cbc5-4e82-8be5-13e2a0e83fed",
+    "embeddingWorkflowId": "16nTQbI9afwg3l29",
+    "embeddingWorkflowVersion": "60b569b6-4315-490b-a89d-b2fa83719f32",
+    "machineCredentialId": "Uko3DCaYJPSjAy4b",
+    "knownFixIntent": {
+      "auditId": 145,
+      "reextractNonce": "37d5e1a9-9d5b-4b1b-925e-18d587271d31",
+      "messageId": 291,
+      "originalFailedMessageId": 14,
+      "oldMessageArchived": true,
+      "originalFailedAttemptAndCostPreserved": true,
+      "originalFailedAckedAt": null,
+      "originalFailedDeliverySettlement": "q14 explicitly archived by guarded audit145; original failed attempt ACK remains NULL (not ordinary ACK)."
+    },
+    "nativeExecutions": {
+      "extraction": "31426",
+      "embedding": "31427",
+      "unchangedRepeat": "31428"
+    },
+    "extraction": {
+      "attemptId": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+      "ownerId": "c070aaaa-0000-4000-a000-000000007ac2",
+      "requestHash": "75c3c673a6c5c7aaef8612a04681e6c08daa1baf4361a6a0810af458eb2a6a91",
+      "payloadHash": "93d1bd9dbfaec025edb7be9514b78b13ca5aa263763a760af33dac5f1827f6e6",
+      "providerResponseId": "resp_0832fb23efd33beb016ae39d14ee5087d2a01692b78b2c6f08",
+      "returnedModel": "gpt-5.4-mini-2026-03-17",
+      "state": "completed",
+      "result": {
+        "brand_id": "3cbc7664-f4da-4c7d-92f2-a2780f8fcf8a",
+        "cost_usd": 0.002665,
+        "agency_id": null,
+        "ai_status": "published",
+        "attempt_id": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+        "confidence": 0.97,
+        "extraction_id": 1,
+        "accounting_mode": "provider",
+        "review_task_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "production_competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d"
+      },
+      "ackedAt": "2026-10-29T19:23:03.980149+00:00",
+      "usage": {
+        "inputTokens": 1992,
+        "cachedInputTokens": 1792,
+        "uncachedInputTokens": 200,
+        "outputTokens": 529
+      },
+      "ledgerId": 61,
+      "unroundedUsageCostUsd": 0.0026649,
+      "recordedCostUsd": 0.002665,
+      "aliasBranchLiveCoverage": "Successful31426 credits contain no colourist role. Alias branch is qualified by the observed-fields regression and actual local SQL, not directly exercised by the successful native response."
+    },
+    "embedding": {
+      "batchId": "65a0d198-7b39-4cca-bc91-ada4d225edeb",
+      "ownerId": "c073aaaa-0000-4000-a000-000000007ac3",
+      "requestHash": "f9dbd3280f4d15fe8e7da0e0660e7ec2cc86fc201579047e1e894b6e0bb2685a",
+      "responseHash": "194e784f138324a0d6554dba1db199b53ec1bcc9a406bae95a7d359b78bfd99a",
+      "model": "text-embedding-3-small",
+      "dimensions": 1536,
+      "inputContractVersion": "embedding_input.v1",
+      "mapping": [
+        {
+          "index": 0,
+          "msg_ids": [
+            1
+          ],
+          "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_type": "item",
+          "content_hash": "3d306f70d23faf583d954d5ba40d0ec4290ff173918205647f78a4f99ca4cf8b"
+        },
+        {
+          "index": 1,
+          "msg_ids": [
+            2
+          ],
+          "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+          "entity_type": "competitor",
+          "content_hash": "383e2ac06af78e318b39c5dd43a8d8c7e7d1bc630f68729c3268bd3db50eae18"
+        }
+      ],
+      "result": {
+        "stale": [],
+        "reason": null,
+        "stored": 2,
+        "skipped": [],
+        "cost_usd": 5e-06,
+        "usage_known": true,
+        "total_tokens": 240,
+        "accounting_mode": "provider",
+        "stored_entities": [
+          {
+            "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+            "entity_type": "item",
+            "content_hash": "3d306f70d23faf583d954d5ba40d0ec4290ff173918205647f78a4f99ca4cf8b"
+          },
+          {
+            "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "entity_type": "competitor",
+            "content_hash": "383e2ac06af78e318b39c5dd43a8d8c7e7d1bc630f68729c3268bd3db50eae18"
+          }
+        ]
+      },
+      "aggregateTokens": 240,
+      "ledgerId": 62,
+      "unroundedUsageCostUsd": 4.8e-06,
+      "recordedCostUsd": 5e-06,
+      "ackedAt": "2026-10-29T19:24:13.391375+00:00"
+    },
+    "unchangedRepeat": {
+      "batchId": "4e6e3cd8-82fc-4730-b27b-90064536dc69",
+      "ownerId": "c073aaaa-0000-4000-a000-000000007ac4",
+      "state": "completed",
+      "requestHash": "355795139b246c3a8a7f89ea6507256dbbce7fcd029fd905698631e2907b64ca",
+      "dispatchedAt": null,
+      "responseHash": null,
+      "result": {
+        "stale": [],
+        "stored": 0,
+        "skipped": [
+          {
+            "reason": "unchanged",
+            "msg_ids": [
+              3
+            ],
+            "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+            "entity_type": "item"
+          },
+          {
+            "reason": "unchanged",
+            "msg_ids": [
+              4
+            ],
+            "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "entity_type": "competitor"
+          }
+        ],
+        "cost_usd": null,
+        "usage_known": false
+      },
+      "providerRequestsDelta": 0,
+      "recordedCostDeltaUsd": 0,
+      "ackedAt": "2026-10-29T19:24:57.275322+00:00"
+    },
+    "replay": {
+      "gatewayCalls": 6,
+      "operations": [
+        "extraction settle",
+        "extraction status",
+        "extraction ACK",
+        "embedding settle",
+        "embedding status",
+        "embedding ACK"
+      ],
+      "providerRequestsDelta": 0,
+      "acceptedResponsePrivateScratchDeleted": true,
+      "extractionTransport": "normalized accepted-result replay, not another provider capture",
+      "embeddingTransport": "exact private durable accepted-response projection",
+      "result": "completed/replayed",
+      "countsAndHashesUnchanged": true,
+      "preserved": [
+        "attempts",
+        "item",
+        "extraction",
+        "entity sightings",
+        "credits",
+        "review tasks",
+        "cost rows",
+        "vectors",
+        "campaign",
+        "original embedding batch"
+      ]
+    },
+    "previewUrl": "https://everyone-market-researcher-nszmlapq7-muhammed-abdelrahman.vercel.app",
+    "previewUrlAtAdmission": "https://everyone-market-researcher-nszmlapq7-muhammed-abdelrahman.vercel.app",
+    "previewDeleted": true
+  },
+  "campaignFinalReadback": {
+    "status": "completed",
+    "phase": "inspect",
+    "ownedCandidates": [
+      {
+        "id": "mySfLZbU7I1850uP",
+        "name": "WF-30 · AI extractor [dev]",
+        "active": false,
+        "versionId": "5248f711-8983-42fc-978d-2014b8446887"
+      }
+    ],
+    "nativeOpenAiType": "openAiApi",
+    "schemaAvailable": true,
+    "sharedCredentialId": "e04LREfPBELWQQ9D",
+    "credentialValuesRead": false,
+    "campaignNative": [
+      {
+        "key": "media",
+        "id": "8Wxh2Sybg7SjBRE9",
+        "active": true,
+        "activeVersionId": "0884b238-785e-4d36-9c0f-c4c8ba364187",
+        "credentialIds": [
+          "iJ8Kjt0kw1bjNe82"
+        ]
+      },
+      {
+        "key": "collector",
+        "id": "ZlOfswfZfEoAwQxJ",
+        "active": true,
+        "activeVersionId": "6442cdec-df31-4ae3-a83e-52d93fef7c19",
+        "credentialIds": [
+          "1Vz3pealky9KpXPI",
+          "EYmaOt0rd45ysq0J"
+        ]
+      },
+      {
+        "key": "callback",
+        "id": "2HFsCokTsG4Ub7LG",
+        "active": true,
+        "activeVersionId": "5c88ae12-3cfc-4e5d-bf0c-3c214e742449",
+        "credentialIds": [
+          "1Vz3pealky9KpXPI"
+        ]
+      },
+      {
+        "key": "guard",
+        "id": "qdnUg63aU6GRjFWi",
+        "active": true,
+        "activeVersionId": "a4a6fda9-b52a-4d83-909f-15e0640164da",
+        "credentialIds": [
+          "1Vz3pealky9KpXPI"
+        ]
+      },
+      {
+        "key": "schedule",
+        "id": "m0u623dOTHvzOSFR",
+        "active": true,
+        "activeVersionId": "20424a64-eb86-4f63-879c-77a7a7db9ba7",
+        "credentialIds": [
+          "1Vz3pealky9KpXPI"
+        ]
+      }
+    ],
+    "campaignVersionsAndBindingsUnchanged": true,
+    "usage": {
+      "vercel": 151,
+      "n8n": 68,
+      "gateway": 18,
+      "vercelNativeOidcCommands": 4,
+      "nativeOidcRequestCountUnknown": true,
+      "vercelNativeCleanupCommands": 4
+    },
+    "observedAt": "2026-10-29T19:26:36.638Z"
+  },
+  "finalDatabaseReceipt": {
+    "phase": "m07_readonly_proof",
+    "target": "zmotjsbzhzjvpelxvxlf",
+    "status": "query_complete",
+    "nativeExit": 0,
+    "databaseClientClosed": true,
+    "childrenClosed": true,
+    "scratchDeleted": true,
+    "persistentAdminPreserved": true,
+    "observedAt": "2026-10-29T19:26:36.7442959+00:00"
+  },
+  "finalDatabaseProof": {
+    "item": {
+      "id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+      "status": "active",
+      "country": "EG",
+      "brand_id": "3cbc7664-f4da-4c7d-92f2-a2780f8fcf8a",
+      "language": "en",
+      "occasion": "always_on",
+      "agency_id": null,
+      "ai_status": "published",
+      "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+      "confidence": 0.97,
+      "content_type": "social_reel_short_form",
+      "duplicate_of": null,
+      "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+      "locked_fields": [],
+      "is_commercial_work": true,
+      "last_extraction_id": 1,
+      "protected_source_sha256": "4a308dddd933e8e18c907d833d97cdd3066be0bbec4d0f70bbaddba6092da12c",
+      "production_competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d"
+    },
+    "costs": [
+      {
+        "id": 60,
+        "unit": "token",
+        "model": "gpt-5.4-mini-2026-03-17",
+        "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+        "category": "ai_extract",
+        "cost_usd": 0.004527,
+        "provider": "openai",
+        "quantity": 2666,
+        "attempt_id": "aaea2e49-fbff-42b0-9652-f8a01465c0ff",
+        "input_tokens": 1992,
+        "output_valid": null,
+        "vector_count": null,
+        "cached_tokens": 0,
+        "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+        "output_tokens": 674,
+        "embed_batch_id": null,
+        "provider_response_id": "resp_09dc820145b1bc45016ae394d8030887d2a55a80649d5f241a",
+        "aggregate_prompt_tokens": null
+      },
+      {
+        "id": 61,
+        "unit": "token",
+        "model": "gpt-5.4-mini-2026-03-17",
+        "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+        "category": "ai_extract",
+        "cost_usd": 0.002665,
+        "provider": "openai",
+        "quantity": 2521,
+        "attempt_id": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+        "input_tokens": 1992,
+        "output_valid": null,
+        "vector_count": null,
+        "cached_tokens": 1792,
+        "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+        "output_tokens": 529,
+        "embed_batch_id": null,
+        "provider_response_id": "resp_0832fb23efd33beb016ae39d14ee5087d2a01692b78b2c6f08",
+        "aggregate_prompt_tokens": null
+      },
+      {
+        "id": 62,
+        "unit": "token",
+        "model": "text-embedding-3-small",
+        "item_id": null,
+        "category": "embed",
+        "cost_usd": 5e-06,
+        "provider": "openai",
+        "quantity": 240,
+        "attempt_id": null,
+        "input_tokens": null,
+        "output_valid": true,
+        "vector_count": 2,
+        "cached_tokens": null,
+        "competitor_id": null,
+        "output_tokens": null,
+        "embed_batch_id": "65a0d198-7b39-4cca-bc91-ada4d225edeb",
+        "provider_response_id": null,
+        "aggregate_prompt_tokens": 240
+      }
+    ],
+    "queues": {
+      "media_count": 267,
+      "media_unchanged": true,
+      "selected_ai_live": 0,
+      "unrelated_ai_count": 289,
+      "unrelated_ai_sha256": "d0aa37add07ecedac141fcd947329d5b2c424236efb5dc9b5528fd9509239bbc",
+      "selected_ai_archived": 1,
+      "media_delivery_sha256": "72eac5883b5e49c9d4e4d379c68d2bca37073a7d03193fad0b2178c8a37c7ada",
+      "unrelated_embed_count": 0,
+      "unrelated_ai_unchanged": true,
+      "unrelated_embed_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "selected_embed_deliveries": [],
+      "unrelated_embed_unchanged": true,
+      "selected_ai_live_inventory": [],
+      "selected_ai_archive_inventory": [
+        {
+          "vt": "2026-10-29T18:56:57.917092+00:00",
+          "msg_id": 14,
+          "headers": null,
+          "message": {
+            "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6"
+          },
+          "read_ct": 1,
+          "archived_at": "2026-10-29T19:18:04.009578+00:00",
+          "enqueued_at": "2026-10-27T13:46:15.278528+00:00"
+        },
+        {
+          "vt": "2026-10-29T19:32:59.438595+00:00",
+          "msg_id": 291,
+          "headers": null,
+          "message": {
+            "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+            "reextract": true,
+            "reextract_nonce": "37d5e1a9-9d5b-4b1b-925e-18d587271d31"
+          },
+          "read_ct": 1,
+          "archived_at": "2026-10-29T19:23:03.980149+00:00",
+          "enqueued_at": "2026-10-29T19:18:04.009578+00:00"
+        }
+      ]
+    },
+    "target": {
+      "database": "postgres",
+      "current_user": "postgres",
+      "session_user": "postgres",
+      "expected_project_ref": "zmotjsbzhzjvpelxvxlf"
+    },
+    "vectors": [
+      {
+        "model": "text-embedding-3-small",
+        "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+        "dimensions": 1536,
+        "updated_at": "2026-10-29T19:24:13.220328+00:00",
+        "entity_type": "competitor",
+        "content_hash": "383e2ac06af78e318b39c5dd43a8d8c7e7d1bc630f68729c3268bd3db50eae18",
+        "vector_sha256": "fb2f5cd70b772cf86eab4825d9a7d14fd5af6926a2712ce79101a25f15729fea",
+        "source_batch_id": "65a0d198-7b39-4cca-bc91-ada4d225edeb",
+        "actual_dimensions": 1536,
+        "source_prepared_at": "2026-10-29T19:24:10.611188+00:00",
+        "input_contract_version": "embedding_input.v1"
+      },
+      {
+        "model": "text-embedding-3-small",
+        "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+        "dimensions": 1536,
+        "updated_at": "2026-10-29T19:24:13.220328+00:00",
+        "entity_type": "item",
+        "content_hash": "3d306f70d23faf583d954d5ba40d0ec4290ff173918205647f78a4f99ca4cf8b",
+        "vector_sha256": "a3e29ff3cd792c886b40abfdc067b8ecc1be74fe132dda8ec994021f179269f3",
+        "source_batch_id": "65a0d198-7b39-4cca-bc91-ada4d225edeb",
+        "actual_dimensions": 1536,
+        "source_prepared_at": "2026-10-29T19:24:10.611188+00:00",
+        "input_contract_version": "embedding_input.v1"
+      }
+    ],
+    "attempts": [
+      {
+        "model": "gpt-5.4-mini-2026-03-17",
+        "state": "failed",
+        "msg_id": 14,
+        "result": {
+          "held": false,
+          "outcome": "invalid_response",
+          "cost_usd": 0.004527,
+          "attempt_id": "aaea2e49-fbff-42b0-9652-f8a01465c0ff",
+          "usage_known": true,
+          "accounting_mode": "provider"
+        },
+        "outcome": "invalid_response",
+        "read_ct": 1,
+        "acked_at": null,
+        "owner_id": "c070aaaa-0000-4000-a000-000000007aae",
+        "attempt_id": "aaea2e49-fbff-42b0-9652-f8a01465c0ff",
+        "created_at": "2026-10-29T18:32:54.557803+00:00",
+        "settled_at": "2026-10-29T18:47:55.120334+00:00",
+        "lease_until": "2026-10-29T18:56:57.917092+00:00",
+        "usage_known": true,
+        "payload_hash": "b90d7ebf8ae7111d4f69d16cdcffbcc7473c215a9f5a12918cb7c626fb0c160b",
+        "request_hash": "ae5d9244228ccabce33ca746ea3195b7c7b958514252e40ddfabbace158c1962",
+        "dispatched_at": "2026-10-29T18:47:51.131017+00:00",
+        "frozen_config": {
+          "model": "gpt-5.4-mini-2026-03-17",
+          "accounting_mode": "provider",
+          "max_output_tokens": 4096
+        },
+        "frozen_prices": {
+          "serpapi/search": {
+            "usd": 0.015,
+            "unit": "search"
+          },
+          "firecrawl/credit": {
+            "usd": 0.00083,
+            "unit": "credit"
+          },
+          "openai/brief_model:input": {
+            "usd": 1.25,
+            "unit": "1M tokens"
+          },
+          "dltik/vimeo-scraper:start": {
+            "usd": 5e-05,
+            "unit": "run"
+          },
+          "dltik/vimeo-scraper:video": {
+            "usd": 0.5,
+            "unit": "1k videos"
+          },
+          "openai/brief_model:output": {
+            "usd": 10,
+            "unit": "1M tokens"
+          },
+          "openai/extract_model:input": {
+            "usd": 0.25,
+            "unit": "1M tokens"
+          },
+          "goat255/vimeo-scraper:video": {
+            "usd": 0.55,
+            "unit": "1k videos"
+          },
+          "openai/extract_model:output": {
+            "usd": 2,
+            "unit": "1M tokens"
+          },
+          "openai/text-embedding-3-small": {
+            "usd": 0.02,
+            "unit": "1M tokens"
+          },
+          "apify/instagram-scraper:result": {
+            "usd": 1.9,
+            "unit": "1k results"
+          },
+          "streamers/youtube-scraper:video": {
+            "usd": 2.6,
+            "unit": "1k videos"
+          },
+          "apify/website-content-crawler:cu": {
+            "usd": 0.16,
+            "unit": "compute unit"
+          },
+          "openai/gpt-5.4-mini-2026-03-17:input": {
+            "usd": 0.75,
+            "unit": "1M tokens"
+          },
+          "streamers/youtube-scraper:date_range": {
+            "usd": 0.8,
+            "unit": "1k videos"
+          },
+          "openai/gpt-5.4-mini-2026-03-17:output": {
+            "usd": 4.5,
+            "unit": "1M tokens"
+          },
+          "harvestapi/linkedin-company-posts:post": {
+            "usd": 1.75,
+            "unit": "1k posts"
+          },
+          "harvestapi/linkedin-company-posts:start": {
+            "usd": 5e-05,
+            "unit": "run"
+          },
+          "igview-owner/instagram-story-viewer:start": {
+            "usd": 0.02,
+            "unit": "run"
+          },
+          "igview-owner/instagram-story-viewer:result": {
+            "usd": 5,
+            "unit": "1k results"
+          },
+          "data-slayer/instagram-stories-scraper:start": {
+            "usd": 0.0005,
+            "unit": "run"
+          },
+          "openai/gpt-5.4-mini-2026-03-17:cached_input": {
+            "usd": 0.075,
+            "unit": "1M tokens"
+          },
+          "data-slayer/instagram-stories-scraper:result": {
+            "usd": 1.83,
+            "unit": "1k results"
+          },
+          "harvestapi/linkedin-company-posts:empty_query": {
+            "usd": 1,
+            "unit": "1k queries"
+          },
+          "harvestapi/linkedin-company-employees:query_start": {
+            "usd": 20,
+            "unit": "1k queries"
+          },
+          "harvestapi/linkedin-company-employees:short_profile": {
+            "usd": 2.5,
+            "unit": "1k profiles"
+          },
+          "louisdeconinck/instagram-story-details-scraper:start": {
+            "usd": 0.08,
+            "unit": "run"
+          },
+          "louisdeconinck/instagram-story-details-scraper:profile": {
+            "usd": 18,
+            "unit": "1k profiles"
+          }
+        },
+        "frozen_routing": {
+          "auto_publish_threshold": 0.8
+        },
+        "prompt_version": "extract_item.v1",
+        "schema_version": "item_extraction.v1",
+        "snapshot_sha256": "ae5d9244228ccabce33ca746ea3195b7c7b958514252e40ddfabbace158c1962",
+        "provider_response_id": "resp_09dc820145b1bc45016ae394d8030887d2a55a80649d5f241a"
+      },
+      {
+        "model": "gpt-5.4-mini-2026-03-17",
+        "state": "completed",
+        "msg_id": 291,
+        "result": {
+          "brand_id": "3cbc7664-f4da-4c7d-92f2-a2780f8fcf8a",
+          "cost_usd": 0.002665,
+          "agency_id": null,
+          "ai_status": "published",
+          "attempt_id": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+          "confidence": 0.97,
+          "extraction_id": 1,
+          "accounting_mode": "provider",
+          "review_task_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "production_competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d"
+        },
+        "outcome": "applied",
+        "read_ct": 1,
+        "acked_at": "2026-10-29T19:23:03.980149+00:00",
+        "owner_id": "c070aaaa-0000-4000-a000-000000007ac2",
+        "attempt_id": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+        "created_at": "2026-10-29T19:22:59.423261+00:00",
+        "settled_at": "2026-10-29T19:23:03.806314+00:00",
+        "lease_until": "2026-10-29T19:32:59.423261+00:00",
+        "usage_known": true,
+        "payload_hash": "93d1bd9dbfaec025edb7be9514b78b13ca5aa263763a760af33dac5f1827f6e6",
+        "request_hash": "75c3c673a6c5c7aaef8612a04681e6c08daa1baf4361a6a0810af458eb2a6a91",
+        "dispatched_at": "2026-10-29T19:23:00.06657+00:00",
+        "frozen_config": {
+          "model": "gpt-5.4-mini-2026-03-17",
+          "accounting_mode": "provider",
+          "max_output_tokens": 4096
+        },
+        "frozen_prices": {
+          "serpapi/search": {
+            "usd": 0.015,
+            "unit": "search"
+          },
+          "firecrawl/credit": {
+            "usd": 0.00083,
+            "unit": "credit"
+          },
+          "openai/brief_model:input": {
+            "usd": 1.25,
+            "unit": "1M tokens"
+          },
+          "dltik/vimeo-scraper:start": {
+            "usd": 5e-05,
+            "unit": "run"
+          },
+          "dltik/vimeo-scraper:video": {
+            "usd": 0.5,
+            "unit": "1k videos"
+          },
+          "openai/brief_model:output": {
+            "usd": 10,
+            "unit": "1M tokens"
+          },
+          "openai/extract_model:input": {
+            "usd": 0.25,
+            "unit": "1M tokens"
+          },
+          "goat255/vimeo-scraper:video": {
+            "usd": 0.55,
+            "unit": "1k videos"
+          },
+          "openai/extract_model:output": {
+            "usd": 2,
+            "unit": "1M tokens"
+          },
+          "openai/text-embedding-3-small": {
+            "usd": 0.02,
+            "unit": "1M tokens"
+          },
+          "apify/instagram-scraper:result": {
+            "usd": 1.9,
+            "unit": "1k results"
+          },
+          "streamers/youtube-scraper:video": {
+            "usd": 2.6,
+            "unit": "1k videos"
+          },
+          "apify/website-content-crawler:cu": {
+            "usd": 0.16,
+            "unit": "compute unit"
+          },
+          "openai/gpt-5.4-mini-2026-03-17:input": {
+            "usd": 0.75,
+            "unit": "1M tokens"
+          },
+          "streamers/youtube-scraper:date_range": {
+            "usd": 0.8,
+            "unit": "1k videos"
+          },
+          "openai/gpt-5.4-mini-2026-03-17:output": {
+            "usd": 4.5,
+            "unit": "1M tokens"
+          },
+          "harvestapi/linkedin-company-posts:post": {
+            "usd": 1.75,
+            "unit": "1k posts"
+          },
+          "harvestapi/linkedin-company-posts:start": {
+            "usd": 5e-05,
+            "unit": "run"
+          },
+          "igview-owner/instagram-story-viewer:start": {
+            "usd": 0.02,
+            "unit": "run"
+          },
+          "igview-owner/instagram-story-viewer:result": {
+            "usd": 5,
+            "unit": "1k results"
+          },
+          "data-slayer/instagram-stories-scraper:start": {
+            "usd": 0.0005,
+            "unit": "run"
+          },
+          "openai/gpt-5.4-mini-2026-03-17:cached_input": {
+            "usd": 0.075,
+            "unit": "1M tokens"
+          },
+          "data-slayer/instagram-stories-scraper:result": {
+            "usd": 1.83,
+            "unit": "1k results"
+          },
+          "harvestapi/linkedin-company-posts:empty_query": {
+            "usd": 1,
+            "unit": "1k queries"
+          },
+          "harvestapi/linkedin-company-employees:query_start": {
+            "usd": 20,
+            "unit": "1k queries"
+          },
+          "harvestapi/linkedin-company-employees:short_profile": {
+            "usd": 2.5,
+            "unit": "1k profiles"
+          },
+          "louisdeconinck/instagram-story-details-scraper:start": {
+            "usd": 0.08,
+            "unit": "run"
+          },
+          "louisdeconinck/instagram-story-details-scraper:profile": {
+            "usd": 18,
+            "unit": "1k profiles"
+          }
+        },
+        "frozen_routing": {
+          "auto_publish_threshold": 0.8
+        },
+        "prompt_version": "extract_item.v1",
+        "schema_version": "item_extraction.v1",
+        "snapshot_sha256": "75c3c673a6c5c7aaef8612a04681e6c08daa1baf4361a6a0810af458eb2a6a91",
+        "provider_response_id": "resp_0832fb23efd33beb016ae39d14ee5087d2a01692b78b2c6f08"
+      }
+    ],
+    "campaign": {
+      "row_sha256": "323f193a33824f55ad242ac203accf2bebc8aba802dfd83e8c54c8b260626553",
+      "slots_sha256": "4833ed95ae6ff7dd9569615d80e68897437f510717610a883f7d760bace36199"
+    },
+    "aggregate": {
+      "raw_count": 293,
+      "item_count": 293,
+      "selected_cost_usd": 0.007197,
+      "all_openai_cost_usd": 0.007197,
+      "all_openai_cost_rows": 3,
+      "infrastructure_cost_usd": null
+    },
+    "quiescence": {
+      "unsettled_ai": 0,
+      "active_m07_sessions": 0,
+      "unsettled_embedding_global": 0
+    },
+    "extractions": [
+      {
+        "id": 1,
+        "model": "gpt-5.4-mini-2026-03-17",
+        "cost_usd": 0.002665,
+        "attempt_id": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+        "confidence": 0.97,
+        "latency_ms": 0,
+        "used_vision": false,
+        "input_tokens": 1992,
+        "output_tokens": 529,
+        "prompt_version": "extract_item.v1",
+        "schema_version": "item_extraction.v1"
+      }
+    ],
+    "observed_at": "2026-10-29T19:26:36.737578+00:00",
+    "embed_batches": [
+      {
+        "model": "text-embedding-3-small",
+        "price": {
+          "usd": 0.02,
+          "unit": "1M tokens"
+        },
+        "state": "completed",
+        "result": {
+          "stale": [],
+          "reason": null,
+          "stored": 2,
+          "skipped": [],
+          "cost_usd": 5e-06,
+          "usage_known": true,
+          "total_tokens": 240,
+          "accounting_mode": "provider",
+          "stored_entities": [
+            {
+              "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+              "entity_type": "item",
+              "content_hash": "3d306f70d23faf583d954d5ba40d0ec4290ff173918205647f78a4f99ca4cf8b"
+            },
+            {
+              "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+              "entity_type": "competitor",
+              "content_hash": "383e2ac06af78e318b39c5dd43a8d8c7e7d1bc630f68729c3268bd3db50eae18"
+            }
+          ]
+        },
+        "mapping": [
+          {
+            "index": 0,
+            "msg_ids": [
+              1
+            ],
+            "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+            "entity_type": "item",
+            "content_hash": "3d306f70d23faf583d954d5ba40d0ec4290ff173918205647f78a4f99ca4cf8b"
+          },
+          {
+            "index": 1,
+            "msg_ids": [
+              2
+            ],
+            "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "entity_type": "competitor",
+            "content_hash": "383e2ac06af78e318b39c5dd43a8d8c7e7d1bc630f68729c3268bd3db50eae18"
+          }
+        ],
+        "members": [
+          {
+            "msg_id": 1,
+            "message": {
+              "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+              "attempt_id": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+              "entity_type": "item"
+            },
+            "outcome": "stored",
+            "read_ct": 1,
+            "batch_id": "65a0d198-7b39-4cca-bc91-ada4d225edeb",
+            "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+            "entity_type": "item",
+            "input_index": 0,
+            "content_hash": "3d306f70d23faf583d954d5ba40d0ec4290ff173918205647f78a4f99ca4cf8b"
+          },
+          {
+            "msg_id": 2,
+            "message": {
+              "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+              "entity_type": "competitor"
+            },
+            "outcome": "stored",
+            "read_ct": 1,
+            "batch_id": "65a0d198-7b39-4cca-bc91-ada4d225edeb",
+            "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "entity_type": "competitor",
+            "input_index": 1,
+            "content_hash": "383e2ac06af78e318b39c5dd43a8d8c7e7d1bc630f68729c3268bd3db50eae18"
+          }
+        ],
+        "acked_at": "2026-10-29T19:24:13.391375+00:00",
+        "batch_id": "65a0d198-7b39-4cca-bc91-ada4d225edeb",
+        "owner_id": "c073aaaa-0000-4000-a000-000000007ac3",
+        "dimensions": 1536,
+        "settled_at": "2026-10-29T19:24:13.253211+00:00",
+        "lease_until": "2026-10-29T19:34:10.438236+00:00",
+        "prepared_at": "2026-10-29T19:24:10.611188+00:00",
+        "usage_known": true,
+        "request_hash": "f9dbd3280f4d15fe8e7da0e0660e7ec2cc86fc201579047e1e894b6e0bb2685a",
+        "dispatched_at": "2026-10-29T19:24:10.742599+00:00",
+        "response_hash": "194e784f138324a0d6554dba1db199b53ec1bcc9a406bae95a7d359b78bfd99a",
+        "price_source_sku": "text-embedding-3-small",
+        "input_contract_version": "embedding_input.v1",
+        "accepted_response_model": "text-embedding-3-small",
+        "accepted_response_usage": {
+          "total_tokens": 240,
+          "prompt_tokens": 240
+        },
+        "accepted_response_present": true
+      },
+      {
+        "model": "text-embedding-3-small",
+        "price": {
+          "usd": 0.02,
+          "unit": "1M tokens"
+        },
+        "state": "completed",
+        "result": {
+          "stale": [],
+          "stored": 0,
+          "skipped": [
+            {
+              "reason": "unchanged",
+              "msg_ids": [
+                3
+              ],
+              "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+              "entity_type": "item"
+            },
+            {
+              "reason": "unchanged",
+              "msg_ids": [
+                4
+              ],
+              "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+              "entity_type": "competitor"
+            }
+          ],
+          "cost_usd": null,
+          "usage_known": false
+        },
+        "mapping": [],
+        "members": [
+          {
+            "msg_id": 3,
+            "message": {
+              "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+              "entity_type": "item"
+            },
+            "outcome": "unchanged",
+            "read_ct": 1,
+            "batch_id": "4e6e3cd8-82fc-4730-b27b-90064536dc69",
+            "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+            "entity_type": "item",
+            "input_index": null,
+            "content_hash": null
+          },
+          {
+            "msg_id": 4,
+            "message": {
+              "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+              "entity_type": "competitor"
+            },
+            "outcome": "unchanged",
+            "read_ct": 1,
+            "batch_id": "4e6e3cd8-82fc-4730-b27b-90064536dc69",
+            "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "entity_type": "competitor",
+            "input_index": null,
+            "content_hash": null
+          }
+        ],
+        "acked_at": "2026-10-29T19:24:57.275322+00:00",
+        "batch_id": "4e6e3cd8-82fc-4730-b27b-90064536dc69",
+        "owner_id": "c073aaaa-0000-4000-a000-000000007ac4",
+        "dimensions": 1536,
+        "settled_at": "2026-10-29T19:24:57.123525+00:00",
+        "lease_until": "2026-10-29T19:34:56.959877+00:00",
+        "prepared_at": "2026-10-29T19:24:57.123525+00:00",
+        "usage_known": false,
+        "request_hash": "355795139b246c3a8a7f89ea6507256dbbce7fcd029fd905698631e2907b64ca",
+        "dispatched_at": null,
+        "response_hash": null,
+        "price_source_sku": "text-embedding-3-small",
+        "input_contract_version": "embedding_input.v1",
+        "accepted_response_model": null,
+        "accepted_response_usage": null,
+        "accepted_response_present": false
+      }
+    ],
+    "entity_effects": {
+      "credits": [
+        {
+          "id": 1,
+          "role": "director",
+          "source": "ai",
+          "person_id": "259078ec-e60b-4869-9390-08ad43ea9540",
+          "competitor_id": null,
+          "organization_id": null
+        },
+        {
+          "id": 2,
+          "role": "art_director",
+          "source": "ai",
+          "person_id": "6731e3d4-43c6-4726-89bf-fdfb34e216e2",
+          "competitor_id": null,
+          "organization_id": null
+        },
+        {
+          "id": 3,
+          "role": "sound_design_and_mix",
+          "source": "ai",
+          "person_id": "c2302983-57bc-4613-afdb-f215e42e4344",
+          "competitor_id": null,
+          "organization_id": null
+        },
+        {
+          "id": 4,
+          "role": "music_composer",
+          "source": "ai",
+          "person_id": "c358545e-3db0-42e5-b89d-e353cb3b9ced",
+          "competitor_id": null,
+          "organization_id": null
+        },
+        {
+          "id": 5,
+          "role": "client_brand",
+          "source": "ai",
+          "person_id": "c33a0c0c-dd0a-4ca8-9059-c761a4a9ef1d",
+          "competitor_id": null,
+          "organization_id": null
+        },
+        {
+          "id": 6,
+          "role": "client_brand",
+          "source": "ai",
+          "person_id": "57c81814-84d3-42cd-9254-94a80f10fc61",
+          "competitor_id": null,
+          "organization_id": null
+        },
+        {
+          "id": 7,
+          "role": "client_brand",
+          "source": "ai",
+          "person_id": "bc9f2e5f-f2ce-4466-addd-bc01cf3bc81a",
+          "competitor_id": null,
+          "organization_id": null
+        }
+      ],
+      "reviews": [
+        {
+          "id": 1,
+          "kind": "new_brand",
+          "status": "open",
+          "priority": 50,
+          "entity_id": "3cbc7664-f4da-4c7d-92f2-a2780f8fcf8a",
+          "entity_type": "organization"
+        },
+        {
+          "id": 2,
+          "kind": "new_person",
+          "status": "open",
+          "priority": 120,
+          "entity_id": "259078ec-e60b-4869-9390-08ad43ea9540",
+          "entity_type": "person"
+        },
+        {
+          "id": 3,
+          "kind": "new_person",
+          "status": "open",
+          "priority": 120,
+          "entity_id": "6731e3d4-43c6-4726-89bf-fdfb34e216e2",
+          "entity_type": "person"
+        },
+        {
+          "id": 4,
+          "kind": "new_person",
+          "status": "open",
+          "priority": 120,
+          "entity_id": "c2302983-57bc-4613-afdb-f215e42e4344",
+          "entity_type": "person"
+        },
+        {
+          "id": 5,
+          "kind": "new_person",
+          "status": "open",
+          "priority": 120,
+          "entity_id": "c358545e-3db0-42e5-b89d-e353cb3b9ced",
+          "entity_type": "person"
+        },
+        {
+          "id": 6,
+          "kind": "new_person",
+          "status": "open",
+          "priority": 120,
+          "entity_id": "c33a0c0c-dd0a-4ca8-9059-c761a4a9ef1d",
+          "entity_type": "person"
+        },
+        {
+          "id": 7,
+          "kind": "new_person",
+          "status": "open",
+          "priority": 120,
+          "entity_id": "57c81814-84d3-42cd-9254-94a80f10fc61",
+          "entity_type": "person"
+        },
+        {
+          "id": 8,
+          "kind": "new_person",
+          "status": "open",
+          "priority": 120,
+          "entity_id": "bc9f2e5f-f2ce-4466-addd-bc01cf3bc81a",
+          "entity_type": "person"
+        }
+      ],
+      "sightings": [
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "3cbc7664-f4da-4c7d-92f2-a2780f8fcf8a",
+          "confidence": 0.99,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "organization"
+        },
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "259078ec-e60b-4869-9390-08ad43ea9540",
+          "confidence": 1,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "person"
+        },
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "57c81814-84d3-42cd-9254-94a80f10fc61",
+          "confidence": 1,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "person"
+        },
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "6731e3d4-43c6-4726-89bf-fdfb34e216e2",
+          "confidence": 1,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "person"
+        },
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "bc9f2e5f-f2ce-4466-addd-bc01cf3bc81a",
+          "confidence": 1,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "person"
+        },
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "c2302983-57bc-4613-afdb-f215e42e4344",
+          "confidence": 1,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "person"
+        },
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "c33a0c0c-dd0a-4ca8-9059-c761a4a9ef1d",
+          "confidence": 1,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "person"
+        },
+        {
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "entity_id": "c358545e-3db0-42e5-b89d-e353cb3b9ced",
+          "confidence": 1,
+          "created_at": "2026-10-29T19:23:03.806314+00:00",
+          "entity_type": "person"
+        }
+      ],
+      "org_alias_count": 1,
+      "person_alias_count": 7
+    },
+    "owned_enqueue_audits": [
+      {
+        "id": 146,
+        "after": {
+          "kind": "initial_competitor",
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "messages": [
+            {
+              "msg_id": 2,
+              "message": {
+                "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+                "entity_type": "competitor"
+              }
+            }
+          ],
+          "ai_attempt_id": "38b645a1-59fa-4d2d-839e-b4af87f46ff5",
+          "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+          "natural_item_msg_id": 1
+        },
+        "entity_id": "b2853bc1-98d4-45bc-a3f1-528e353ed687"
+      },
+      {
+        "id": 147,
+        "after": {
+          "kind": "unchanged_repeat",
+          "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+          "messages": [
+            {
+              "msg_id": 3,
+              "message": {
+                "entity_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+                "entity_type": "item"
+              }
+            },
+            {
+              "msg_id": 4,
+              "message": {
+                "entity_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+                "entity_type": "competitor"
+              }
+            }
+          ],
+          "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+          "original_batch_id": "65a0d198-7b39-4cca-bc91-ada4d225edeb"
+        },
+        "entity_id": "d7b7c19a-120c-4d15-95ab-f095b7dba9c3"
+      }
+    ]
+  },
+  "finalInvariants": {
+    "rawRows": 293,
+    "itemRows": 293,
+    "extractionRows": 1,
+    "entitySightings": 8,
+    "credits": 7,
+    "reviewTasks": 8,
+    "vectors": 2,
+    "openAiCostRows": 3,
+    "openAiCostUsd": 0.007197,
+    "selectedAiLiveMessages": 0,
+    "selectedAiArchiveInventoryCount": 2,
+    "unrelatedAiMessages": 289,
+    "unrelatedAiUnchanged": true,
+    "genericMediaMessages": 267,
+    "genericMediaUnchanged": true,
+    "unrelatedEmbedUnchanged": true,
+    "unsettledAiAttempts": 0,
+    "unsettledEmbedBatches": 0,
+    "activeM07Sessions": 0,
+    "campaignDatabaseHashesUnchanged": true,
+    "campaignNativeVersionsAndCredentialsUnchanged": true,
+    "m06BypassReadOrChanged": false
+  },
+  "closedRuntimeStatusProjection": {
+    "status": "completed",
+    "phase": "status",
+    "head": "3f29b276eddb62a286900fded09362876fb69b68",
+    "bindingCount": 14,
+    "pendingIntent": null,
+    "deployment": {
+      "id": "dpl_3w4A11CMtCyXtGbVov9zjGhNVAd6",
+      "url": "everyone-market-researcher-nszmlapq7-muhammed-abdelrahman.vercel.app",
+      "state": "READY",
+      "sha": "3f29b276eddb62a286900fded09362876fb69b68"
+    },
+    "workflows": [
+      {
+        "key": "WF-30-M07",
+        "id": "4UaP7QWjrDt4o3TN",
+        "versionId": "661b7f3d-cbc5-4e82-8be5-13e2a0e83fed"
+      },
+      {
+        "key": "WF-33-M07",
+        "id": "16nTQbI9afwg3l29",
+        "versionId": "60b569b6-4315-490b-a89d-b2fa83719f32"
+      }
+    ],
+    "credentialId": "Uko3DCaYJPSjAy4b",
+    "oidcExpiresAt": "2026-10-30T07:18:08.000Z",
+    "cleanupComplete": true,
+    "ownedMachinePresent": false,
+    "ownedOidcPresent": false,
+    "usage": {
+      "vercel": 151,
+      "n8n": 68,
+      "gateway": 18,
+      "vercelNativeOidcCommands": 4,
+      "nativeOidcRequestCountUnknown": true,
+      "vercelNativeCleanupCommands": 4
+    },
+    "observedAt": "2026-10-29T19:28:06.657Z"
+  },
+  "closedRuntimeStatusNote": "The deployment/workflow identities in status are retained admission metadata; final cleanup exact-ID reads prove resources absent. Status confirms cleanupComplete=true, pendingIntent=null, ownedMachinePresent=false, ownedOidcPresent=false. accepted-replay.dpapi is absent.",
+  "firstAttemptCleanup": {
+    "status": "verified",
+    "verifiedComplete": true,
+    "observedAt": "2026-10-29T18:21:51Z",
+    "environmentEntriesRemoved": 14,
+    "freshMetadataAbsent": true,
+    "ownedMachineCredentialId": "pO09c5Gx8ed2Sprn",
+    "ownedMachineCredentialDeleteAcknowledged": true,
+    "nativeCredentialSearchNoResults": true,
+    "previewDeploymentId": "dpl_HhH4z9H8dHBrd2uiVp61ZJPEuTtE",
+    "previewDeleteAcknowledged": true,
+    "previewReadHttpAfterDelete": 404,
+    "machineAndOidcClearedFromRuntimeState": true,
+    "nativeWorkflowsCreated": 0,
+    "providerRequests": 0,
+    "campaignDeploymentStillReady": true,
+    "campaignCommit": "8ba0eb7"
   }
 }

@@ -1,11 +1,11 @@
-# M07 next bounded real-model dev validation
+# M07 authorized bounded real-model dev validation - completed checkpoint
 
-Status: **owner-authorized; hosted validation in progress, not complete.** Accepted application head `795c3556928f756c146406d415e95ebc5b2473d0`, branch `m07-ai-understanding`; [CI40913235591](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591) passed all five required jobs and is reused. Actual two-file dev migration and price/advisor preflight succeeded. Native workflow save exposed a concrete connection-shape defect before any model start; corrected-code qualification and remaining live proof stay open. [Current actual evidence](live-ai-dev-20261029.md) / [machine record](live-ai-dev-20261029.json). This packet remains the already-authorized one-item text/embedding scope; no new general approval is needed after repair/reconciliation. It does not claim model accuracy or full M07 acceptance.
+Status: **owner-authorized bounded checkpoint executed and safely closed; full M07 remains open.** Actual application `3f29b276eddb62a286900fded09362876fb69b68` / [CI40937812673](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40937812673) passed all five jobs before native31426/31427/31428. Real extraction/two embeddings/replay/unchanged skip and final cleanup passed. Original795c355 local acceptance, all failed attempts and costs remain retained. [Actual result](live-ai-dev-20261029.md) / [final machine SQL/runtime projections](live-ai-dev-20261029.json). The procedure below records executed scope; it is not authority to repeat a closed smoke. One sample is not model accuracy or full M07 acceptance.
 
-## 1. Targets and pending definitions
+## 1. Targets and applied definitions
 
 - Project: emr-dev / `zmotjsbzhzjvpelxvxlf`; session pooler `aws-1-eu-central-1.pooler.supabase.com:5432`, database postgres. Runtime login is `n8n_writer.zmotjsbzhzjvpelxvxlf`, max pool1, strict pinned CA verification.
-- Read current hosted migration history before any write. Last owner-accepted hosted baseline is24; current actual history is deliberately unverified in this local slice. Pending expected versions: `20261029143813_m07_ai.sql` and `20261029154649_m07_embeddings.sql`. Exact hashes are in the companion local evidence JSON. If a reviewed version is already applied identically, record and skip it, then dry-run only the still-pending reviewed subset. Stop on unknown or divergent history; do not replay a successful operation. Use the existing bounded administrative path for the exact two-file dry run/push and readbacks only. No seed.sql, reset or production access.
+- Actual hosted24-version preflight, exact two-file dry run, one-time application and26-version readback succeeded. Applied `20261029143813_m07_ai.sql` and `20261029154649_m07_embeddings.sql` retain the exact hashes below; all24 original native history hashes are preserved. Do not reapply these migrations or repeat their setup sequence. No seed.sql, reset or production access occurred.
 - Source application head/CI, native definition hashes, exact deployment ID/URL and exact selected UUIDs must be recorded at admission. A mutable branch alias is insufficient.
 
 ## 2. Exact preflight selection
@@ -47,7 +47,7 @@ Protection must leave the active M06 bypass entirely untouched. Use the supporte
 4. Replay the same accepted extraction identity/application and the embedding settlement using its private durable accepted-response projection, with no model node execution. Record unchanged receipt/cost/entity/credit/review/vector counts. If extraction transport is reconstructed from accepted output/metadata, label it a normalized accepted-result replay, not another provider capture. Re-read terminal status and replay ACK safely.
 5. Enqueue only the same selected embedding entities again through the scoped existing enqueue path, then run WF-33: model/dimension/input-version/text unchanged must skip without another provider call or cost. Verify unrelated queue rows/read counts/visibility and the generic media backlog are unchanged.
 
-No live access/binding/model behavior above has been observed by this local delivery. Use supported native records plus bounded SQL assertions; do not restart a supervisor or repeat accepted M06 tests.
+Actual native/SQL observations for this exact scope are recorded in the completed result. Native31426/31427/31428, settlement replay, cost-once, unchanged skip and cleanup passed; original known failure/cost remains. This does not qualify accuracy, vision or production. No supervisor was restarted and no accepted M06 test was repeated.
 
 ## 6. Recovery, restoration and retained evidence
 
@@ -57,11 +57,11 @@ Close owned native executions and database clients. Restore exact inactive defin
 
 Report actual incremental and cumulative M07 provider usage, prices/unknown invoice charges and separate unknown infrastructure costs. This packet never authorizes production backlog, M05 denied work, vision, Batch, evaluation, email, recurrence or merge. The campaign remains pinned8ba0eb7; new collection stops6November12:00Cairo and resumed cleanup/revocation remains due7November18:00Cairo.
 
-## Authorization recorded and continuation
+## Authorization executed and checkpoint closed
 
-The owner authorized this exact packet at accepted795c355/CI40913235591. Its access preflight and reviewed migrations have begun; preserve the actual26-version state and current evidence. Repair and qualify the identified native save defect, reconcile/close owned temporary effects, then continue the incomplete same-scope observation, repeats and shutdown. Do not replay migrations or request the same routine setup authorization again. No campaign/bypass change, credential value or financial reapproval is authorized or requested.
+The owner authorized this packet and its bounded known-failure/fix reserve. It is now executed and safely closed at qualified3f29b276/CI40937812673, with final actual evidence linked above. Preserve26 applied migrations, admitted identities, three provider charges and retained data. Do not request the same setup approval or repeat a closed smoke. Full M07, MA-17, production/recurrence/email/merge remain separate.
 
-## Exact pending migration hashes
+## Exact applied migration hashes
 
 | Version | SHA256 |
 |---|---|

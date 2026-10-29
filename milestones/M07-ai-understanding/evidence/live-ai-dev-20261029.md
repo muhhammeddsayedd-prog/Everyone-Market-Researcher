@@ -1,6 +1,6 @@
 # M07 bounded hosted development validation - 29 October 2026
 
-Status: **first real model request returned and settled as a known-cost invalid response; third temporary setup cleanup verified. Narrow alias fix locally qualified, required changed-head CI pending.** Bounded checkpoint and full M07 remain open. Cloud fix `a551f9a` / [CI40932926977](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40932926977) passed all five jobs before native execution31409. Earlier qualified attempts and cleanup remain preserved below. [Sanitized machine record](live-ai-dev-20261029.json).
+Status: **bounded M07 real text-extraction/embedding validation completed and safely closed; full M07 remains open.** Application `3f29b276eddb62a286900fded09362876fb69b68` / [CI40937812673](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40937812673) passed all five required jobs before native executions31426/31427/31428. Extraction, two vectors, settlement replay, unchanged skip, retained costs/queues/campaign and final cleanup are verified. One sample is integration evidence, not model accuracy or full milestone acceptance. [Sanitized machine record and final SQL/runtime projections](live-ai-dev-20261029.json). Historical failures and qualified fixes remain below.
 
 ## Verified hosted database work
 
@@ -92,3 +92,35 @@ The narrow canonical spelling alias now maps `colorist` to the existing `colouri
 Third temporary setup cleanup is **verified at19:07:44UTC**: two owned workflows deleted/read404, all14 environment entries absent on fresh read, Machine deletion acknowledged and Preview read404. Campaign remains READY on8ba0eb7. Native UI output inspection autosaved layout/default parameter omissions/binaryMode; collector code, connections, TLS and auth semantics matched the owned definition. An encrypted exact private snapshot was retained before owned deletion; no unexplained newer work was overwritten.
 
 Cumulative known operations:49 n8n Management,113 controlled Vercel API calls, nine root gateway checks plus four native gateway requests (one claim/three same-owner recovery),16 administrative database commands, three native OIDC commands (internal requests unknown) and three native cleanup commands. All prior charges retained. Model starts1; cumulative M07 provider costUSD0.004527. Infrastructure unknown. Extraction success, embeddings, settlement replay and unchanged skip remain open.
+
+## Completed bounded real observation and repeats
+
+After `3f29b276` / CI40937812673 passed all five jobs, guarded audit145 archived old delivery14 and admitted explicit known-fix nonce `37d5e1a9-9d5b-4b1b-925e-18d587271d31`, message291. The original terminal failed attempt, snapshot, provider response and USD0.004527 ledger60 remain unchanged. Its ACK remains NULL: old delivery14 was explicitly archived by audit145, not passed off as a normal ACK. This was the packet's deliberate known-failure/fix observation, not an uncertain paid retry or overwritten settlement.
+
+Application `3f29b276` ran on Preview `dpl_3w4A11CMtCyXtGbVov9zjGhNVAd6`. Native WF-30 `4UaP7QWjrDt4o3TN` version `661b7f3d-cbc5-4e82-8be5-13e2a0e83fed`; WF-33 `16nTQbI9afwg3l29` version `60b569b6-4315-490b-a89d-b2fa83719f32`; owned Machine `Uko3DCaYJPSjAy4b`.
+
+| Native execution | Actual result | Recorded cost |
+|---|---|---|
+|31426 / WF-30 | Correct pinned model; attempt `38b645a1-59fa-4d2d-839e-b4af87f46ff5`, published0.97, extraction1, seven credits, eight review tasks and eight entity sightings | ledger61 / USD0.002665 |
+|31427 / WF-33 | Batch `65a0d198-7b39-4cca-bc91-ada4d225edeb`; selected item and competitor stored as two1536-dimensional vectors | ledger62 / USD0.000005 |
+|31428 / WF-33 repeat | Batch `4e6e3cd8-82fc-4730-b27b-90064536dc69`; two unchanged skips, stored0, dispatched_at/response/cost NULL | No provider request or new cost row |
+
+The successful31426 response contains no `colourist` credit. The spelling alias branch is proven by the observed-field regression and actual local SQL, not by claiming that branch occurred in the successful native result. Recorded latency_ms0 is a default/unmeasured value and supplies no latency or performance proof.
+
+Successful extraction provider response `resp_0832fb23efd33beb016ae39d14ee5087d2a01692b78b2c6f08` reported1992 input tokens (1792 cached/200 uncached),529 output. Usage math USD0.0026649 rounds to the six-decimal ledger USD0.002665. Embeddings reported240 aggregate tokens; USD0.0000048 rounds to USD0.000005. No per-vector token allocation is invented. All three provider requests, including the original known failure, total **recorded USD0.007197** (unrounded usage math USD0.0071967). Invoice adjustments and Vercel/Supabase/n8n infrastructure charges remain unknown.
+
+Initial item embedding message1 arose naturally from extraction; bounded administrative audit146 added only selected competitor message2. Audit147 added only the same item/competitor repeat messages3/4. The global all-competitor enqueue was never called.
+
+Six authenticated replay calls settled/read status/repeated ACK for the original successful extraction and embedding identities, without a model node. Extraction used a normalized accepted-result replay, not another provider capture. Embeddings used the exact private durable accepted-response projection; its temporary encrypted transport was deleted. Replay returned completed/replayed and preserved counts/hashes: one extraction, eight sightings, seven credits, eight reviews, two vectors and three cost rows. After the unchanged repeat these remained identical. The repeat's NULL cost/usage is preserved; zero **incremental** requests/charge is established by no dispatch and unchanged ledger, not fabricated usage.
+
+## Final database, campaign and cleanup proof
+
+Final bounded SQL proves293 item/raw rows retained; no unsettled AI/embedding batch or active M07 session. Both selected extraction deliveries14 and291 are in the exact archive inventory with read_ct1, and none remains live. The legacy numeric `selected_ai_archived=1` covers only original14; the exact inventory contains **two**. All289 unrelated AI deliveries preserve message bodies/read counts/visibility hash; unrelated embed inventory is unchanged. Generic media remains267 with its original delivery hash. No generic backlog was drained and no source collection was repeated.
+
+Final cleanup verified **19:26:23.433UTC**: two exact owned native workflows deleted/read404; all14 temporary M07 branch environment entries absent; Machine exact-ID DELETE acknowledged; Preview deleted/read404. Owned private children/clients closed, runtime Machine/OIDC cleared and disposable response/scratch removed. Persistent encrypted originals, migrations, price rows, extraction/vector/product rows, all costs and audit evidence are retained. Closed-runtime status at19:28:06.657UTC confirms cleanupComplete=true, pendingIntent=NULL and no owned Machine/OIDC present; accepted-replay.dpapi is absent. Cached admission identities in that status are historical metadata, not evidence of surviving deployments/workflows. OIDC is short-lived and allowed to expire; no M06 automation bypass was read, changed or revoked.
+
+Final native campaign readback **19:26:36.638UTC** proves all five active workflow versions and credential IDs unchanged; existing deployment remains READY on `8ba0eb7`. Campaign/configuration and slot database hashes match preflight. No campaign observation was restarted. New collection cutoff remains6November12:00Cairo, resumed shutdown/revocation deadline7November18:00Cairo.
+
+Cumulative known operations across all attempts: **68 n8n Management**, **151 controlled Vercel API calls**, **18 coordinator plus17 native gateway requests**, **24 bounded administrative database commands**, four native OIDC commands and four native cleanup commands. Native command internal request counts are unknown and are not silently treated as zero. Three model requests and all prior charges remain accounted.
+
+This closes only the authorized one-item text/two-vector checkpoint. Full M07 remains open for vision/media v2, the200-item labeled evaluation/model choice (MA-17), broader reporting and the separately authorized production backlog/optional Batch path. No accuracy target, production, recurrence, email, merge, M08 or denied M05 action is claimed complete or authorized by this result. Existing PR403 remains a separate delivery-access issue.
