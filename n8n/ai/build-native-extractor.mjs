@@ -83,7 +83,8 @@ export function m07ProviderRequest(value) {
   );
 }
 export function advanceM07Gateway(original, reply) {
-  const state = structuredClone(original);
+  // Workflow state is JSON-only; use the sandbox's standard JSON builtins.
+  const state = JSON.parse(JSON.stringify(original));
   if (state.action !== 'gateway' || !m07Object(state.request)) throw Error('M07_STATE_INVALID');
   const body = m07Object(reply) && reply.statusCode === 200 && m07Object(reply.body) ? reply.body : null;
   if (
@@ -198,7 +199,7 @@ export function advanceM07Gateway(original, reply) {
   throw Error('M07_STATE_INVALID');
 }
 export function advanceM07Provider(original, reply) {
-  const state = structuredClone(original);
+  const state = JSON.parse(JSON.stringify(original));
   if (state.action !== 'provider' || !m07Uuid(state.attempt_id)) throw Error('M07_STATE_INVALID');
   delete state.provider_request;
   if (!m07Object(reply) || reply.statusCode !== 200 || !m07Object(reply.body))

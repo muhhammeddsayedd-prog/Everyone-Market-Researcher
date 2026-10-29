@@ -80,7 +80,6 @@ function code(name, input, prepared, definition = graph) {
   return runInNewContext(
     '(function(){' + definition.workflow.nodes.find((n) => n.name === name).parameters.jsCode + '\n})()',
     {
-      structuredClone,
       $input: { all: () => [{ json: structuredClone(input) }] },
       $execution: { id: '73123' },
       $: () => ({ item: { json: structuredClone(prepared) } }),
@@ -200,6 +199,63 @@ test('native transitions admit provider once then apply and acknowledge only sav
   assert.equal(r.action, 'done');
   assert.equal(r.result.status, 'completed');
   assert.deepEqual(JSON.parse(JSON.stringify(r.result.result)), applied);
+});
+test('assembled Cloud Code completes claim through ACK without a structuredClone global', () => {
+  for (const n of graph.workflow.nodes.filter((n) => n.type === 'n8n-nodes-base.code'))
+    assert.doesNotMatch(n.parameters.jsCode, /structuredClone/);
+  let s = code('Initialize local extraction', { env: 'dev' })[0].json;
+  const original = JSON.stringify(s);
+  const claimed = code(
+    'Advance extraction receipt',
+    receipt(s, {
+      owner_id: s.owner_id,
+      messages: [
+        { attempt_id: attempt, owner_id: s.owner_id, item_id: item, msg_id: 1, read_ct: 1, state: 'claimed' },
+      ],
+    }),
+    s,
+  )[0].json;
+  assert.equal(JSON.stringify(s), original);
+  s = claimed;
+  s = code(
+    'Advance extraction receipt',
+    receipt(s, {
+      attempt_id: attempt,
+      owner_id: s.owner_id,
+      item_id: item,
+      state: 'prepared',
+      provider_request: provider,
+    }),
+    s,
+  )[0].json;
+  assert.equal(s.request.operation, 'dispatch');
+  s = code(
+    'Advance extraction receipt',
+    receipt(s, {
+      attempt_id: attempt,
+      state: 'dispatched',
+      admitted: true,
+      provider_request: provider,
+    }),
+    s,
+  )[0].json;
+  assert.equal(s.action, 'provider');
+  s = code('Advance model receipt', { statusCode: 200, body: { id: 'resp_controlled' } }, s)[0].json;
+  assert.equal(s.request.operation, 'settle');
+  s = code(
+    'Advance extraction receipt',
+    receipt(s, {
+      attempt_id: attempt,
+      state: 'completed',
+      result: { ai_status: 'review', cost_usd: 0.0002 },
+    }),
+    s,
+  )[0].json;
+  assert.equal(s.request.operation, 'ack');
+  s = code('Advance extraction receipt', receipt(s, { attempt_id: attempt, acked: true }), s)[0].json;
+  const result = code('Return extraction outcome', s)[0].json;
+  assert.equal(result.status, 'completed');
+  assert.equal(result.result.ai_status, 'review');
 });
 test('completed replay has no preparation or provider dispatch', () => {
   const s = claim(initializeM07Extraction({ env: 'dev' }, '73123'), {

@@ -1,6 +1,6 @@
-# M07 bounded hosted development validation ? 29 October 2026
+# M07 bounded hosted development validation - 29 October 2026
 
-Status: **first attempt safely closed; maintained native fix locally qualified, required changed-head CI pending. Bounded checkpoint and full M07 remain open.** The owner accepted `795c3556928f756c146406d415e95ebc5b2473d0` / [CI40913235591](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40913235591) and authorized the complete [live packet](live-ai-dev-packet-20261029.md). Its unchanged five-job local/CI qualification is reused. [Sanitized machine record](live-ai-dev-20261029.json).
+Status: **second native attempt terminal before model dispatch; temporary cleanup verified, original unstarted claim retained for reconciliation. Bounded checkpoint and full M07 remain open.** The connection-shape fix at `6e7ee98` / [CI40930532066](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40930532066) passed all five jobs before this attempt. The owner authorization persists. Accepted `795c355`/CI40913235591 and the first safely closed setup remain preserved below. [Sanitized machine record](live-ai-dev-20261029.json).
 
 ## Verified hosted database work
 
@@ -35,13 +35,13 @@ Temporary setup used14 branch-scoped Sensitive M07 environment entries, Preview 
 
 The connector attempts returned Vercel404 unscoped/403 scoped and n8n MCP-32603. Existing native fallback subsequently worked; these errors did not imply absent credentials. A bounded full workflow list failed; exact legacy WF-30 and credential-schema reads succeeded.
 
-Native M07 workflow creation returned HTTP400 twice: the assembled export represented root connection values without n8n's required `main` array. The native errors specifically identified missing/invalid `node`, `type` and `index`. Exact native UI search found no M07 workflow. No workflow/model execution or provider request occurred. Both failures remain recorded.
+Native M07 workflow creation returned HTTP400 twice: the assembled export represented root connection values without n8n's required `main` array. The native errors identified invalid root connection values at `connections.node`, `connections.type` and `connections.index`; they did not establish missing workflow nodes. Exact native UI search found no M07 workflow. No workflow/model execution or provider request occurred. Both failures remain recorded.
 
-The maintained WF-30/WF-33 builders and exports now assign both conditional branches under their named node `main` arrays; previously individual edge descriptors were spread at the connections root. The focused native suite passes29 tests and focused review passes. Required changed-head CI remains pending and must pass before further live execution. This is an implementation defect, not a new owner-approval or credential gate.
+The maintained WF-30/WF-33 builders and exports now assign both conditional branches under their named node `main` arrays; previously individual edge descriptors were spread at the connections root. The focused native suite passed29 tests and focused review passed. Changed-head `6e7ee98` / CI40930532066 then passed all five jobs before the second native attempt. This is an implementation defect, not a new owner-approval or credential gate.
 
-## Outcome and restoration boundary
+## First-attempt outcome and verified restoration
 
-Real extraction, embedding, restricted runtime identity, settlement replay and unchanged-input skip remain **pending**. No model request has started; incremental and cumulative M07 provider usage/cost remain0/USD0. Vercel/n8n/Supabase infrastructure charges are unknown and separate. No model accuracy or full M07 acceptance is claimed.
+At the first-attempt close, real extraction, embedding, restricted runtime identity, settlement replay and unchanged-input skip were **pending**. The second attempt below subsequently proved the restricted claim path; model/settlement/skip proofs are still pending. No model request has started; incremental and cumulative M07 provider usage/cost remain0/USD0. Vercel/n8n/Supabase infrastructure charges are unknown and separate. No model accuracy or full M07 acceptance is claimed.
 
 At18:21:51UTC the old attempt was **safely closed and cleanup verified**: all14 owned environment IDs removed and fresh metadata absent; owned Machine credential deletion acknowledged and native exact search returned `No credentials found`; owned Preview deleted and subsequent GET404. Machine/OIDC values were cleared from the owned encrypted runtime state. No M07 workflow or model execution was created. Persistent credential originals, migrations, price rows, collected data and audit evidence are retained.
 
@@ -50,3 +50,29 @@ Actual charges/operations:12 n8n Management requests (including the failed bound
 Campaign database/configuration and slot hashes remained unchanged, as did five native workflow versions. Campaign stays pinned `8ba0eb7`; no observation was started. New collection cuts off6November12:00Cairo; resumed shutdown/revocation remains due7November18:00Cairo. The existing campaign deployment remained READY on8ba0eb7 after cleanup. No campaign settings/bindings/bypass were changed. A final queue/campaign comparison remains required after the eventual model observation; the closed setup attempt performed no queue claim or product ingestion.
 
 Next: commit/push the concrete native graph correction and actual records, verify required changed-head CI, then execute the same authorized selected extraction/embedding, replay/unchanged checks and shutdown. No new scope approval is requested. Production, vision/Batch/evaluation, emails, recurrence, merge and the specific denied M05 action remain excluded.
+
+## Second native attempt and supported runtime correction
+
+Qualified application `6e7ee98` deployed as `dpl_57pVcYpb645qM97ByJFyi2eBSRYW`. Owned native definitions: WF-30 `ETCSEY3nhIFJHqSy`, version `7e5250b3-52fd-4efc-af42-c6ffe3cb6360`; WF-33 `JD7DOuIi432sttsf`, version `2bf52212-a801-479a-8a79-9a73093cb5b8`; Machine credential `vfmTr7xJ5zWgKrAP`.
+
+Native execution **31406** is terminal with the Code sandbox error `structuredClone is not defined`. The restricted gateway claim succeeded first. At18:34:15.513868UTC, bounded database readback established this exact original state:
+
+| Field | Actual result |
+|---|---|
+| Attempt | `aaea2e49-fbff-42b0-9652-f8a01465c0ff` |
+| Owner | `c070aaaa-0000-4000-a000-000000007aae` |
+| Queue | message14, read_ct1 |
+| State / creation | claimed /18:32:54.557803UTC |
+| Recorded lease | expires18:42:54.557803UTC |
+| Model, frozen snapshot/hash, dispatched_at, provider response | all NULL |
+| OpenAI ledger rows / total USD |0 /0 |
+
+This is a **known unstarted provider attempt**, not a rejected password, completed extraction or unknown paid outcome. Retain/reconcile this exact attempt and owner. Do not create a replacement identity merely because its lease expires. The native API execution list was empty with manual persistence disabled; the terminal native UI error plus exact database claim provide scoped provenance. Do not claim an API-persisted execution receipt.
+
+The maintained Cloud runtime clone is now corrected to a supported JSON round-trip. The generated graph is exercised in a VM without `structuredClone`:31 focused tests, format and lint pass. Required changed-head CI remains pending before more live execution. No provider request was reached, so M07 provider usage/cost remains0/USD0; infrastructure remains unknown.
+
+Second temporary setup cleanup is **verified at18:37:39.816UTC**: both exact owned workflows deleted with subsequent GET404; Machine credential deletion acknowledged; all14 env entries removed and fresh list absent; exact Preview deleted with GET404. Private children closed and Machine/OIDC cleared from owned runtime state. Campaign deployment remains READY on8ba0eb7.
+
+Cumulative known operations, retaining the first attempt:28 n8n Management requests,76 controlled Vercel API calls, two native OIDC commands (internal network count unknown), two native deployment cleanup commands, six gateway auth/claim checks and14 bounded administrative database commands including advisors/two proof queries. Provider starts0, USD0; infrastructure unknown.
+
+This temporary cleanup is **separate from the retained original unstarted claim**, which remains claimed for reconciliation. Do not assert zero active claims or settled extraction. First-attempt cleanup also stays verified. After qualified changed-head CI, continue same-owner bounded reconciliation under the existing authorization; no migration replay, new routine approval or changed scope.

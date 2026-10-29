@@ -79,7 +79,8 @@ export function m07EmbeddingProviderRequest(r) {
   return total <= 300000;
 }
 export function advanceM07EmbeddingGateway(original, reply) {
-  const s = structuredClone(original);
+  // Workflow state is JSON-only; use the sandbox's standard JSON builtins.
+  const s = JSON.parse(JSON.stringify(original));
   if (s.action !== 'gateway' || !m07EmbeddingObject(s.request)) throw Error('M07_EMBED_STATE_INVALID');
   const body =
     m07EmbeddingObject(reply) && reply.statusCode === 200 && m07EmbeddingObject(reply.body)
@@ -189,7 +190,7 @@ export function advanceM07EmbeddingGateway(original, reply) {
   throw Error('M07_EMBED_STATE_INVALID');
 }
 export function advanceM07EmbeddingProvider(original, reply) {
-  const s = structuredClone(original);
+  const s = JSON.parse(JSON.stringify(original));
   if (s.action !== 'provider' || !m07EmbeddingUuid(s.batch_id)) throw Error('M07_EMBED_STATE_INVALID');
   delete s.provider_request;
   if (!m07EmbeddingObject(reply) || reply.statusCode !== 200 || !m07EmbeddingObject(reply.body))

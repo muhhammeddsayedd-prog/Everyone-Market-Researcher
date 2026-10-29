@@ -72,7 +72,6 @@ function code(name, input, prepared, definition = graph) {
   return runInNewContext(
     '(function(){' + source + '\n})()',
     {
-      structuredClone,
       $input: { all: () => [{ json: structuredClone(input) }] },
       $execution: { id: '73301' },
       $: () => ({ item: { json: structuredClone(prepared) } }),
@@ -272,6 +271,84 @@ test('generated provider response advances raw aggregate response to settlement 
     }),
   );
   assert.equal(next.result.status, 'completed');
+});
+test('assembled Cloud Code completes embedding claim through ACK without a structuredClone global', () => {
+  for (const n of graph.workflow.nodes.filter((n) => n.type === 'n8n-nodes-base.code'))
+    assert.doesNotMatch(n.parameters.jsCode, /structuredClone/);
+  let s = code('Initialize embeddings', { env: 'dev' })[0].json;
+  const original = JSON.stringify(s);
+  const claimed = code(
+    'Advance embedding receipt',
+    receipt(s, {
+      batch_id: batch,
+      owner_id: s.owner_id,
+      state: 'claimed',
+      messages: [{ msg_id: 1, read_ct: 1 }],
+    }),
+    s,
+  )[0].json;
+  assert.equal(JSON.stringify(s), original);
+  s = claimed;
+  s = code(
+    'Advance embedding receipt',
+    receipt(s, {
+      batch_id: batch,
+      owner_id: s.owner_id,
+      state: 'prepared',
+      request_hash: requestHash,
+      snapshot: { provider_request: provider },
+    }),
+    s,
+  )[0].json;
+  assert.equal(s.request.operation, 'dispatch');
+  s = code(
+    'Advance embedding receipt',
+    receipt(s, {
+      batch_id: batch,
+      owner_id: s.owner_id,
+      state: 'dispatched',
+      admitted: true,
+      request_hash: requestHash,
+      snapshot: { provider_request: provider },
+    }),
+    s,
+  )[0].json;
+  assert.equal(s.action, 'provider');
+  s = code(
+    'Advance embedding model receipt',
+    {
+      statusCode: 200,
+      body: { object: 'list', model: provider.model, data: [], usage: { prompt_tokens: 0, total_tokens: 0 } },
+    },
+    s,
+  )[0].json;
+  assert.equal(s.request.operation, 'settle');
+  s = code(
+    'Advance embedding receipt',
+    receipt(s, {
+      batch_id: batch,
+      owner_id: s.owner_id,
+      state: 'completed',
+      request_hash: requestHash,
+      result: { cost_usd: 0.000002 },
+    }),
+    s,
+  )[0].json;
+  assert.equal(s.request.operation, 'ack');
+  s = code(
+    'Advance embedding receipt',
+    receipt(s, {
+      batch_id: batch,
+      owner_id: s.owner_id,
+      state: 'completed',
+      request_hash: requestHash,
+      acked: true,
+    }),
+    s,
+  )[0].json;
+  const result = code('Return embedding outcome', s)[0].json;
+  assert.equal(result.status, 'completed');
+  assert.equal(result.result.cost_usd, 0.000002);
 });
 test('uncertain provider transport is held without retry or queue acknowledgment', () => {
   let s = advanceM07EmbeddingProvider(admitted(), { statusCode: 503, body: {} });

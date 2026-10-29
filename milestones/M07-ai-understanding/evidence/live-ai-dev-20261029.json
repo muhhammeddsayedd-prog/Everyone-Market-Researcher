@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "observedAt": "2026-10-29T18:21:51Z",
+  "observedAt": "2026-10-29T18:37:39.816Z",
   "environment": "dev",
   "projectRef": "zmotjsbzhzjvpelxvxlf",
-  "status": "first_attempt_safely_closed_native_fix_qualified_awaiting_changed_head_ci",
+  "status": "second_temporary_setup_cleanup_verified_original_unstarted_claim_retained",
   "boundedCheckpointComplete": false,
   "fullM07Complete": false,
   "qualifiedApplication": {
@@ -183,7 +183,8 @@
     "embeddings": "pending",
     "replay": "pending",
     "unchangedSkip": "pending",
-    "restrictedApplicationLogin": "pending"
+    "restrictedApplicationLogin": "restricted gateway claim succeeded; model preparation/dispatch not reached",
+    "knownUnstartedClaimRetained": true
   },
   "cleanup": {
     "status": "verified",
@@ -211,7 +212,7 @@
     "stopNewCairo": "2026-11-06T12:00:00+02:00",
     "shutdownDeadlineCairo": "2026-11-07T18:00:00+02:00"
   },
-  "next": "Commit/push the maintained native connections correction and current actual records; verify required changed-head CI, then resume the already-authorized bounded live scope without replaying migrations or accepted qualification.",
+  "next": "Commit/push the Cloud JSON clone fix and actual native/DB/cleanup records; verify required changed-head CI, then reconcile and resume the exact original unstarted attempt/owner. All old temporary setup is removed; this does not imply the retained claim is settled.",
   "localCorrection": {
     "maintainedBuildersAndExportsFixed": true,
     "defect": "Two conditional connections were spread as edge descriptors at root; required named node main arrays were missing.",
@@ -220,15 +221,84 @@
     "requiredChangedHeadCi": "pending"
   },
   "actualOperations": {
-    "n8nManagementRequests": 12,
-    "includesFailedListAndTwoRejectedCreates": true,
-    "vercelControlledApiRequests": 39,
-    "nativeOidcCommands": 1,
+    "n8nManagementRequests": 28,
+    "includesPriorCharges": true,
+    "vercelControlledApiRequests": 76,
+    "nativeOidcCommands": 2,
     "nativeOidcInternalRequestCount": "unknown",
-    "nativeCleanupCommands": 1,
-    "gatewayAuthChecks": 3,
-    "administrativeDatabaseCommands": 12,
-    "includesAdvisors": true,
+    "nativeCleanupCommands": 2,
+    "gatewayAuthAndClaimChecks": 6,
+    "administrativeDatabaseCommands": 14,
+    "includesAdvisorsAndTwoProofQueries": true,
     "modelRequests": 0
+  },
+  "qualifiedApplicationAfterConnectionFix": {
+    "commit": "6e7ee98",
+    "ciRunId": "40930532066",
+    "requiredJobsPassed": 5,
+    "status": "success"
+  },
+  "secondAttempt": {
+    "applicationCommit": "6e7ee98",
+    "previewDeploymentId": "dpl_57pVcYpb645qM97ByJFyi2eBSRYW",
+    "machineCredentialId": "vfmTr7xJ5zWgKrAP",
+    "extractionWorkflowId": "ETCSEY3nhIFJHqSy",
+    "extractionWorkflowVersion": "7e5250b3-52fd-4efc-af42-c6ffe3cb6360",
+    "embeddingWorkflowId": "JD7DOuIi432sttsf",
+    "embeddingWorkflowVersion": "2bf52212-a801-479a-8a79-9a73093cb5b8",
+    "nativeExecutionId": "31406",
+    "nativeExecutionState": "terminal_failure",
+    "failure": "Cloud Code sandbox: structuredClone is not defined",
+    "failureBeforeModel": true,
+    "restrictedGatewayClaimSucceeded": true,
+    "nativeApiExecutionList": "empty; native UI terminal Code error and database claim used as scoped provenance",
+    "originalClaim": {
+      "attemptId": "aaea2e49-fbff-42b0-9652-f8a01465c0ff",
+      "ownerId": "c070aaaa-0000-4000-a000-000000007aae",
+      "messageId": 14,
+      "readCount": 1,
+      "state": "claimed",
+      "createdAt": "2026-10-29T18:32:54.557803Z",
+      "leaseUntil": "2026-10-29T18:42:54.557803Z",
+      "model": null,
+      "snapshot": null,
+      "requestHash": null,
+      "dispatchedAt": null,
+      "providerResponseId": null,
+      "handling": "Retain and reconcile this exact unstarted attempt/owner; do not mint a replacement attempt or dispatch blindly."
+    },
+    "cleanup": {
+      "status": "verified",
+      "verifiedComplete": true,
+      "observedAt": "2026-10-29T18:37:39.816Z",
+      "nativeWorkflowIdsDeleted": [
+        "ETCSEY3nhIFJHqSy",
+        "JD7DOuIi432sttsf"
+      ],
+      "nativeWorkflowReadHttpAfterDelete": [
+        404,
+        404
+      ],
+      "ownedMachineCredentialId": "vfmTr7xJ5zWgKrAP",
+      "ownedMachineCredentialDeleteAcknowledged": true,
+      "environmentEntriesRemoved": 14,
+      "freshMetadataAbsent": true,
+      "previewDeploymentId": "dpl_57pVcYpb645qM97ByJFyi2eBSRYW",
+      "previewDeleteAcknowledged": true,
+      "previewReadHttpAfterDelete": 404,
+      "allPrivateChildrenClosed": true,
+      "machineAndOidcClearedFromRuntimeState": true,
+      "campaignDeploymentStillReady": true,
+      "campaignCommit": "8ba0eb7",
+      "originalUnstartedClaimRetained": true
+    }
+  },
+  "localCorrectionAfterCloudFailure": {
+    "change": "Cloud graph JSON cloning uses supported JSON round-trip rather than unavailable structuredClone.",
+    "focusedNativeTests": 31,
+    "assembledGeneratedCodeVmWithoutStructuredClone": true,
+    "format": "passed",
+    "lint": "passed",
+    "changedHeadCi": "pending"
   }
 }
