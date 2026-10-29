@@ -42,7 +42,7 @@
                        ],
     "generated_types":  {
                             "path":  "packages/shared/src/db.types.ts",
-                            "generator":  "official postgres-meta v0.100.0 generate-types CLI path",
+                            "generator":  "Supabase CLI2.121.0 gen types typescript, exact native CI generation contract",
                             "native_exit":  0,
                             "shared_typecheck":  "passed",
                             "schemas":  [
@@ -93,5 +93,32 @@
                         "Source completeness is derived by server source adapters; SQL tests do not establish actual provider history coverage.",
                         "SQL privilege simulation is not a hosted restricted-login receipt.",
                         "No pending upkeep migration or removal operation was applied to development or production."
-                    ]
+                    ],
+    "type_projection_repair":  {
+                                   "observed_at":  "2026-10-29T12:39:51.5404185+00:00",
+                                   "reason":  "Direct postgres-meta generator had already formatted type literals at80 columns; project formatting preserves those breaks, whereas native CLI output formats canonically at110. No schema fields or nullability changed.",
+                                   "preserved_ci_failure":  "CI40873389916 f87b1b9: SQL20suites953assertions andall8composedSQLcasespassed; onlyexactgeneratedtypesparityfailed",
+                                   "canonical_project_definition_replay":  24,
+                                   "infrastructure":  "Schema-only auth/storage infrastructure, no app/ops/ingest/api project definitions copied",
+                                   "native_generator_exit":  0,
+                                   "exact_ci_formatter_parity":  true,
+                                   "semantic_tokens_unchanged_ignoring_optional_semicolons":  true,
+                                   "project_print_width":  110,
+                                   "prior23_types_unchanged":  true,
+                                   "new_rpc_additions":  6,
+                                   "lines_added_against_base23":  27,
+                                   "lines_deleted_against_base23":  0,
+                                   "shared_typecheck":  "passed",
+                                   "security_advisors_findings":  0,
+                                   "performance_advisors_findings":  0,
+                                   "qualifier":  {
+                                                     "id":  "11313d4be9e1656cc250593ddeb7d57efac40a7cad87b5363b1086f81b777e9e",
+                                                     "name":  "emr-m06-upkeep-types",
+                                                     "removed":  true,
+                                                     "items":  0,
+                                                     "raw_items":  0,
+                                                     "postgres_superuser":  false
+                                                 },
+                                   "hosted_operations":  0
+                               }
 }
