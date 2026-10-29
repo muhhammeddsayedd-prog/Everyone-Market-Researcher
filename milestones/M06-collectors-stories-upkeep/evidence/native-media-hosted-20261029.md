@@ -68,7 +68,7 @@ Actual usage is reported by its observed boundary, without inventing a browser-w
 
 ## Remaining development boundary
 
-Application code used by the native test is unchanged from accepted47ac405. The Storage initializer/evidence delivery needs normal changed-head CI; no unchanged full local suite is required merely to record this result.
+Application code used by the native test is unchanged from accepted47ac405. Delivery04ef102 passed quality/build/e2e/db-tests and Vercel in CI40795098971; unit found one stale static assertion expecting the old initializer kind list. Its narrow test correction accepts opt-in Storage while retaining the existing All/runtime-isolation checks. The corrected delivery uses normal changed-head CI; no unchanged full local suite or hosted replay is needed merely to record this result.
 
 Final [readback](hosted-media-final-20261029.json) preserves the replay invariants after shutdown; [summary](hosted-media-summary-20261029.json) records the deployed revision, native IDs, object and cleanup. The first three runtime reads used query SHA `fffaadef215d577d1fd85365bed0d58a9c1fb50de637bd154c06550b65fb5d8a`; the final read uses the checked-in guarded-CASE variant `e55fd2169f916f49687654cc9f613f32642037f0554b7d7f432ef42ea771d74f`. That reader-only correction prevents an unrelated malformed audit ID from reaching a numeric cast and changes no measured result.
 

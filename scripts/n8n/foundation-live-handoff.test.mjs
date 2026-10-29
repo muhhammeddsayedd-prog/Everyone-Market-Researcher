@@ -20,7 +20,7 @@ const adapter = readFileSync(resolve('scripts/n8n/windows/Dev-CredentialStore.ps
 
 test('single initialization interface keeps admin separate and preserves bounded runtime purposes without extraction', () => {
   assert.match(source, /ValidateSet\('Initialize','Status','Update'\)/);
-  assert.match(source, /ValidateSet\('Admin','Management','Writer','ApifyRead','All'\)/);
+  assert.match(source, /ValidateSet\('Admin','Management','Writer','ApifyRead','Storage','All'\)/);
   assert.match(source, /Dev-CredentialStore\.ps1/);
   assert.match(source, /Get-M03DevCredentialStatus/);
   assert.match(source, /Initialize-M03DevCredentials -Action \$Action -Kind \$Kind/);
