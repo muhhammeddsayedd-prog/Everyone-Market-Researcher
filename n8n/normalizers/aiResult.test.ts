@@ -41,6 +41,16 @@ const api = require('./aiResult.js') as {
 };
 const fixture = () =>
   JSON.parse(readFileSync(new URL('./fixtures/ai/controlled-extraction.v1.json', import.meta.url), 'utf8'));
+const observedFields = JSON.parse(
+  readFileSync(new URL('./fixtures/ai/live-observed-fields-31409.json', import.meta.url), 'utf8'),
+);
+// Mixed regression fixture: only tags/one credit were observed live. Every
+// other result field and the response envelope remain the controlled example.
+const mixedColoristFixture = () => ({
+  ...fixture(),
+  tags: structuredClone(observedFields.observed_fields.tags),
+  credits: [structuredClone(observedFields.observed_fields.credit)],
+});
 const tax = {
   content_format: ['tvc_brand_film', 'other'],
   industry: ['telecom', 'other'],
@@ -227,6 +237,50 @@ describe('M07 pure Responses contract', () => {
     expect(JSON.stringify(p.result)).toContain('invented-occasion');
     expect((p.result?.tags as string[]).length).toBeLessThanOrEqual(8);
     expect(api.parseResponse(wire(f), { ...tax, content_format: ['tvc_brand_film'] }).ok).toBe(false);
+  });
+  it('canonicalizes the observed colorist spelling only to an available colourist code, preserving all eight tags', () => {
+    expect(observedFields.evidence_type).toBe('live_observed_field_projection');
+    const value = mixedColoristFixture();
+    const before = structuredClone(value);
+    const response = wire(value);
+    const originalWire = structuredClone(response);
+    const parsed = api.parseResponse(response, { ...tax, credit_role: ['director', 'colourist', 'other'] });
+    expect(parsed.ok).toBe(true);
+    expect(parsed.result?.credits).toEqual([{ ...before.credits[0], role: 'colourist' }]);
+    expect(parsed.result?.tags).toEqual(before.tags);
+    expect(value).toEqual(before);
+    expect(response).toEqual(originalWire);
+  });
+  it('keeps an exact colorist taxonomy code when both spellings are available', () => {
+    const parsed = api.parseResponse(wire(mixedColoristFixture()), {
+      ...tax,
+      credit_role: ['director', 'colorist', 'colourist', 'other'],
+    });
+    expect(parsed.ok).toBe(true);
+    expect(parsed.result?.credits).toEqual([observedFields.observed_fields.credit]);
+    expect(parsed.result?.tags).toEqual(observedFields.observed_fields.tags);
+  });
+  it('keeps the existing unknown-code path when the canonical spelling is unavailable', () => {
+    const value = mixedColoristFixture();
+    value.tags = ['controlled-fixture'];
+    const parsed = api.parseResponse(wire(value), tax);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.result?.credits).toEqual([{ ...value.credits[0], role: 'other' }]);
+    expect(parsed.result?.tags).toEqual(['controlled-fixture', 'credit_role:colorist']);
+    expect(api.parseResponse(wire(mixedColoristFixture()), tax)).toMatchObject({
+      ok: false,
+      error: 'AI_TAXONOMY_TAG_LIMIT',
+    });
+  });
+  it('still rejects a genuinely unknown ninth taxonomy tag instead of truncating evidence', () => {
+    const value = mixedColoristFixture();
+    value.credits[0].role = 'genuinely_unknown_role';
+    expect(
+      api.parseResponse(wire(value), { ...tax, credit_role: ['director', 'colourist', 'other'] }),
+    ).toMatchObject({
+      ok: false,
+      error: 'AI_TAXONOMY_TAG_LIMIT',
+    });
   });
   it('clamps finite confidences and rejects string/nonfinite confidence values', () => {
     const f = fixture();

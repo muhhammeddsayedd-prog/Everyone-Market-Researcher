@@ -507,6 +507,10 @@ function parseResponse(resp, tax, validationSchema = extractionSchema.schema) {
   const unknown = [];
   const code = (category, value) => {
     if (value === null || codes[category].includes(value)) return value;
+    // Canonical spelling only when the admitted taxonomy provides it. An exact
+    // active code always wins; unrelated unknown codes still retain evidence.
+    if (category === 'credit_role' && value === 'colorist' && codes.credit_role.includes('colourist'))
+      return 'colourist';
     if (!codes[category].includes('other')) aiFailure('AI_TAXONOMY_OTHER_MISSING');
     unknown.push(category + ':' + value);
     return 'other';

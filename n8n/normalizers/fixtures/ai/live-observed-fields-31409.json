@@ -1,0 +1,45 @@
+{
+  "evidence_type": "live_observed_field_projection",
+  "observed_date": "2026-10-29",
+  "provenance": {
+    "native_execution_id": "31409",
+    "provider_response_id": "resp_09dc820145b1bc45016ae394d8030887d2a55a80649d5f241a",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "attempt_id": "aaea2e49-fbff-42b0-9652-f8a01465c0ff",
+    "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+    "cost_ledger_id": 60
+  },
+  "usage": {
+    "input_tokens": 1992,
+    "output_tokens": 674,
+    "cached_input_tokens": 0
+  },
+  "known_cost_usd": 0.004527,
+  "observed_fields": {
+    "tags": [
+      "production_services",
+      "reel",
+      "social_reel_short_form",
+      "written_and_directed",
+      "art_direction",
+      "coloring",
+      "editing",
+      "sound_design"
+    ],
+    "credit": {
+      "role": "colorist",
+      "person_name": "@aliheraize",
+      "organization": null
+    }
+  },
+  "original_settlement": {
+    "state": "failed",
+    "reason": "invalid_response",
+    "normalizer_error": "AI_TAXONOMY_TAG_LIMIT"
+  },
+  "limitations": [
+    "This is a projection of observed fields and accounting identifiers, not a complete raw provider response.",
+    "Regression tests combine these fields with a separately labeled controlled full-schema envelope; those tests are mixed fixtures, not additional live captures.",
+    "The original known-cost failed attempt remains failed; normalization tests do not rewrite its settlement."
+  ]
+}

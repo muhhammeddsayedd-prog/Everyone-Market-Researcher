@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "observedAt": "2026-10-29T18:37:39.816Z",
+  "observedAt": "2026-10-29T19:07:44Z",
   "environment": "dev",
   "projectRef": "zmotjsbzhzjvpelxvxlf",
-  "status": "second_temporary_setup_cleanup_verified_original_unstarted_claim_retained",
+  "status": "known_cost_first_model_failed_third_setup_cleanup_verified_alias_fix_awaiting_ci",
   "boundedCheckpointComplete": false,
   "fullM07Complete": false,
   "qualifiedApplication": {
@@ -174,17 +174,24 @@
     }
   ],
   "modelObservation": {
-    "providerRequests": 0,
-    "nativeModelExecutions": 0,
-    "incrementalProviderCostUsd": 0,
-    "cumulativeM07ProviderCostUsd": 0,
+    "providerRequests": 1,
+    "nativeModelExecutions": 1,
+    "incrementalProviderCostUsd": 0.004527,
+    "cumulativeM07ProviderCostUsd": 0.004527,
+    "usage": {
+      "inputTokens": 1992,
+      "outputTokens": 674,
+      "cachedInputTokens": 0
+    },
+    "actualModel": "gpt-5.4-mini-2026-03-17",
     "infrastructureCharges": "unknown",
-    "extraction": "pending",
+    "extraction": "known_failed_invalid_response",
     "embeddings": "pending",
     "replay": "pending",
     "unchangedSkip": "pending",
-    "restrictedApplicationLogin": "restricted gateway claim succeeded; model preparation/dispatch not reached",
-    "knownUnstartedClaimRetained": true
+    "restrictedApplicationLogin": "claim/resume/known-failure settlement through restricted gateway observed",
+    "knownUnstartedClaimRetained": false,
+    "originalKnownFailedAttemptRetained": true
   },
   "cleanup": {
     "status": "verified",
@@ -212,7 +219,7 @@
     "stopNewCairo": "2026-11-06T12:00:00+02:00",
     "shutdownDeadlineCairo": "2026-11-07T18:00:00+02:00"
   },
-  "next": "Commit/push the Cloud JSON clone fix and actual native/DB/cleanup records; verify required changed-head CI, then reconcile and resume the exact original unstarted attempt/owner. All old temporary setup is removed; this does not imply the retained claim is settled.",
+  "next": "Commit/push the narrow alias fix and records, verify required changed-head CI, then execute at most the packet-reserved one known-failure/fix observation using a new trusted reextract nonce. Preserve original failed attempt/snapshot/provider response/cost once. Reviewed queue14 archival/new deliberate reextract have not yet executed. Embedding/replay/unchanged checks remain pending.",
   "localCorrection": {
     "maintainedBuildersAndExportsFixed": true,
     "defect": "Two conditional connections were spread as edge descriptors at root; required named node main arrays were missing.",
@@ -221,16 +228,20 @@
     "requiredChangedHeadCi": "pending"
   },
   "actualOperations": {
-    "n8nManagementRequests": 28,
+    "n8nManagementRequests": 49,
     "includesPriorCharges": true,
-    "vercelControlledApiRequests": 76,
-    "nativeOidcCommands": 2,
+    "vercelControlledApiRequests": 113,
+    "nativeOidcCommands": 3,
     "nativeOidcInternalRequestCount": "unknown",
-    "nativeCleanupCommands": 2,
-    "gatewayAuthAndClaimChecks": 6,
-    "administrativeDatabaseCommands": 14,
-    "includesAdvisorsAndTwoProofQueries": true,
-    "modelRequests": 0
+    "nativeCleanupCommands": 3,
+    "rootGatewayChecks": 9,
+    "nativeGatewayRequests": 4,
+    "nativeGatewayBreakdown": {
+      "claim": 1,
+      "sameOwnerRecovery": 3
+    },
+    "administrativeDatabaseCommands": 16,
+    "modelRequests": 1
   },
   "qualifiedApplicationAfterConnectionFix": {
     "commit": "6e7ee98",
@@ -300,5 +311,63 @@
     "format": "passed",
     "lint": "passed",
     "changedHeadCi": "pending"
+  },
+  "qualifiedApplicationAfterCloudFix": {
+    "commit": "a551f9a",
+    "ciRunId": "40932926977",
+    "requiredJobsPassed": 5,
+    "status": "success"
+  },
+  "thirdAttempt": {
+    "applicationCommit": "a551f9a",
+    "previewDeploymentId": "dpl_2YqotCz9HVMmkpy74YAZN52rncXC",
+    "extractionWorkflowId": "MoOmyDmwBe5E10o4",
+    "embeddingWorkflowId": "p7y4yntR3UOaeknZ",
+    "machineCredentialId": "VSXQ7qsLoypFOO39",
+    "adminResumeAuditId": 144,
+    "resumeHandling": "One guarded renewal of the same original unstarted attempt/owner/message14; original queue body/read count preserved. No replacement attempt or migration.",
+    "nativeExecutionId": "31409",
+    "providerResponseId": "resp_09dc820145b1bc45016ae394d8030887d2a55a80649d5f241a",
+    "returnedModel": "gpt-5.4-mini-2026-03-17",
+    "usage": {
+      "inputTokens": 1992,
+      "outputTokens": 674,
+      "cachedInputTokens": 0
+    },
+    "knownCostUsd": 0.004527,
+    "costLedgerId": 60,
+    "settlementState": "failed",
+    "settlementReason": "invalid_response",
+    "normalizerError": "AI_TAXONOMY_TAG_LIMIT",
+    "paidOutcomeUncertain": false,
+    "extractionRows": 0,
+    "embeddingRows": 0,
+    "productAiFieldsWritten": false,
+    "originalFailedAttemptImmutable": true,
+    "observedFieldProjection": "n8n/normalizers/fixtures/ai/live-observed-fields-31409.json",
+    "projectionIsRawCapture": false,
+    "diagnosis": "Eight model tags plus credit role colorist; catalog spelling colourist. Preserving the unknown role would create a ninth tag beyond max8.",
+    "ownedDefinitionDriftHandling": "Native UI inspection autosaved layout/default parameter omissions/binaryMode; code/connections/TLS/auth semantics matched. Encrypted exact private definition snapshot preserved before owned deletion. No unexplained work overwritten.",
+    "cleanup": {
+      "status": "verified",
+      "observedAt": "2026-10-29T19:07:44Z",
+      "nativeWorkflowsDeletedReadHttp": [
+        404,
+        404
+      ],
+      "machineCredentialDeleteAcknowledged": true,
+      "environmentEntriesRemoved": 14,
+      "freshMetadataAbsent": true,
+      "previewReadHttpAfterDelete": 404,
+      "campaignDeploymentStillReady": true,
+      "campaignCommit": "8ba0eb7"
+    }
+  },
+  "localCorrectionAfterKnownResponse": {
+    "change": "Narrow canonical credit-role spelling alias colorist to existing colourist, preserving all eight tags and genuine unknown-role limits.",
+    "focusedTestsIncludingActualLocalSql": 35,
+    "status": "local_tests_passed",
+    "requiredChangedHeadCi": "pending",
+    "liveKnownFixObservation": "not_started"
   }
 }

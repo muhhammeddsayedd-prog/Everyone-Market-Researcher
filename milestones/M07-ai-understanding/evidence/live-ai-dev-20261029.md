@@ -1,6 +1,6 @@
 # M07 bounded hosted development validation - 29 October 2026
 
-Status: **second native attempt terminal before model dispatch; temporary cleanup verified, original unstarted claim retained for reconciliation. Bounded checkpoint and full M07 remain open.** The connection-shape fix at `6e7ee98` / [CI40930532066](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40930532066) passed all five jobs before this attempt. The owner authorization persists. Accepted `795c355`/CI40913235591 and the first safely closed setup remain preserved below. [Sanitized machine record](live-ai-dev-20261029.json).
+Status: **first real model request returned and settled as a known-cost invalid response; third temporary setup cleanup verified. Narrow alias fix locally qualified, required changed-head CI pending.** Bounded checkpoint and full M07 remain open. Cloud fix `a551f9a` / [CI40932926977](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40932926977) passed all five jobs before native execution31409. Earlier qualified attempts and cleanup remain preserved below. [Sanitized machine record](live-ai-dev-20261029.json).
 
 ## Verified hosted database work
 
@@ -76,3 +76,19 @@ Second temporary setup cleanup is **verified at18:37:39.816UTC**: both exact own
 Cumulative known operations, retaining the first attempt:28 n8n Management requests,76 controlled Vercel API calls, two native OIDC commands (internal network count unknown), two native deployment cleanup commands, six gateway auth/claim checks and14 bounded administrative database commands including advisors/two proof queries. Provider starts0, USD0; infrastructure unknown.
 
 This temporary cleanup is **separate from the retained original unstarted claim**, which remains claimed for reconciliation. Do not assert zero active claims or settled extraction. First-attempt cleanup also stays verified. After qualified changed-head CI, continue same-owner bounded reconciliation under the existing authorization; no migration replay, new routine approval or changed scope.
+
+## First real provider response, known failure and narrow correction
+
+Qualified application `a551f9a` deployed as `dpl_2YqotCz9HVMmkpy74YAZN52rncXC`; WF-30 `MoOmyDmwBe5E10o4`, WF-33 `p7y4yntR3UOaeknZ`, Machine `VSXQ7qsLoypFOO39`. One guarded administrative same-owner renewal (audit144) resumed the exact original unstarted attempt/owner/message14, preserving its body/read count. No replacement attempt or migration was used.
+
+Native execution **31409** made the first actual Responses request. Returned model `gpt-5.4-mini-2026-03-17` matched the admitted model. Provider response `resp_09dc820145b1bc45016ae394d8030887d2a55a80649d5f241a` reported1992 input tokens,674 output tokens, cached0. Actual cost: **USD0.004527**, ledger60, once.
+
+The result settled terminal **failed / invalid_response**, specifically `AI_TAXONOMY_TAG_LIMIT`. The model returned eight tags and credit role `colorist`; the frozen catalog uses `colourist`. Preserving that unknown spelling adds a ninth tag, beyond the existing maximum8. No extraction row, vector or product AI-field update was applied. This is a known paid failure, not an uncertain request or accepted extraction.
+
+The retained [observed field projection](../../../n8n/normalizers/fixtures/ai/live-observed-fields-31409.json) contains the observed tags/credit/accounting identities. It is **not a full raw provider capture**. Regressions combine it with separately labelled controlled full-schema fixtures; those tests are not extra live results.
+
+The narrow canonical spelling alias now maps `colorist` to the existing `colourist` role, preserves every model tag and retains the genuine-unknown tag-limit behavior.35 focused tests including the actual local SQL path pass. Required changed-head CI and the reserved known-failure/fix observation remain pending. The original failed row, frozen snapshot, provider identity and cost remain closed and immutable. Reviewed guarded queue14 archival and a new explicit trusted reextract nonce have **not** executed. After changed-head qualification, the packet's one separately attributable known-failure/fix reserve permits that deliberate observation; no blind same-provider retry or overwrite.
+
+Third temporary setup cleanup is **verified at19:07:44UTC**: two owned workflows deleted/read404, all14 environment entries absent on fresh read, Machine deletion acknowledged and Preview read404. Campaign remains READY on8ba0eb7. Native UI output inspection autosaved layout/default parameter omissions/binaryMode; collector code, connections, TLS and auth semantics matched the owned definition. An encrypted exact private snapshot was retained before owned deletion; no unexplained newer work was overwritten.
+
+Cumulative known operations:49 n8n Management,113 controlled Vercel API calls, nine root gateway checks plus four native gateway requests (one claim/three same-owner recovery),16 administrative database commands, three native OIDC commands (internal requests unknown) and three native cleanup commands. All prior charges retained. Model starts1; cumulative M07 provider costUSD0.004527. Infrastructure unknown. Extraction success, embeddings, settlement replay and unchanged skip remain open.

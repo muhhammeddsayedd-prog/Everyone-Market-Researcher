@@ -362,6 +362,36 @@ describe.skipIf(process.env.EMR_M07_LOCAL_SQL_TEST !== 'true')('M07 generated ex
       expect((await inspect('select ai_status from app.items where id=$1', [skipId])).rows[0].ai_status).toBe(
         'skipped',
       );
+      // Mixed fixture: only these eight tags and one credit are a retained
+      // observed-field projection; all other content/usage remain controlled.
+      const spellingId = await enqueue();
+      const observedFields = JSON.parse(
+        readFileSync(
+          new URL('../../../n8n/normalizers/fixtures/ai/live-observed-fields-31409.json', import.meta.url),
+          'utf8',
+        ),
+      );
+      const spelling = example();
+      spelling.tags = observedFields.observed_fields.tags;
+      spelling.credits = [observedFields.observed_fields.credit];
+      const spellingRun = await execute(response(spelling));
+      expect(spellingRun.state.result.status).toBe('completed');
+      const spellingEffects = await effects(spellingId);
+      expect(spellingEffects.extractions).toBe('1');
+      expect(spellingEffects.costs).toBe('1');
+      expect(spellingEffects.credits).toBe('1');
+      expect(
+        (
+          await inspect('select role::text,person_name_raw from app.item_credits where item_id=$1', [
+            spellingId,
+          ])
+        ).rows,
+      ).toEqual([{ role: 'colourist', person_name_raw: '@aliheraize' }]);
+      expect((await inspect('select tags from app.items where id=$1', [spellingId])).rows[0].tags).toEqual(
+        spelling.tags,
+      );
+      expect((await invoke(spellingRun.settled)).statusCode).toBe(200);
+      expect(await effects(spellingId)).toEqual(spellingEffects);
       const badId = await enqueue();
       const malformed = response({ invalid: true });
       expect((await execute(malformed)).state.result.status).toBe('failed');
@@ -405,7 +435,7 @@ describe.skipIf(process.env.EMR_M07_LOCAL_SQL_TEST !== 'true')('M07 generated ex
       expect(reconciled.statusCode, JSON.stringify(reconciled.body)).toBe(200);
       expect(reconciled.body.result.state).toBe('completed');
       expect((await effects(unknownId)).costs).toBe('1');
-      expect(providerCalls).toBe(6);
+      expect(providerCalls).toBe(7);
       expect(savepoint).toBeUndefined();
     } finally {
       await c.query('reset session authorization').catch(() => {});
