@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { m05Args, m05Actors } from './n8n-m05-contracts.ts';
+import { m06StoryArgs, m06StoryActors } from './n8n-m06-contracts.ts';
 
 const id = z.uuid(),
   count = z.number().int().nonnegative();
@@ -78,6 +79,7 @@ const launch = z
   );
 export const collectorArgs = {
   ...m05Args,
+  ...m06StoryArgs,
   start: z
     .strictObject({
       workflow: z.enum(['WF-10', 'WF-11']),
@@ -204,4 +206,34 @@ export const m05RunPolicy = collectorPolicy.safeExtend({
   max_total_usd: m05Amount,
   actors: z.partialRecord(z.enum(m05Actors), collectorBuild),
 });
-export type CollectorPolicy = z.infer<typeof collectorPolicy>;
+export const m06RunPolicy = z
+  .strictObject({
+    ...collectorPolicy.shape,
+    max_actor_starts: count.min(1).max(2147483647),
+    max_actor_usd: m05Amount,
+    max_total_usd: m05Amount,
+    actors: z.partialRecord(
+      z.enum(m06StoryActors),
+      collectorBuild.extend({
+        // All three qualified current INPUT schemas contain usernames only.
+        // Never compare a default that the native launch body did not send.
+        inputDefaults: z.strictObject({}).optional(),
+        memoryMbytes: z
+          .number()
+          .int()
+          .min(128)
+          .max(32768)
+          .refine((n) => (n & (n - 1)) === 0),
+        timeoutSecs: z.number().int().min(30).max(600),
+      }),
+    ),
+  })
+  .refine((p) => p.max_actor_usd <= p.max_total_usd);
+export type CollectorPolicy = Omit<z.infer<typeof collectorPolicy>, 'actors'> & {
+  actors: Partial<
+    Record<
+      (typeof collectorActors)[number] | (typeof m06StoryActors)[number],
+      z.infer<typeof collectorBuild> & { memoryMbytes?: number; timeoutSecs?: number }
+    >
+  >;
+};

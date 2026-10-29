@@ -79,7 +79,7 @@ for suite in supabase/tests/*.sql; do
     *) old_suites+=("$suite") ;;
   esac
 done
-[[ "${#old_suites[@]}" == 17 ]] || { printf 'Expected seventeen SQL suites including M06 media, cadence and health contracts.\n' >&2; exit 1; }
+[[ "${#old_suites[@]}" == 18 ]] || { printf 'Expected eighteen SQL suites including M06 stories, media, cadence and health contracts.\n' >&2; exit 1; }
 run_private 'pgTAP' supabase test db --local "${old_suites[@]}"
 
 # Emit only numeric TAP summaries. An empty/skipped or incomplete suite is not acceptance.
@@ -93,8 +93,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     verdict=PASS
   fi
 done <"$private_log"
-if [[ "$files" != 17 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
-  printf 'pgTAP: FAIL (expected seventeen files, nonzero assertions and PASS).\n' >&2
+if [[ "$files" != 18 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
+  printf 'pgTAP: FAIL (expected eighteen files, nonzero assertions and PASS).\n' >&2
   exit 1
 fi
 printf 'pgTAP: %s files, %s assertions, PASS\n' "$files" "$assertions"
@@ -163,6 +163,18 @@ if(!r.success || r.numFailedTests!==0 || r.numPendingTests!==0 || !f?.assertionR
   console.error('M06 SQL/app contract: FAIL (missing, skipped or failed assertions).');process.exit(1);
 }
 console.log('M06 SQL/app contract: PASS (synthetic story, actual writer SQL/queue, actual JPEG, mocked storage, replay)');
+NODE
+
+run_private 'M06 stories SQL/app contract' env EMR_M06_STORIES_LOCAL_SQL_TEST=true pnpm --filter web exec vitest run server/n8n-worker/m06-stories-sql.integration.test.ts --reporter=json --outputFile "$private_report"
+node --input-type=module - "$private_report" <<'NODE'
+import {readFileSync} from 'node:fs';
+let r;
+try {r=JSON.parse(readFileSync(process.argv[2],'utf8'));} catch {console.error('M06 stories SQL/app contract: FAIL (invalid report).');process.exit(1);}
+const f=r.testResults?.find(v=>v.name?.replaceAll('\\','/').endsWith('/server/n8n-worker/m06-stories-sql.integration.test.ts'));
+if(!r.success || r.numFailedTests!==0 || r.numPendingTests!==0 || !f?.assertionResults?.length || f.assertionResults.some(v=>v.status!=='passed')) {
+  console.error('M06 stories SQL/app contract: FAIL (missing, skipped or failed assertions).');process.exit(1);
+}
+console.log('M06 stories SQL/app contract: PASS (generated WF-12, actual writer SQL, callback mocks, ownership, comparison and replay)');
 NODE
 
 run_private 'Generated database types' bash -c 'supabase gen types typescript --local --schema app,ops,ingest,api --output-format text > "$1"' _ "$private_types"

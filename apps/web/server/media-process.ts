@@ -13,9 +13,11 @@ export interface MediaProcessConfig {
   webhookSecret: string;
   protectionBypass: string;
   batchSize: number;
+  lane: 'media' | 'stories';
 }
 export function mediaProcessConfig(env: Record<string, string | undefined>): MediaProcessConfig {
   const batchSize = env.EMR_MEDIA_BATCH_SIZE ?? '1';
+  const lane = env.EMR_MEDIA_QUEUE ?? 'media';
   if (
     env.EMR_MEDIA_PROCESS_ENABLED !== 'true' ||
     env.EMR_MEDIA_UPLOAD_ENABLED !== 'true' ||
@@ -32,7 +34,8 @@ export function mediaProcessConfig(env: Record<string, string | undefined>): Med
     !env.EMR_MEDIA_WRITER_PASSWORD ||
     env.EMR_MEDIA_WRITER_PASSWORD.length > 4096 ||
     env.EMR_MEDIA_WRITER_PASSWORD.includes('\0') ||
-    !/^[1-5]$/.test(batchSize)
+    !/^[1-5]$/.test(batchSize) ||
+    !['media', 'stories'].includes(lane)
   )
     throw new WorkerFailure('unavailable', 503);
   return {
@@ -41,6 +44,7 @@ export function mediaProcessConfig(env: Record<string, string | undefined>): Med
     webhookSecret: env.INTERNAL_WEBHOOK_SECRET!,
     protectionBypass: env.EMR_MEDIA_PROTECTION_BYPASS!,
     batchSize: Number(batchSize),
+    lane: lane as 'media' | 'stories',
   };
 }
 export type MediaHttpPorts = Pick<MediaPorts, 'download' | 'sign' | 'upload'> & {
@@ -49,7 +53,7 @@ export type MediaHttpPorts = Pick<MediaPorts, 'download' | 'sign' | 'upload'> & 
 interface Dependencies {
   environment: () => Record<string, string | undefined>;
   open: (
-    config: Pick<MediaProcessConfig, 'writerPassword' | 'batchSize'>,
+    config: Pick<MediaProcessConfig, 'writerPassword' | 'batchSize' | 'lane'>,
     executionId: string,
     signal: AbortSignal,
     onLost: () => void,
@@ -115,7 +119,7 @@ export function createMediaProcessHandler(deps: Dependencies) {
       await http.preflight(controller.signal);
       controller.signal.throwIfAborted();
       db = await deps.open(
-        { writerPassword: config.writerPassword, batchSize: config.batchSize },
+        { writerPassword: config.writerPassword, batchSize: config.batchSize, lane: config.lane },
         input.data.execution_id,
         controller.signal,
         abort,

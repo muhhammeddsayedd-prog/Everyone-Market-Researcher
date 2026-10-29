@@ -1,0 +1,266 @@
+[
+  {
+    "actor": "data-slayer/instagram-stories-scraper",
+    "actorId": "z1rvDd9bJrnT4LVee",
+    "buildId": "LbkXerigrUUa2dxt6",
+    "buildNumber": "1.0.32",
+    "observedAt": "2026-10-29T00:56:41.025Z",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "usernames"
+      ],
+      "properties": {
+        "usernames": {
+          "title": "Instagram Usernames",
+          "type": "array",
+          "description": "One or more Instagram usernames to capture stories from (store test uses one profile for speed)",
+          "default": [
+            "nike"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "pricing": {
+      "minimalMaxTotalChargeUsd": null,
+      "pricingModel": "PAY_PER_EVENT",
+      "isPriceChangeNotificationSuppressed": false,
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "apify-actor-start": {
+            "eventTitle": "Actor Start",
+            "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+            "isOneTimeEvent": true,
+            "eventPriceUsd": 0.0005
+          },
+          "apify-default-dataset-item": {
+            "eventTitle": "result",
+            "eventDescription": "Single result in the default dataset.",
+            "eventTieredPricingUsd": {
+              "FREE": {
+                "tieredEventPriceUsd": 0.0025
+              },
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.00217
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.00183
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.0015
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.0015
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.0015
+              }
+            },
+            "isPrimaryEvent": true
+          }
+        }
+      },
+      "startedAt": "2026-05-15T05:41:45.877Z",
+      "createdAt": "2026-05-15T05:41:46.321Z",
+      "apifyMarginPercentage": 0.2
+    },
+    "urls": {
+      "input": "https://apify.com/data-slayer/instagram-stories-scraper/input-schema",
+      "api": "https://api.apify.com/v2/acts/data-slayer~instagram-stories-scraper/builds/default/openapi.json"
+    }
+  },
+  {
+    "actor": "igview-owner/instagram-story-viewer",
+    "actorId": "7eNb0Yr5dLwy1jfPS",
+    "buildId": "jhZNplLsVKuGelTTm",
+    "buildNumber": "1.0.16",
+    "observedAt": "2026-10-29T00:56:41.513Z",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "usernames"
+      ],
+      "properties": {
+        "usernames": {
+          "title": "👥 Instagram Usernames",
+          "minItems": 1,
+          "maxItems": 50,
+          "uniqueItems": true,
+          "type": "array",
+          "description": "Enter Instagram usernames (without @ symbol). Example: ['instagram', 'cristiano', 'leomessi']. You can add multiple usernames to scrape stories from multiple accounts in one run.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._]+$"
+          },
+          "default": [
+            "instagram"
+          ]
+        }
+      }
+    },
+    "pricing": {
+      "minimalMaxTotalChargeUsd": null,
+      "pricingModel": "PAY_PER_EVENT",
+      "isPriceChangeNotificationSuppressed": false,
+      "reasonForChange": "best market price apply",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "apify-actor-start": {
+            "eventTitle": "Actor Start",
+            "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+            "isOneTimeEvent": true,
+            "eventTieredPricingUsd": {
+              "FREE": {
+                "tieredEventPriceUsd": 0.05
+              },
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.03
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.02
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.01
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.01
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.01
+              }
+            }
+          },
+          "apify-default-dataset-item": {
+            "eventTitle": "result",
+            "eventDescription": "Single result in the default dataset.",
+            "isOneTimeEvent": false,
+            "eventTieredPricingUsd": {
+              "FREE": {
+                "tieredEventPriceUsd": 0.02
+              },
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.005
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.005
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.005
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.005
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.005
+              }
+            },
+            "isPrimaryEvent": true
+          }
+        }
+      },
+      "startedAt": "2025-12-26T11:47:59.018Z",
+      "createdAt": "2025-12-26T11:47:57.250Z",
+      "apifyMarginPercentage": 0.2
+    },
+    "urls": {
+      "input": "https://apify.com/igview-owner/instagram-story-viewer/input-schema",
+      "api": "https://api.apify.com/v2/acts/igview-owner~instagram-story-viewer/builds/default/openapi.json"
+    }
+  },
+  {
+    "actor": "louisdeconinck/instagram-story-details-scraper",
+    "actorId": "9pQFsbs9nqUI64rDQ",
+    "buildId": "4QpIiw2A9YDJ2aneN",
+    "buildNumber": "0.0.10",
+    "observedAt": "2026-10-29T00:56:42.049Z",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "usernames"
+      ],
+      "properties": {
+        "usernames": {
+          "title": "Usernames",
+          "type": "array",
+          "description": "Instagram usernames to process.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "pricing": {
+      "minimalMaxTotalChargeUsd": 1,
+      "pricingModel": "PAY_PER_EVENT",
+      "isPriceChangeNotificationSuppressed": false,
+      "reasonForChange": "You only pay for each Instagram profile and not per story. If a profile has 1 story or 50, your cost is the same. Bundle multiple profiles per actor start to reduce the start up cost.",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "results": {
+            "eventTitle": "Profiles",
+            "eventDescription": "Cost for each scraped profile. Stories are free, you only pay per profile, no matter how many stories the profile has.",
+            "isOneTimeEvent": false,
+            "eventTieredPricingUsd": {
+              "FREE": {
+                "tieredEventPriceUsd": 0.02
+              },
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.019
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.018
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.017
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.017
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.017
+              }
+            },
+            "isPrimaryEvent": true
+          },
+          "init": {
+            "eventTitle": "Actor start",
+            "eventDescription": "Cost for each time the actor is started. You only pay this once per run, so try to bundle as many profiles in a single run.",
+            "isOneTimeEvent": true,
+            "eventTieredPricingUsd": {
+              "FREE": {
+                "tieredEventPriceUsd": 0.1
+              },
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.09
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.08
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.07
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.07
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.07
+              }
+            }
+          }
+        }
+      },
+      "startedAt": "2026-08-29T08:43:52.079Z",
+      "createdAt": "2026-08-15T08:43:52.621Z",
+      "apifyMarginPercentage": 0.2,
+      "notifiedAboutFutureChangeAt": "2026-08-15T08:44:18.432Z",
+      "notifiedAboutChangeAt": "2026-08-29T09:05:50.737Z"
+    },
+    "urls": {
+      "input": "https://apify.com/louisdeconinck/instagram-story-details-scraper/input-schema",
+      "api": "https://api.apify.com/v2/acts/louisdeconinck~instagram-story-details-scraper/builds/default/openapi.json"
+    }
+  }
+]

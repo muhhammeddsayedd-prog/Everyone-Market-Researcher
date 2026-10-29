@@ -1,0 +1,454 @@
+{
+  "key": "WF-12",
+  "id": "8pz1lF0xPDQCs3ab",
+  "kind": "native-json-blueprint",
+  "hostedAcceptance": false,
+  "runnableWorkflow": true,
+  "liveEnabled": false,
+  "bindingManifest": {
+    "ready": false,
+    "environment": "dev",
+    "audience": "https://everyone-market-researcher-unbound.vercel.app",
+    "credential": {
+      "id": "UNBOUND_EMR_STORIES_AUTH",
+      "name": "UNBOUND EMR stories dev",
+      "type": "httpCustomAuth"
+    }
+  },
+  "definitionProfile": "inactive_native_staging",
+  "sourceProfile": {
+    "actor": "data-slayer/instagram-stories-scraper",
+    "publicOnly": true,
+    "inputContract": "usernames:string[]",
+    "collectionMode": "ingest"
+  },
+  "callbackIntegration": {
+    "state": "local_server_contract_only",
+    "requiredNativeChange": "route registered instagram_stories callbacks to the M06 gateway; no M05 website branch changes"
+  },
+  "workflow": {
+    "name": "WF-12 · Instagram stories collector [dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "7333112d-bfa2-46e0-a7ff-563bc2ef6973",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "5d93db0f-5831-4ddf-af75-3d8b2855f841",
+        "name": "Initialize fixed stories selection",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M06_STORIES_BINDING_REQUIRED');\nconst rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M06_STORIES_NATIVE_INPUT_INVALID');const j=rows[0].json;\nfunction validateStoryAccounts(accounts) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Array.isArray(accounts) || accounts.length > 100 || !accounts.length)\n    throw Error('M06_STORIES_ACCOUNTS_INVALID');\n  const ids = new Set(),\n    handles = new Set();\n  return accounts.map((account) => {\n    if (!account || typeof account !== 'object' || Array.isArray(account))\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    const id = account.account_id ?? account.id;\n    const handle = account.handle_norm ?? account.handle;\n    if (\n      !uuid(id) ||\n      !uuid(account.competitor_id) ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      account.platform !== 'instagram_stories' ||\n      typeof handle !== 'string' ||\n      !/^[a-z0-9._]{1,30}$/.test(handle) ||\n      (account.handle !== undefined && account.handle !== handle) ||\n      (account.url !== undefined && account.url !== `https://www.instagram.com/${handle}/`) ||\n      (account.backfill_status !== undefined && account.backfill_status !== 'not_applicable') ||\n      ids.has(id) ||\n      handles.has(handle)\n    )\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    ids.add(id);\n    handles.add(handle);\n    return { ...account, id, handle };\n  });\n}\n\nfunction buildStoryBatches(accounts, options) {\n  const actors = {\n    'data-slayer/instagram-stories-scraper': 100,\n    'igview-owner/instagram-story-viewer': 50,\n    'louisdeconinck/instagram-story-details-scraper': 100,\n  };\n  if (\n    !options ||\n    Object.keys(options).some((k) => !['actor_id', 'collection_mode', 'results_limit'].includes(k)) ||\n    !Object.hasOwn(actors, options.actor_id) ||\n    !['ingest', 'bakeoff'].includes(options.collection_mode) ||\n    (options.collection_mode === 'ingest' && options.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Number.isSafeInteger(options.results_limit) ||\n    options.results_limit < 1 ||\n    options.results_limit > 1000\n  )\n    throw Error('M06_STORIES_PLAN_INVALID');\n  const rows = validateStoryAccounts(accounts).sort((a, b) => a.handle.localeCompare(b.handle)),\n    result = [];\n  const chunkSize = Math.min(actors[options.actor_id], Math.floor(1000 / options.results_limit));\n  for (let offset = 0; offset < rows.length; offset += chunkSize) {\n    const chunk = rows.slice(offset, offset + chunkSize);\n    result.push({\n      actor: options.actor_id,\n      platform: 'instagram_stories',\n      purpose: 'daily',\n      pass: 'primary',\n      collection_mode: options.collection_mode,\n      account_ids: chunk.map((a) => a.id),\n      resultsLimit: options.results_limit,\n      input: { usernames: chunk.map((a) => a.handle) },\n      coverage: { complete: false, reason: 'ephemeral_point_in_time_observation' },\n    });\n  }\n  return result;\n}\n\nfunction storyRegistrationCompletion(receipt, runId) {\n  if (\n    !receipt ||\n    typeof receipt !== 'object' ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M06_STORIES_REGISTRATION_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !receipt.summary ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction advanceM06StoryActor(state, response) {\n  const data = response?.body?.data,\n    id = data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M06_STORIES_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorStarts++;\n  const d = state.launchDescriptor;\n  // Save any known provider ID before refusing further starts on changed caps,\n  // build or identity. A lost/invalid start is never replaced automatically.\n  state.actorAcknowledged =\n    data.actId === d.actorId &&\n    data.userId === d.ownerId &&\n    data.buildId === d.buildId &&\n    data.buildNumber === d.build &&\n    data.options?.maxTotalChargeUsd === d.maxTotalChargeUsd &&\n    data.options?.memoryMbytes === d.memory &&\n    data.options?.timeoutSecs === d.timeout;\n  const batch = state.batches[state.batchIndex];\n  return m06StoryGateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n  });\n}\n\nfunction advanceM06StoryGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M06_STORIES_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm06.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M06_STORIES_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    return m06StoryGateway(state, 'claim', {\n      run_id: state.runId,\n      platform: 'instagram_stories',\n      mode: 'daily',\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm06.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((a) => a?.account_id ?? a?.id)).size !== result.length ||\n      result.some((a) => !state.accountIds.includes(a?.account_id ?? a?.id))\n    )\n      throw Error('M06_STORIES_CLAIM_INVALID');\n    state.batches = buildStoryBatches(result, {\n      actor_id: state.actorId,\n      collection_mode: state.collectionMode,\n      results_limit: state.resultsLimit,\n    });\n    if (state.batches.length > state.maxActorStarts) throw Error('M06_STORIES_OPERATIONAL_START_BOUND');\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.launch') {\n    if (!result || result.launch_id !== state.launchId || typeof result.permit !== 'boolean')\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    if (result.permit === false) {\n      if (!/^[A-Za-z0-9_-]{1,128}$/.test(result.apify_run_id ?? ''))\n        throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n      state.startedActorId = result.apify_run_id;\n      // A known ID only reconciles identity. It does not establish that the\n      // previous native launch acknowledged its authentic build/options.\n      // Preserve registration, then stop for authoritative reconciliation.\n      state.actorAcknowledged = false;\n      const batch = state.batches[state.batchIndex];\n      return m06StoryGateway(state, 'register', {\n        run_id: state.runId,\n        launch_id: state.launchId,\n        apify_run_id: state.startedActorId,\n        actor_id: batch.actor,\n        pass: 'primary',\n        account_ids: batch.account_ids,\n        purpose: 'daily',\n      });\n    }\n    const d = result.descriptor,\n      batch = state.batches[state.batchIndex];\n    if (\n      body.replayed ||\n      result.replayed !== false ||\n      !d ||\n      typeof d !== 'object' ||\n      Array.isArray(d) ||\n      Object.keys(d).length !== 10 ||\n      Object.keys(d).some(\n        (k) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'actorId',\n            'ownerId',\n            'build',\n            'buildId',\n            'maxTotalChargeUsd',\n            'maxOutputItems',\n            'memory',\n            'timeout',\n          ].includes(k),\n      ) ||\n      !['PPE', 'PPU'].includes(d.billingModel) ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.actorId ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.ownerId ?? '') ||\n      !/^\\d+\\.\\d+\\.\\d+$/.test(d.build ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.buildId ?? '') ||\n      typeof d.maxTotalChargeUsd !== 'number' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      d.maxOutputItems !== batch.account_ids.length * batch.resultsLimit ||\n      !Number.isSafeInteger(d.memory) ||\n      d.memory < 128 ||\n      d.memory > 32768 ||\n      (d.memory & (d.memory - 1)) !== 0 ||\n      !Number.isSafeInteger(d.timeout) ||\n      d.timeout < 30 ||\n      d.timeout > 600\n    )\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm06.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M06_STORIES_REGISTER_RECONCILIATION_REQUIRED');\n    if (!state.actorAcknowledged) throw Error('M06_STORIES_PROVIDER_OPTIONS_RECONCILIATION_REQUIRED');\n    if (!state.actorIds.includes(state.startedActorId)) state.actorIds.push(state.startedActorId);\n    state.batchIndex++;\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.close_registration') {\n    const completion = storyRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorStarts,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n      collection_mode: state.collectionMode,\n    };\n    return state;\n  }\n  throw Error('M06_STORIES_OPERATION_INVALID');\n}\n\nfunction initializeM06Stories(input, executionId, now) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  const actors = [\n    'data-slayer/instagram-stories-scraper',\n    'igview-owner/instagram-story-viewer',\n    'louisdeconinck/instagram-story-details-scraper',\n  ];\n  if (\n    !input ||\n    typeof input !== 'object' ||\n    Array.isArray(input) ||\n    Object.keys(input).length !== 7 ||\n    Object.keys(input).some(\n      (k) =>\n        ![\n          'env',\n          'mode',\n          'actor_id',\n          'collection_mode',\n          'account_ids',\n          'results_limit',\n          'max_actor_starts',\n        ].includes(k),\n    ) ||\n    input.env !== 'dev' ||\n    input.mode !== 'daily' ||\n    !actors.includes(input.actor_id) ||\n    !['ingest', 'bakeoff'].includes(input.collection_mode) ||\n    (input.collection_mode === 'ingest' && input.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 100 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > 1000 ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    typeof now !== 'string' ||\n    !Number.isFinite(Date.parse(now))\n  )\n    throw Error('M06_STORIES_INPUT_INVALID');\n  const state = {\n    executionId,\n    now,\n    accountIds: input.account_ids,\n    actorId: input.actor_id,\n    collectionMode: input.collection_mode,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n    actorStarts: 0,\n  };\n  return m06StoryGateway(state, 'start', {\n    workflow: 'WF-12',\n    platform: 'instagram_stories',\n    mode: 'daily',\n    env: 'dev',\n    execution_id: executionId,\n    collection_mode: state.collectionMode,\n  });\n}\n\nfunction m06StoryGateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m06StoryRequestId(state.executionId, state.sequence),\n    operation: 'm06.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction nextM06StoryLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m06StoryGateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m06StoryRequestId(state.executionId, state.sequence + 1);\n  return m06StoryGateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    collection_mode: batch.collection_mode,\n  });\n}\nreturn[{json:initializeM06Stories({\"env\":\"dev\",\"mode\":\"daily\",\"actor_id\":\"data-slayer/instagram-stories-scraper\",\"collection_mode\":\"ingest\",\"account_ids\":[\"7c70141b-bb1e-4d0b-a54c-f957413400e1\",\"62a5fef9-78c3-418a-9010-d5ea54f29e45\",\"34b95d90-12e6-42da-84f8-3fd78cd19103\"],\"results_limit\":50,\"max_actor_starts\":1},String($execution.id),new Date().toISOString())}];"
+        },
+        "position": [
+          200,
+          0
+        ]
+      },
+      {
+        "id": "c08049a0-8527-4b0e-a710-eea465f79397",
+        "name": "Stories gateway action?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "c4ca4c97-4626-409f-ac94-b0c45d19ad57",
+                "leftValue": "={{ $json.action === 'gateway' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          400,
+          0
+        ]
+      },
+      {
+        "id": "49189f1c-4b94-4e26-a54c-8fa8b658b912",
+        "name": "Prepare stories gateway",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M06_STORIES_NATIVE_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:{state:j,request:j.request}}];"
+        },
+        "position": [
+          600,
+          -200
+        ]
+      },
+      {
+        "id": "ddfc3032-95bd-402c-acde-c2e3145e181e",
+        "name": "Execute typed stories gateway",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-unbound.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          800,
+          -200
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "UNBOUND_EMR_STORIES_AUTH",
+            "name": "UNBOUND EMR stories dev"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "8ff4e217-172c-4f9d-a03d-fcd93c89eb27",
+        "name": "Advance stories gateway",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M06_STORIES_NATIVE_INPUT_INVALID');const j=rows[0].json;\nfunction validateStoryAccounts(accounts) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Array.isArray(accounts) || accounts.length > 100 || !accounts.length)\n    throw Error('M06_STORIES_ACCOUNTS_INVALID');\n  const ids = new Set(),\n    handles = new Set();\n  return accounts.map((account) => {\n    if (!account || typeof account !== 'object' || Array.isArray(account))\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    const id = account.account_id ?? account.id;\n    const handle = account.handle_norm ?? account.handle;\n    if (\n      !uuid(id) ||\n      !uuid(account.competitor_id) ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      account.platform !== 'instagram_stories' ||\n      typeof handle !== 'string' ||\n      !/^[a-z0-9._]{1,30}$/.test(handle) ||\n      (account.handle !== undefined && account.handle !== handle) ||\n      (account.url !== undefined && account.url !== `https://www.instagram.com/${handle}/`) ||\n      (account.backfill_status !== undefined && account.backfill_status !== 'not_applicable') ||\n      ids.has(id) ||\n      handles.has(handle)\n    )\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    ids.add(id);\n    handles.add(handle);\n    return { ...account, id, handle };\n  });\n}\n\nfunction buildStoryBatches(accounts, options) {\n  const actors = {\n    'data-slayer/instagram-stories-scraper': 100,\n    'igview-owner/instagram-story-viewer': 50,\n    'louisdeconinck/instagram-story-details-scraper': 100,\n  };\n  if (\n    !options ||\n    Object.keys(options).some((k) => !['actor_id', 'collection_mode', 'results_limit'].includes(k)) ||\n    !Object.hasOwn(actors, options.actor_id) ||\n    !['ingest', 'bakeoff'].includes(options.collection_mode) ||\n    (options.collection_mode === 'ingest' && options.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Number.isSafeInteger(options.results_limit) ||\n    options.results_limit < 1 ||\n    options.results_limit > 1000\n  )\n    throw Error('M06_STORIES_PLAN_INVALID');\n  const rows = validateStoryAccounts(accounts).sort((a, b) => a.handle.localeCompare(b.handle)),\n    result = [];\n  const chunkSize = Math.min(actors[options.actor_id], Math.floor(1000 / options.results_limit));\n  for (let offset = 0; offset < rows.length; offset += chunkSize) {\n    const chunk = rows.slice(offset, offset + chunkSize);\n    result.push({\n      actor: options.actor_id,\n      platform: 'instagram_stories',\n      purpose: 'daily',\n      pass: 'primary',\n      collection_mode: options.collection_mode,\n      account_ids: chunk.map((a) => a.id),\n      resultsLimit: options.results_limit,\n      input: { usernames: chunk.map((a) => a.handle) },\n      coverage: { complete: false, reason: 'ephemeral_point_in_time_observation' },\n    });\n  }\n  return result;\n}\n\nfunction storyRegistrationCompletion(receipt, runId) {\n  if (\n    !receipt ||\n    typeof receipt !== 'object' ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M06_STORIES_REGISTRATION_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !receipt.summary ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction advanceM06StoryActor(state, response) {\n  const data = response?.body?.data,\n    id = data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M06_STORIES_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorStarts++;\n  const d = state.launchDescriptor;\n  // Save any known provider ID before refusing further starts on changed caps,\n  // build or identity. A lost/invalid start is never replaced automatically.\n  state.actorAcknowledged =\n    data.actId === d.actorId &&\n    data.userId === d.ownerId &&\n    data.buildId === d.buildId &&\n    data.buildNumber === d.build &&\n    data.options?.maxTotalChargeUsd === d.maxTotalChargeUsd &&\n    data.options?.memoryMbytes === d.memory &&\n    data.options?.timeoutSecs === d.timeout;\n  const batch = state.batches[state.batchIndex];\n  return m06StoryGateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n  });\n}\n\nfunction advanceM06StoryGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M06_STORIES_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm06.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M06_STORIES_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    return m06StoryGateway(state, 'claim', {\n      run_id: state.runId,\n      platform: 'instagram_stories',\n      mode: 'daily',\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm06.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((a) => a?.account_id ?? a?.id)).size !== result.length ||\n      result.some((a) => !state.accountIds.includes(a?.account_id ?? a?.id))\n    )\n      throw Error('M06_STORIES_CLAIM_INVALID');\n    state.batches = buildStoryBatches(result, {\n      actor_id: state.actorId,\n      collection_mode: state.collectionMode,\n      results_limit: state.resultsLimit,\n    });\n    if (state.batches.length > state.maxActorStarts) throw Error('M06_STORIES_OPERATIONAL_START_BOUND');\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.launch') {\n    if (!result || result.launch_id !== state.launchId || typeof result.permit !== 'boolean')\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    if (result.permit === false) {\n      if (!/^[A-Za-z0-9_-]{1,128}$/.test(result.apify_run_id ?? ''))\n        throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n      state.startedActorId = result.apify_run_id;\n      // A known ID only reconciles identity. It does not establish that the\n      // previous native launch acknowledged its authentic build/options.\n      // Preserve registration, then stop for authoritative reconciliation.\n      state.actorAcknowledged = false;\n      const batch = state.batches[state.batchIndex];\n      return m06StoryGateway(state, 'register', {\n        run_id: state.runId,\n        launch_id: state.launchId,\n        apify_run_id: state.startedActorId,\n        actor_id: batch.actor,\n        pass: 'primary',\n        account_ids: batch.account_ids,\n        purpose: 'daily',\n      });\n    }\n    const d = result.descriptor,\n      batch = state.batches[state.batchIndex];\n    if (\n      body.replayed ||\n      result.replayed !== false ||\n      !d ||\n      typeof d !== 'object' ||\n      Array.isArray(d) ||\n      Object.keys(d).length !== 10 ||\n      Object.keys(d).some(\n        (k) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'actorId',\n            'ownerId',\n            'build',\n            'buildId',\n            'maxTotalChargeUsd',\n            'maxOutputItems',\n            'memory',\n            'timeout',\n          ].includes(k),\n      ) ||\n      !['PPE', 'PPU'].includes(d.billingModel) ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.actorId ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.ownerId ?? '') ||\n      !/^\\d+\\.\\d+\\.\\d+$/.test(d.build ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.buildId ?? '') ||\n      typeof d.maxTotalChargeUsd !== 'number' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      d.maxOutputItems !== batch.account_ids.length * batch.resultsLimit ||\n      !Number.isSafeInteger(d.memory) ||\n      d.memory < 128 ||\n      d.memory > 32768 ||\n      (d.memory & (d.memory - 1)) !== 0 ||\n      !Number.isSafeInteger(d.timeout) ||\n      d.timeout < 30 ||\n      d.timeout > 600\n    )\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm06.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M06_STORIES_REGISTER_RECONCILIATION_REQUIRED');\n    if (!state.actorAcknowledged) throw Error('M06_STORIES_PROVIDER_OPTIONS_RECONCILIATION_REQUIRED');\n    if (!state.actorIds.includes(state.startedActorId)) state.actorIds.push(state.startedActorId);\n    state.batchIndex++;\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.close_registration') {\n    const completion = storyRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorStarts,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n      collection_mode: state.collectionMode,\n    };\n    return state;\n  }\n  throw Error('M06_STORIES_OPERATION_INVALID');\n}\n\nfunction initializeM06Stories(input, executionId, now) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  const actors = [\n    'data-slayer/instagram-stories-scraper',\n    'igview-owner/instagram-story-viewer',\n    'louisdeconinck/instagram-story-details-scraper',\n  ];\n  if (\n    !input ||\n    typeof input !== 'object' ||\n    Array.isArray(input) ||\n    Object.keys(input).length !== 7 ||\n    Object.keys(input).some(\n      (k) =>\n        ![\n          'env',\n          'mode',\n          'actor_id',\n          'collection_mode',\n          'account_ids',\n          'results_limit',\n          'max_actor_starts',\n        ].includes(k),\n    ) ||\n    input.env !== 'dev' ||\n    input.mode !== 'daily' ||\n    !actors.includes(input.actor_id) ||\n    !['ingest', 'bakeoff'].includes(input.collection_mode) ||\n    (input.collection_mode === 'ingest' && input.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 100 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > 1000 ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    typeof now !== 'string' ||\n    !Number.isFinite(Date.parse(now))\n  )\n    throw Error('M06_STORIES_INPUT_INVALID');\n  const state = {\n    executionId,\n    now,\n    accountIds: input.account_ids,\n    actorId: input.actor_id,\n    collectionMode: input.collection_mode,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n    actorStarts: 0,\n  };\n  return m06StoryGateway(state, 'start', {\n    workflow: 'WF-12',\n    platform: 'instagram_stories',\n    mode: 'daily',\n    env: 'dev',\n    execution_id: executionId,\n    collection_mode: state.collectionMode,\n  });\n}\n\nfunction m06StoryGateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m06StoryRequestId(state.executionId, state.sequence),\n    operation: 'm06.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction nextM06StoryLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m06StoryGateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m06StoryRequestId(state.executionId, state.sequence + 1);\n  return m06StoryGateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    collection_mode: batch.collection_mode,\n  });\n}\nconst prior=$('Prepare stories gateway').item.json.state;return[{json:advanceM06StoryGateway(prior,j)}];"
+        },
+        "position": [
+          1000,
+          -200
+        ]
+      },
+      {
+        "id": "f7d44b9c-8261-40ac-aff2-e0ae4de2ea64",
+        "name": "Stories actor action?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "bd47df33-9a20-4935-ac5c-94931677051c",
+                "leftValue": "={{ $json.action === 'apify' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          600,
+          200
+        ]
+      },
+      {
+        "id": "e3592027-8bda-4103-ace1-98dacef5e264",
+        "name": "Prepare stories actor",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M06_STORIES_NATIVE_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:j}];"
+        },
+        "position": [
+          800,
+          200
+        ]
+      },
+      {
+        "id": "f878b532-8434-45be-ac6e-99329a251b50",
+        "name": "Start asynchronous stories actor",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "={{ \"https://api.apify.com/v2/acts/\"+$json.launchDescriptor.actorPath+\"/runs?waitForFinish=0&restartOnError=false&timeout=\"+$json.launchDescriptor.timeout+\"&memory=\"+$json.launchDescriptor.memory+\"&build=\"+encodeURIComponent($json.launchDescriptor.build)+\"&maxTotalChargeUsd=\"+$json.launchDescriptor.maxTotalChargeUsd+\"&webhooks=W3siZXZlbnRUeXBlcyI6WyJBQ1RPUi5SVU4uU1VDQ0VFREVEIiwiQUNUT1IuUlVOLkZBSUxFRCIsIkFDVE9SLlJVTi5USU1FRF9PVVQiLCJBQ1RPUi5SVU4uQUJPUlRFRCJdLCJyZXF1ZXN0VXJsIjoiaHR0cHM6Ly9tdWhoYW1tZWRzYXllZC5hcHAubjhuLmNsb3VkL3dlYmhvb2svZW1yLWFwaWZ5LWNhbGxiYWNrIn1d\" }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "apifyApi",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.batches[$json.batchIndex].input }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1000,
+          200
+        ],
+        "credentials": {
+          "apifyApi": {
+            "id": "EYmaOt0rd45ysq0J",
+            "name": "Apify account"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "19623076-ec3b-4424-a9bc-3e089605979e",
+        "name": "Advance stories actor response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M06_STORIES_NATIVE_INPUT_INVALID');const j=rows[0].json;\nfunction validateStoryAccounts(accounts) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (!Array.isArray(accounts) || accounts.length > 100 || !accounts.length)\n    throw Error('M06_STORIES_ACCOUNTS_INVALID');\n  const ids = new Set(),\n    handles = new Set();\n  return accounts.map((account) => {\n    if (!account || typeof account !== 'object' || Array.isArray(account))\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    const id = account.account_id ?? account.id;\n    const handle = account.handle_norm ?? account.handle;\n    if (\n      !uuid(id) ||\n      !uuid(account.competitor_id) ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      account.platform !== 'instagram_stories' ||\n      typeof handle !== 'string' ||\n      !/^[a-z0-9._]{1,30}$/.test(handle) ||\n      (account.handle !== undefined && account.handle !== handle) ||\n      (account.url !== undefined && account.url !== `https://www.instagram.com/${handle}/`) ||\n      (account.backfill_status !== undefined && account.backfill_status !== 'not_applicable') ||\n      ids.has(id) ||\n      handles.has(handle)\n    )\n      throw Error('M06_STORIES_ACCOUNTS_INVALID');\n    ids.add(id);\n    handles.add(handle);\n    return { ...account, id, handle };\n  });\n}\n\nfunction buildStoryBatches(accounts, options) {\n  const actors = {\n    'data-slayer/instagram-stories-scraper': 100,\n    'igview-owner/instagram-story-viewer': 50,\n    'louisdeconinck/instagram-story-details-scraper': 100,\n  };\n  if (\n    !options ||\n    Object.keys(options).some((k) => !['actor_id', 'collection_mode', 'results_limit'].includes(k)) ||\n    !Object.hasOwn(actors, options.actor_id) ||\n    !['ingest', 'bakeoff'].includes(options.collection_mode) ||\n    (options.collection_mode === 'ingest' && options.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Number.isSafeInteger(options.results_limit) ||\n    options.results_limit < 1 ||\n    options.results_limit > 1000\n  )\n    throw Error('M06_STORIES_PLAN_INVALID');\n  const rows = validateStoryAccounts(accounts).sort((a, b) => a.handle.localeCompare(b.handle)),\n    result = [];\n  const chunkSize = Math.min(actors[options.actor_id], Math.floor(1000 / options.results_limit));\n  for (let offset = 0; offset < rows.length; offset += chunkSize) {\n    const chunk = rows.slice(offset, offset + chunkSize);\n    result.push({\n      actor: options.actor_id,\n      platform: 'instagram_stories',\n      purpose: 'daily',\n      pass: 'primary',\n      collection_mode: options.collection_mode,\n      account_ids: chunk.map((a) => a.id),\n      resultsLimit: options.results_limit,\n      input: { usernames: chunk.map((a) => a.handle) },\n      coverage: { complete: false, reason: 'ephemeral_point_in_time_observation' },\n    });\n  }\n  return result;\n}\n\nfunction storyRegistrationCompletion(receipt, runId) {\n  if (\n    !receipt ||\n    typeof receipt !== 'object' ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M06_STORIES_REGISTRATION_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !receipt.summary ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M06_STORIES_REGISTRATION_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction advanceM06StoryActor(state, response) {\n  const data = response?.body?.data,\n    id = data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M06_STORIES_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorStarts++;\n  const d = state.launchDescriptor;\n  // Save any known provider ID before refusing further starts on changed caps,\n  // build or identity. A lost/invalid start is never replaced automatically.\n  state.actorAcknowledged =\n    data.actId === d.actorId &&\n    data.userId === d.ownerId &&\n    data.buildId === d.buildId &&\n    data.buildNumber === d.build &&\n    data.options?.maxTotalChargeUsd === d.maxTotalChargeUsd &&\n    data.options?.memoryMbytes === d.memory &&\n    data.options?.timeoutSecs === d.timeout;\n  const batch = state.batches[state.batchIndex];\n  return m06StoryGateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n  });\n}\n\nfunction advanceM06StoryGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M06_STORIES_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm06.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M06_STORIES_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    return m06StoryGateway(state, 'claim', {\n      run_id: state.runId,\n      platform: 'instagram_stories',\n      mode: 'daily',\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm06.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((a) => a?.account_id ?? a?.id)).size !== result.length ||\n      result.some((a) => !state.accountIds.includes(a?.account_id ?? a?.id))\n    )\n      throw Error('M06_STORIES_CLAIM_INVALID');\n    state.batches = buildStoryBatches(result, {\n      actor_id: state.actorId,\n      collection_mode: state.collectionMode,\n      results_limit: state.resultsLimit,\n    });\n    if (state.batches.length > state.maxActorStarts) throw Error('M06_STORIES_OPERATIONAL_START_BOUND');\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.launch') {\n    if (!result || result.launch_id !== state.launchId || typeof result.permit !== 'boolean')\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    if (result.permit === false) {\n      if (!/^[A-Za-z0-9_-]{1,128}$/.test(result.apify_run_id ?? ''))\n        throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n      state.startedActorId = result.apify_run_id;\n      // A known ID only reconciles identity. It does not establish that the\n      // previous native launch acknowledged its authentic build/options.\n      // Preserve registration, then stop for authoritative reconciliation.\n      state.actorAcknowledged = false;\n      const batch = state.batches[state.batchIndex];\n      return m06StoryGateway(state, 'register', {\n        run_id: state.runId,\n        launch_id: state.launchId,\n        apify_run_id: state.startedActorId,\n        actor_id: batch.actor,\n        pass: 'primary',\n        account_ids: batch.account_ids,\n        purpose: 'daily',\n      });\n    }\n    const d = result.descriptor,\n      batch = state.batches[state.batchIndex];\n    if (\n      body.replayed ||\n      result.replayed !== false ||\n      !d ||\n      typeof d !== 'object' ||\n      Array.isArray(d) ||\n      Object.keys(d).length !== 10 ||\n      Object.keys(d).some(\n        (k) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'actorId',\n            'ownerId',\n            'build',\n            'buildId',\n            'maxTotalChargeUsd',\n            'maxOutputItems',\n            'memory',\n            'timeout',\n          ].includes(k),\n      ) ||\n      !['PPE', 'PPU'].includes(d.billingModel) ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.actorId ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.ownerId ?? '') ||\n      !/^\\d+\\.\\d+\\.\\d+$/.test(d.build ?? '') ||\n      !/^[A-Za-z0-9_-]{1,128}$/.test(d.buildId ?? '') ||\n      typeof d.maxTotalChargeUsd !== 'number' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      d.maxOutputItems !== batch.account_ids.length * batch.resultsLimit ||\n      !Number.isSafeInteger(d.memory) ||\n      d.memory < 128 ||\n      d.memory > 32768 ||\n      (d.memory & (d.memory - 1)) !== 0 ||\n      !Number.isSafeInteger(d.timeout) ||\n      d.timeout < 30 ||\n      d.timeout > 600\n    )\n      throw Error('M06_STORIES_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm06.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M06_STORIES_REGISTER_RECONCILIATION_REQUIRED');\n    if (!state.actorAcknowledged) throw Error('M06_STORIES_PROVIDER_OPTIONS_RECONCILIATION_REQUIRED');\n    if (!state.actorIds.includes(state.startedActorId)) state.actorIds.push(state.startedActorId);\n    state.batchIndex++;\n    return nextM06StoryLaunch(state);\n  }\n  if (operation === 'm06.close_registration') {\n    const completion = storyRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorStarts,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n      collection_mode: state.collectionMode,\n    };\n    return state;\n  }\n  throw Error('M06_STORIES_OPERATION_INVALID');\n}\n\nfunction initializeM06Stories(input, executionId, now) {\n  const uuid = (v) =>\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  const actors = [\n    'data-slayer/instagram-stories-scraper',\n    'igview-owner/instagram-story-viewer',\n    'louisdeconinck/instagram-story-details-scraper',\n  ];\n  if (\n    !input ||\n    typeof input !== 'object' ||\n    Array.isArray(input) ||\n    Object.keys(input).length !== 7 ||\n    Object.keys(input).some(\n      (k) =>\n        ![\n          'env',\n          'mode',\n          'actor_id',\n          'collection_mode',\n          'account_ids',\n          'results_limit',\n          'max_actor_starts',\n        ].includes(k),\n    ) ||\n    input.env !== 'dev' ||\n    input.mode !== 'daily' ||\n    !actors.includes(input.actor_id) ||\n    !['ingest', 'bakeoff'].includes(input.collection_mode) ||\n    (input.collection_mode === 'ingest' && input.actor_id !== 'data-slayer/instagram-stories-scraper') ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 100 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > 1000 ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    typeof now !== 'string' ||\n    !Number.isFinite(Date.parse(now))\n  )\n    throw Error('M06_STORIES_INPUT_INVALID');\n  const state = {\n    executionId,\n    now,\n    accountIds: input.account_ids,\n    actorId: input.actor_id,\n    collectionMode: input.collection_mode,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n    actorStarts: 0,\n  };\n  return m06StoryGateway(state, 'start', {\n    workflow: 'WF-12',\n    platform: 'instagram_stories',\n    mode: 'daily',\n    env: 'dev',\n    execution_id: executionId,\n    collection_mode: state.collectionMode,\n  });\n}\n\nfunction m06StoryGateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m06StoryRequestId(state.executionId, state.sequence),\n    operation: 'm06.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction nextM06StoryLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m06StoryGateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m06StoryRequestId(state.executionId, state.sequence + 1);\n  return m06StoryGateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    account_ids: batch.account_ids,\n    purpose: 'daily',\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    collection_mode: batch.collection_mode,\n  });\n}\nconst prior=$('Prepare stories actor').item.json;return[{json:advanceM06StoryActor(prior,j)}];"
+        },
+        "position": [
+          1200,
+          200
+        ]
+      },
+      {
+        "id": "40bcd5fc-289c-49b8-a49a-e2236c4b44f9",
+        "name": "Return stories dispatch result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M06_STORIES_NATIVE_INPUT_INVALID');const j=rows[0].json;\nif(j.action!=='done'||!j.result)throw Error('M06_STORIES_NATIVE_STATE_INVALID');return[{json:j.result}];"
+        },
+        "position": [
+          800,
+          400
+        ]
+      }
+    ],
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 1800,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "9N3BQMVj0uqaD0p1",
+        "name": "platform:ig_stories"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Initialize fixed stories selection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Initialize fixed stories selection": {
+        "main": [
+          [
+            {
+              "node": "Stories gateway action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stories gateway action?": {
+        "main": [
+          [
+            {
+              "node": "Prepare stories gateway",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Stories actor action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare stories gateway": {
+        "main": [
+          [
+            {
+              "node": "Execute typed stories gateway",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute typed stories gateway": {
+        "main": [
+          [
+            {
+              "node": "Advance stories gateway",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance stories gateway": {
+        "main": [
+          [
+            {
+              "node": "Stories gateway action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stories actor action?": {
+        "main": [
+          [
+            {
+              "node": "Prepare stories actor",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return stories dispatch result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare stories actor": {
+        "main": [
+          [
+            {
+              "node": "Start asynchronous stories actor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Start asynchronous stories actor": {
+        "main": [
+          [
+            {
+              "node": "Advance stories actor response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance stories actor response": {
+        "main": [
+          [
+            {
+              "node": "Stories gateway action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

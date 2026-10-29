@@ -4,6 +4,6 @@ export default defineConfig({
   test: {
     name: 'seed-scripts',
     environment: 'node',
-    include: ['seed/**/*.test.ts'],
+    include: ['seed/**/*.test.ts', 'bakeoff-report.test.ts'],
   },
 });

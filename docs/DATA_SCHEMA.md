@@ -281,6 +281,12 @@ M01 implementation notes: `competitor_accounts.handle_norm` is generated from lo
 6. Migrations are additive and reversible where practical; destructive changes need an owner-approved entry in `docs/DECISIONS.md`.
 7. Regenerate `packages/shared/src/db.types.ts` after every migration and commit it.
 
+## M06 current schema boundary — 29 October 2026
+
+The hosted development checkpoint now has21 applied versions (media20 and cadence/health21 included); older pending descriptions below are historical. New local-only migration22 `20261029005731_m06_story_collection_bakeoff.sql` adds private `ops.m06_story_runs`, `ops.m06_story_jobs`, `ops.bakeoff_observations` and `ops.bakeoff_results`, with RLS and restricted RPC-only access. Registration closes separately from callback settlement; owned claims survive until all registered work settles. Exact source identity, actor/build/options/INPUT and measured cost bind to the existing allocation; source replay creates no duplicate cost/items.
+
+Only newly inserted story items route to `pgmq.media_stories`; existing `media` messages remain unchanged. Dedicated story-media RPCs retain durable batch/receipt/ACK and cross-lane identity guards. `EMR_MEDIA_QUEUE=stories` selects the server profile, not caller input. Comparison-only jobs add observations/results without item/AI/media ingestion or primary account-health changes. Generated types and809 regular SQL assertions qualify all22 versions locally; migration22 has not been applied hosted. See the [source/local evidence](../milestones/M06-collectors-stories-upkeep/evidence/story-fixture-capture-20261029.md) and [next plan](../milestones/M06-collectors-stories-upkeep/evidence/stories-connected-dev-plan-20261029.md).
+
 ## M05 pending local schema extension — 28 October 2026
 
 The later current M06 checkpoint preserves the19 applied hosted versions. M06 migrations20/media and21/cadence-health remain local and unapplied; the older M05-local description below is historical implementation context, not the current hosted migration count.

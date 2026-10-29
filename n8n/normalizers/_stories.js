@@ -130,7 +130,8 @@ function storySourceError(row) {
     storyPrivateMarkers(row)
   )
     return 'stories_private_or_login';
-  return row.error ||
+  return (row.success !== undefined && row.success !== true) ||
+    row.error ||
     row.errorDescription ||
     (row.status != null &&
       (typeof row.status !== 'string' ||
@@ -172,7 +173,24 @@ function normalizeStoryRows(rows, ctx, shape) {
     summaries = [],
     errors = [];
   for (const row of rows) {
-    const owner = storyOwner(row, shape.owner),
+    const noIds =
+      storyRecord(row) &&
+      shape.ids.every((k) => row[k] === undefined || row[k] === null || row[k] === '') &&
+      !row.code;
+    const shapeEmpty = storyRecord(row) && shape.isEmpty?.(row) === true;
+    const explicitEmpty =
+      noIds &&
+      ((/^(?:no_stories|no stories|no_active_stories)$/i.test(row.status ?? '') && row.stories_count === 0) ||
+        shapeEmpty);
+    // Data Slayer's observed empty rows identify the requested account with
+    // username, while its story rows use creator_username. This exception is
+    // restricted to explicit zero-story summaries; it never repairs story ownership.
+    const owner = storyOwner(
+        row,
+        explicitEmpty && shape.summaryOwner && !storyHandle(row[shape.owner])
+          ? shape.summaryOwner
+          : shape.owner,
+      ),
       fail = (error) => errors.push({ matchKey: owner, error });
     const sourceError = storySourceError(row);
     if (sourceError) {
@@ -184,13 +202,7 @@ function normalizeStoryRows(rows, ctx, shape) {
       continue;
     }
     const id = storyIdentity(row, shape.ids);
-    const noIds =
-      shape.ids.every((k) => row[k] === undefined || row[k] === null || row[k] === '') && !row.code;
-    if (
-      noIds &&
-      /^(?:no_stories|no stories|no_active_stories)$/i.test(row.status ?? '') &&
-      row.stories_count === 0
-    ) {
+    if (explicitEmpty) {
       summaries.push({ matchKey: owner });
       continue;
     }
@@ -198,7 +210,7 @@ function normalizeStoryRows(rows, ctx, shape) {
       fail('stories_identity_invalid');
       continue;
     }
-    if (row.stories_count === 0 && /no.*stor/i.test(row.status ?? '')) {
+    if (shapeEmpty || (row.stories_count === 0 && /no.*stor/i.test(row.status ?? ''))) {
       fail('stories_summary_conflict');
       continue;
     }
@@ -233,7 +245,12 @@ function normalizeStoryRows(rows, ctx, shape) {
         ...storyCommon.ats(caption),
         ...shape
           .mentions(row)
-          .map((v) => storyHandle(typeof v === 'string' ? v : v?.username))
+          .map((v) => {
+            if (typeof v === 'string') return storyHandle(v);
+            const direct = storyHandle(v?.username),
+              nested = storyHandle(v?.user?.username);
+            return direct && nested && direct !== nested ? null : (direct ?? nested);
+          })
           .filter(Boolean),
       ]),
     ];

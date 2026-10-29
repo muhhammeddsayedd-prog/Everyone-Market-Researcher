@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-10-29T00:58:20.024521+00:00",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "verification": "bounded read-only native SQL; native exit0; client and child closed; scratch deleted",
+  "accounts": [
+    {"companyCode":"C000","handle":"everyone.film","accountId":"7c70141b-bb1e-4d0b-a54c-f957413400e1","competitorId":"94928d31-8983-403c-bdbd-f5f44613d631","baseline":true,"pilotRank":null},
+    {"companyCode":"C001","handle":"goodpeoplefilms","accountId":"62a5fef9-78c3-418a-9010-d5ea54f29e45","competitorId":"9a0dba8a-b946-45a1-bd53-933216f1fc4d","baseline":false,"pilotRank":1},
+    {"companyCode":"C130","handle":"bigfootfilms","accountId":"34b95d90-12e6-42da-84f8-3fd78cd19103","competitorId":"7ba084a1-52a1-49d5-b3a9-e488289cb504","baseline":false,"pilotRank":2}
+  ],
+  "all": {"platform":"instagram_stories","accountStatus":"active","competitorStatus":"active","backfillStatus":"not_applicable","cadence":"1 day"},
+  "unchangedBaseline": {"items":280,"mediaQueue":267,"costRows":58,"costLedgerUsd":1.355284},
+  "hostedMutation": false
+}

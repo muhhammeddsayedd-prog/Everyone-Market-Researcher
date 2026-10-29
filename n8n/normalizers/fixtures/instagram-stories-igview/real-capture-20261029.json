@@ -1,0 +1,1932 @@
+{
+  "provenance": {
+    "kind": "sanitized_real_actor_capture",
+    "actor": "igview-owner/instagram-story-viewer",
+    "actorId": "7eNb0Yr5dLwy1jfPS",
+    "runId": "b2ORwCMqJZ7z8Ywri",
+    "buildId": "jhZNplLsVKuGelTTm",
+    "buildNumber": "1.0.16",
+    "startedAt": "2026-10-29T01:11:13.452Z",
+    "finishedAt": "2026-10-29T01:11:41.278Z",
+    "input": {
+      "usernames": ["everyone.film", "goodpeoplefilms", "bigfootfilms"]
+    },
+    "sourceDatasetId": "Cb0dMPrVRvVBoC3gw",
+    "sanitization": [
+      "URL query strings/fragments removed",
+      "credential/session/header keys removed",
+      "Only source-contract fields retained; public metadata, no media downloaded",
+      "Mention stickers reduced to type/username/public-link fields"
+    ],
+    "usageTotalUsd": 0.19,
+    "chargedEventCounts": {
+      "apify-actor-start": 4,
+      "apify-default-dataset-item": 14
+    },
+    "options": {
+      "build": "1.0.16",
+      "memoryMbytes": 4096,
+      "timeoutSecs": 180,
+      "maxTotalChargeUsd": 0.5,
+      "maxItems": 100,
+      "isMaxTotalChargeUsdSetByUser": true,
+      "diskMbytes": 8192
+    }
+  },
+  "rows": [
+    {
+      "username": "everyone.film",
+      "mediaType": "none",
+      "storiesCount": 0,
+      "takenAtFormatted": "No active stories",
+      "success": true
+    },
+    {
+      "storyId": "4017811773010771928",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/868587992_18503463796100694_609579934957491038_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793180507,
+      "takenAtISO": "2026-10-28T09:41:47.000Z",
+      "takenAtFormatted": "10/28/2026, 9:41:47 AM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4017861865935840682",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869940944_18503480191100694_6288251787443768382_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793186479,
+      "takenAtISO": "2026-10-28T11:21:19.000Z",
+      "takenAtFormatted": "10/28/2026, 11:21:19 AM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4017926497492930889",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/866946320_18503503801100694_7260925759910267935_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793194184,
+      "takenAtISO": "2026-10-28T13:29:44.000Z",
+      "takenAtFormatted": "10/28/2026, 1:29:44 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4017953054265561713",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/873599789_18503517127100694_7114905492221989394_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793197350,
+      "takenAtISO": "2026-10-28T14:22:30.000Z",
+      "takenAtFormatted": "10/28/2026, 2:22:30 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018001981173936570",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869966912_18503539927100694_4975440404306812197_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793203182,
+      "takenAtISO": "2026-10-28T15:59:42.000Z",
+      "takenAtFormatted": "10/28/2026, 3:59:42 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018079410812333091",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870167702_18503571151100694_8327631283285958972_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793212413,
+      "takenAtISO": "2026-10-28T18:33:33.000Z",
+      "takenAtFormatted": "10/28/2026, 6:33:33 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018079857874811223",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869628198_18503571385100694_792824132311530852_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793212466,
+      "takenAtISO": "2026-10-28T18:34:26.000Z",
+      "takenAtFormatted": "10/28/2026, 6:34:26 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018132074904195282",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/869932303_18503588416100694_226273110658998883_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793218691,
+      "takenAtISO": "2026-10-28T20:18:11.000Z",
+      "takenAtFormatted": "10/28/2026, 8:18:11 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018132630523811987",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/874287524_18503588758100694_2062880206069602933_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793218757,
+      "takenAtISO": "2026-10-28T20:19:17.000Z",
+      "takenAtFormatted": "10/28/2026, 8:19:17 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018180701381863289",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/876658202_18503604079100694_1649720011791759391_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793224487,
+      "takenAtISO": "2026-10-28T21:54:47.000Z",
+      "takenAtFormatted": "10/28/2026, 9:54:47 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 17,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "hussein.t.aziz"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018239427224676472",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/870097009_18503623885100694_3417214570216822620_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793231488,
+      "takenAtISO": "2026-10-28T23:51:28.000Z",
+      "takenAtFormatted": "10/28/2026, 11:51:28 PM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 17,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "hussein.t.aziz"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "storyId": "4018268955871514283",
+      "username": "goodpeoplefilms",
+      "isPrivate": false,
+      "hasAudio": false,
+      "imageUrl": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+      "videoUrl": "",
+      "allImages": [
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 1206,
+          "height": 2144
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 640,
+          "height": 1138
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 480,
+          "height": 853
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 320,
+          "height": 569
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 240,
+          "height": 427
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 1080,
+          "height": 1080
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 750,
+          "height": 750
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 640,
+          "height": 640
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 480,
+          "height": 480
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 320,
+          "height": 320
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 240,
+          "height": 240
+        },
+        {
+          "url": "https://instagram.fsjk2-1.fna.fbcdn.net/v/t51.82787-15/872105649_18503633470100694_1301275998457775006_n.jpg",
+          "width": 150,
+          "height": 150
+        }
+      ],
+      "allVideos": [],
+      "originalWidth": 1206,
+      "originalHeight": 2144,
+      "takenAt": 1793235008,
+      "takenAtISO": "2026-10-29T00:50:08.000Z",
+      "takenAtFormatted": "10/29/2026, 12:50:08 AM",
+      "storyFeedMediaCount": 0,
+      "storyBloksStickersCount": 16,
+      "storyBloksStickers": [
+        {
+          "stickerType": "",
+          "mentionUsername": "khatsarevich"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "samakutkut"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "nadakhedrr"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "sarahhwalidd"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "p_waled_"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "impactbbdo"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ooniiiii"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "theseify"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ahmedshaabanaly"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "malakfarid1"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "martin_moussa"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "kyzaki"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "omarkhalil1989"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "moaazksalama"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "magedmnassar"
+        },
+        {
+          "stickerType": "",
+          "mentionUsername": "ramyhaider"
+        }
+      ],
+      "storyFeedMedia": [],
+      "mediaType": "image"
+    },
+    {
+      "username": "bigfootfilms",
+      "mediaType": "none",
+      "storiesCount": 0,
+      "takenAtFormatted": "No active stories",
+      "success": true
+    }
+  ]
+}

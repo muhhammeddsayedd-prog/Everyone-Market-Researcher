@@ -59,6 +59,7 @@ export {
   collectorActors,
   collectorPolicy,
   m05RunPolicy,
+  m06RunPolicy,
   collectorBuild,
   collectorAccountIds,
   collectorExecutionErrorArgs,
@@ -66,3 +67,5 @@ export {
 } from './n8n-collector-contracts';
 export type { CollectorRequest, CollectorOperation, CollectorPolicy } from './n8n-collector-contracts';
 export { m05Args, m05Actors, m05Platforms, m05WorkflowIds, m05ExecutionErrorArgs } from './n8n-m05-contracts';
+export { m06StoryArgs, m06StoryActors, m06StoryInternalArgs } from './n8n-m06-contracts';
+export type { M06StoryActor } from './n8n-m06-contracts';

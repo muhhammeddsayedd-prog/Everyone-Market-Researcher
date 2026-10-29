@@ -417,7 +417,14 @@ const nativeBaselineSql = `select jsonb_build_object(
 ) snapshot`;
 
 async function connectedSqlFixture(
-  run: (fixture: { c: Client; item: string; pool: WorkerPool; releaseCount: () => number }) => Promise<void>,
+  run: (fixture: {
+    c: Client;
+    item: string;
+    pool: WorkerPool;
+    releaseCount: () => number;
+    genericQueueBefore?: string;
+  }) => Promise<void>,
+  lane: 'media' | 'stories' = 'media',
 ) {
   const c = new Client({
     host: '127.0.0.1',
@@ -454,12 +461,13 @@ async function connectedSqlFixture(
     );
     const runId = (
       await c.query(
-        "select ops.start_run('WF-12','instagram_stories','daily','dev','m06-native-local-synthetic') id",
+        "select ops.start_run($1,$2::app.platform,'daily','dev','m06-native-local-synthetic') id",
+        [lane === 'stories' ? 'WF-12' : 'WF-10', lane === 'stories' ? 'instagram_stories' : 'vimeo'],
       )
     ).rows[0].id;
     await c.query(
-      "insert into app.competitor_accounts(id,competitor_id,platform,handle,url,status,backfill_status,last_run_id,locked_until) values($1,$2,'instagram_stories','synthetic_studio','https://www.instagram.com/synthetic_studio/','active','not_applicable',$3,now()+interval '15 minutes')",
-      [account, competitor, runId],
+      "insert into app.competitor_accounts(id,competitor_id,platform,handle,url,status,backfill_status,last_run_id,locked_until) values($1,$2,$4::app.platform,'synthetic_studio','https://www.instagram.com/synthetic_studio/','active','not_applicable',$3,now()+interval '15 minutes')",
+      [account, competitor, runId, lane === 'stories' ? 'instagram_stories' : 'vimeo'],
     );
     const f = JSON.parse(
       readFileSync(
@@ -476,22 +484,51 @@ async function connectedSqlFixture(
       ],
       now: '2026-10-28T12:00:00Z',
     });
+    let genericQueueBefore: string | undefined;
+    if (lane === 'stories') {
+      const backlogItem = randomUUID();
+      await c.query(
+        "insert into app.items(id,competitor_id,platform,item_type,external_id,url) values($1,$2,'vimeo','video','synthetic-backlog','https://vimeo.com/220099')",
+        [backlogItem, competitor],
+      );
+      await c.query(
+        "select pgmq.send_batch('media',array(select jsonb_build_object('item_id',$1::text) from generate_series(1,267)))",
+        [backlogItem],
+      );
+      genericQueueBefore = (
+        await c.query('select md5(jsonb_agg(to_jsonb(q) order by msg_id)::text) digest from pgmq.q_media q')
+      ).rows[0].digest;
+    }
+    const selectedItems = prepared.groups[0].items.map((item: Record<string, unknown>) =>
+      lane === 'stories'
+        ? item
+        : {
+            ...item,
+            platform: 'vimeo',
+            actor: 'vimeo-api',
+            item_type: 'video',
+            url: 'https://vimeo.com/' + item.external_id,
+          },
+    );
     await c.query('set local role n8n_writer');
     const ingest = (
       await c.query('select ingest.upsert_raw_items($1,$2,$3::jsonb) r', [
         runId,
         account,
-        JSON.stringify(prepared.groups[0].items),
+        JSON.stringify(selectedItems),
       ])
     ).rows[0].r;
     expect(ingest.inserted).toBe(1);
     const item = String(ingest.new_item_ids[0]);
     await c.query('reset role');
-    // Hide foreign local fixture messages only inside this rollback transaction.
-    await c.query(
-      "update pgmq.q_media set vt=now()+interval '1 day' where message->>'item_id' is distinct from $1",
-      [item],
-    );
+    if (lane === 'media') {
+      // Generic transport-negative fixtures isolate one message inside rollback.
+      // The new story profile NEVER changes generic visibility or FIFO order.
+      await c.query(
+        "update pgmq.q_media set vt=now()+interval '1 day' where message->>'item_id' is distinct from $1",
+        [item],
+      );
+    }
     await c.query('set session authorization n8n_writer');
     const pool: WorkerPool = {
       connect: async () =>
@@ -529,7 +566,7 @@ async function connectedSqlFixture(
           off: (event: 'error', listener: (error: unknown) => void) => c.off(event, listener),
         }) as WorkerClient,
     };
-    await run({ c, item, pool, releaseCount: () => releaseCount });
+    await run({ c, item, pool, releaseCount: () => releaseCount, genericQueueBefore });
     expect(
       (
         await c.query(
@@ -618,6 +655,61 @@ function nativeExecution(handler: (request: Request) => Promise<Response>, execu
 describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
   'M06 generated WF-31 to real local SQL/codec with boundary HTTP mocks',
   () => {
+    it('processes newly ingested story media immediately without draining or changing 267 generic backlog deliveries', async () => {
+      await connectedSqlFixture(async ({ c, item, pool, genericQueueBefore }) => {
+        const http = await nativeHttpFixture('success');
+        const handler = createMediaProcessHandler({
+          environment: () => ({ ...nativeEnvironment, EMR_MEDIA_QUEUE: 'stories' }),
+          transports: http.ports,
+          open: (config, executionId, signal, onLost) =>
+            openMediaDatabaseSession(pool, executionId, signal, onLost, config.batchSize, config.lane),
+        });
+        const execute = nativeExecution(handler, '94001');
+        const initial = await execute();
+        expect(initial.response.status).toBe(200);
+        expect(initial.body).toMatchObject({ state: 'completed', claimed: 1, stored: 1, replayed: false });
+        expect(http.uploads).toHaveLength(1);
+        const jpeg = await sharp(http.uploads[0]).metadata();
+        expect(jpeg).toMatchObject({ format: 'jpeg', width: 1280, height: 360 });
+        expect((await execute()).body).toMatchObject({ replayed: true, stored: 1, state: 'completed' });
+        expect(http.uploads).toHaveLength(1);
+        expect(http.sdkFetch).toHaveBeenCalledTimes(1);
+        await c.query('reset session authorization');
+        expect(
+          (
+            await c.query(
+              'select md5(jsonb_agg(to_jsonb(q) order by msg_id)::text) digest from pgmq.q_media q',
+            )
+          ).rows[0].digest,
+        ).toBe(genericQueueBefore);
+        expect(
+          (
+            await c.query("select count(*)::int n from pgmq.q_media_stories where message->>'item_id'=$1", [
+              item,
+            ])
+          ).rows[0].n,
+        ).toBe(0);
+        expect(
+          (
+            await c.query("select count(*)::int n from pgmq.a_media_stories where message->>'item_id'=$1", [
+              item,
+            ])
+          ).rows[0].n,
+        ).toBe(1);
+        expect(
+          (await c.query('select thumbnail_path from app.items where id=$1', [item])).rows[0].thumbnail_path,
+        ).toBe('m06-native-synthetic/instagram_stories/3773069825095106469/thumb.jpg');
+        expect(
+          (
+            await c.query(
+              "select count(*)::int n from ops.audit_log where action='story_media_outcome' and entity_id=$1",
+              ['94001:' + item],
+            )
+          ).rows[0].n,
+        ).toBe(1);
+        expect(http.calls.every((call) => call.closed)).toBe(true);
+      }, 'stories');
+    }, 30000);
     it('stores once, replays the native execution and acknowledges a new already-stored message without another upload', async () => {
       await connectedSqlFixture(async ({ c, item, pool, releaseCount }) => {
         const http = await nativeHttpFixture('success');
@@ -653,7 +745,7 @@ describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
           )
         ).rows[0];
         expect(saved).toMatchObject({
-          thumbnail_path: 'm06-native-synthetic/instagram_stories/3773069825095106469/thumb.jpg',
+          thumbnail_path: 'm06-native-synthetic/vimeo/3773069825095106469/thumb.jpg',
           width: 1280,
           height: 360,
           assets: 1,

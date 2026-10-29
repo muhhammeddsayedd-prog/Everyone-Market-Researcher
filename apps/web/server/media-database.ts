@@ -108,16 +108,32 @@ export async function openMediaDatabaseSession(
   signal: AbortSignal,
   onLost: () => void = () => {},
   batchSize = 50,
+  lane: 'media' | 'stories' = 'media',
 ): Promise<MediaDatabaseSession> {
   if (
     !/^[1-9][0-9]{0,19}$/.test(executionId) ||
     signal.aborted ||
     !Number.isSafeInteger(batchSize) ||
     batchSize < 1 ||
-    batchSize > 50
+    batchSize > 50 ||
+    !['media', 'stories'].includes(lane)
   )
     throw bad();
   const client = await pool.connect();
+  const operations =
+    lane === 'stories'
+      ? {
+          claim: 'ops.claim_story_media_batch',
+          record: 'ops.record_story_media_outcome',
+          ack: 'ops.ack_story_media_batch',
+          finish: 'ops.finish_story_media_batch',
+        }
+      : {
+          claim: 'ops.claim_media_batch',
+          record: 'ops.record_media_outcome',
+          ack: 'ops.ack_media_batch',
+          finish: 'ops.finish_media_batch',
+        };
   let released = false,
     locked = false,
     closed: Promise<void> | undefined,
@@ -250,7 +266,7 @@ export async function openMediaDatabaseSession(
     claim: async (opSignal = signal) =>
       parseClaim(
         await receipt(
-          'select ops.claim_media_batch($1::text,$2::int) as result',
+          `select ${operations.claim}($1::text,$2::int) as result`,
           [executionId, batchSize],
           opSignal,
         ),
@@ -269,21 +285,21 @@ export async function openMediaDatabaseSession(
     },
     record: async (outcome: MediaOutcome, opSignal) => {
       await receipt(
-        'select ops.record_media_outcome($1::text,$2::jsonb) as result',
+        `select ${operations.record}($1::text,$2::jsonb) as result`,
         [executionId, JSON.stringify(outcome)],
         opSignal,
       );
     },
     ack: async (ids, opSignal) => {
       await receipt(
-        'select ops.ack_media_batch($1::text,$2::bigint[]) as result',
+        `select ${operations.ack}($1::text,$2::bigint[]) as result`,
         [executionId, ids],
         opSignal,
       );
     },
     finish: async (opSignal) =>
       parseMediaBatchSummary(
-        await receipt('select ops.finish_media_batch($1::text) as result', [executionId], opSignal),
+        await receipt(`select ${operations.finish}($1::text) as result`, [executionId], opSignal),
       ),
     close: () => {
       if (closePromise) return closePromise;

@@ -8,9 +8,12 @@ import { databaseConfig, type WorkerPool } from './database';
 import type { CollectorConfig, CollectorDispatch } from './collectors';
 import { WorkerFailure } from './errors';
 import { m05Args, m05ExecutionErrorArgs, m05WorkflowIds } from '@emr/shared';
+import { m06StoryArgs, m06StoryInternalArgs } from '@emr/shared';
 
 const operations = new Set([
   ...Object.keys(m05Args),
+  ...Object.keys(m06StoryArgs),
+  ...Object.keys(m06StoryInternalArgs),
   'm05.settle',
   'm05.classify',
   'm05.lookup',
@@ -117,12 +120,21 @@ export async function dispatchCollectorDatabase(
     }
     const result = (
       await query(
-        operation.startsWith('m05.')
-          ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
-          : operation === 'classify' && _config.scope === 'm05'
+        operation.startsWith('m06.') ||
+          (_config.scope === 'm06' && ['classify', 'status'].includes(operation))
+          ? 'select ops.m06_execute($1::uuid,$2::text,$3::jsonb) as receipt'
+          : operation.startsWith('m05.')
             ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
-            : 'select ops.collector_execute($1::uuid,$2::text,$3::jsonb) as receipt',
-        [requestId, operation, JSON.stringify(args)],
+            : operation === 'classify' && _config.scope === 'm05'
+              ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
+              : 'select ops.collector_execute($1::uuid,$2::text,$3::jsonb) as receipt',
+        [
+          requestId,
+          _config.scope === 'm06' && ['classify', 'status'].includes(operation)
+            ? 'm06.' + operation
+            : operation,
+          JSON.stringify(args),
+        ],
       )
     ).rows[0]?.receipt;
     if (
@@ -176,7 +188,12 @@ export const dispatchCollectorWorkerDatabase: CollectorDispatch = async (
     const ca = readFileSync(join(process.cwd(), 'server/n8n-worker/certs/supabase-root-2021.crt'));
     pool = new Pool({
       ...databaseConfig(config.password, ca),
-      application_name: config.scope === 'm05' ? 'emr-m05-collectors-dev' : 'emr-m04-collectors-dev',
+      application_name:
+        config.scope === 'm06'
+          ? 'emr-m06-collectors-dev'
+          : config.scope === 'm05'
+            ? 'emr-m05-collectors-dev'
+            : 'emr-m04-collectors-dev',
     });
     pool.on('error', () => {});
     pool.on('connect', (client) => client.on('error', () => {}));

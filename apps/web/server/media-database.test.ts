@@ -48,13 +48,14 @@ function fixture(
       if (options.unlock === 'hang') return new Promise<never>(() => {});
       return { rows: [{ unlocked: options.unlock ?? true }] };
     }
-    if (sql.includes('ops.claim_media_batch'))
+    if (/ops\.claim_(story_)?media_batch/.test(sql))
       return {
         rows: [
           { result: options.claim ?? { replayed: false, state: 'running', messages: [], held_count: 0 } },
         ],
       };
-    if (sql.includes('ops.finish_media_batch')) return { rows: [{ result: options.finish ?? summary }] };
+    if (/ops\.finish_(story_)?media_batch/.test(sql))
+      return { rows: [{ result: options.finish ?? summary }] };
     return { rows: [{ result: null }] };
   });
   const client: WorkerClient = {
@@ -75,6 +76,38 @@ function fixture(
   return { client, pool, query, listeners };
 }
 describe('M06 concrete media database session', () => {
+  it('selects only the dedicated story RPCs while retaining the same identity and global lock', async () => {
+    const t = fixture(),
+      c = new AbortController();
+    const session = await openMediaDatabaseSession(t.pool, '3100699', c.signal, () => {}, 5, 'stories');
+    await session.claim();
+    await session.record(
+      {
+        item_id: '06000000-0000-4000-8000-000000000001',
+        msg_ids: ['1'],
+        outcome: 'skipped',
+        code: 'no_source',
+        bytes: 0,
+        cost_usd: null,
+      },
+      c.signal,
+    );
+    await session.ack(['1'], c.signal);
+    await session.finish(c.signal);
+    await session.close();
+    const sql = t.query.mock.calls.map(([value]) => value).join('\n');
+    for (const name of [
+      'claim_story_media_batch',
+      'record_story_media_outcome',
+      'ack_story_media_batch',
+      'finish_story_media_batch',
+    ])
+      expect(sql).toContain(name);
+    expect(sql).not.toMatch(
+      /ops\.(claim_media_batch|record_media_outcome|ack_media_batch|finish_media_batch)/,
+    );
+    expect(sql).toContain('pg_try_advisory_lock(73106,31)');
+  });
   it('checks both restricted principals and fixed advisory lock before product RPCs', async () => {
     const t = fixture(),
       c = new AbortController();

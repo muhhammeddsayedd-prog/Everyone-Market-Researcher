@@ -2520,6 +2520,108 @@ export type Database = {
         };
         Relationships: [];
       };
+      bakeoff_observations: {
+        Row: {
+          account_id: string;
+          actor: string;
+          apify_run_id: string;
+          created_at: string;
+          day: string;
+          error_code: string | null;
+          login_prompt: boolean;
+          observed_at: string;
+          status: string;
+          story_keys: string[];
+        };
+        ComputedFields: never;
+        Insert: {
+          account_id: string;
+          actor: string;
+          apify_run_id: string;
+          created_at?: string;
+          day: string;
+          error_code?: string | null;
+          login_prompt?: boolean;
+          observed_at: string;
+          status: string;
+          story_keys?: string[];
+        };
+        Update: {
+          account_id?: string;
+          actor?: string;
+          apify_run_id?: string;
+          created_at?: string;
+          day?: string;
+          error_code?: string | null;
+          login_prompt?: boolean;
+          observed_at?: string;
+          status?: string;
+          story_keys?: string[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'bakeoff_observations_apify_run_id_fkey';
+            columns: ['apify_run_id'];
+            isOneToOne: false;
+            referencedRelation: 'apify_runs';
+            referencedColumns: ['apify_run_id'];
+          },
+        ];
+      };
+      bakeoff_results: {
+        Row: {
+          account_id: string;
+          actor: string;
+          apify_run_id: string;
+          created_at: string;
+          day: string;
+          has_link: boolean;
+          has_mentions: boolean;
+          has_thumbnail: boolean;
+          id: number;
+          raw_id: string;
+          story_key: string;
+          taken_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          account_id: string;
+          actor: string;
+          apify_run_id: string;
+          created_at?: string;
+          day: string;
+          has_link: boolean;
+          has_mentions: boolean;
+          has_thumbnail: boolean;
+          id?: never;
+          raw_id: string;
+          story_key: string;
+          taken_at: string;
+        };
+        Update: {
+          account_id?: string;
+          actor?: string;
+          apify_run_id?: string;
+          created_at?: string;
+          day?: string;
+          has_link?: boolean;
+          has_mentions?: boolean;
+          has_thumbnail?: boolean;
+          id?: never;
+          raw_id?: string;
+          story_key?: string;
+          taken_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'bakeoff_results_apify_run_id_account_id_fkey';
+            columns: ['apify_run_id', 'account_id'];
+            isOneToOne: false;
+            referencedRelation: 'bakeoff_observations';
+            referencedColumns: ['apify_run_id', 'account_id'];
+          },
+        ];
+      };
       collector_accounts: {
         Row: {
           account_id: string;
@@ -3071,6 +3173,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      m06_story_jobs: {
+        Row: {
+          actor_input: NonNullable<Json>;
+          build_id: string;
+          collection_mode: string;
+          created_at: string;
+          launch_id: string;
+          memory_mbytes: number;
+          result: Json | null;
+          settled: boolean;
+          timeout_secs: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          actor_input: NonNullable<Json>;
+          build_id: string;
+          collection_mode: string;
+          created_at?: string;
+          launch_id: string;
+          memory_mbytes: number;
+          result?: Json | null;
+          settled?: boolean;
+          timeout_secs: number;
+        };
+        Update: {
+          actor_input?: NonNullable<Json>;
+          build_id?: string;
+          collection_mode?: string;
+          created_at?: string;
+          launch_id?: string;
+          memory_mbytes?: number;
+          result?: Json | null;
+          settled?: boolean;
+          timeout_secs?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'm06_story_jobs_launch_id_fkey';
+            columns: ['launch_id'];
+            isOneToOne: true;
+            referencedRelation: 'collector_launches';
+            referencedColumns: ['launch_id'];
+          },
+        ];
+      };
+      m06_story_runs: {
+        Row: {
+          collection_mode: string;
+          run_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          collection_mode: string;
+          run_id: string;
+        };
+        Update: {
+          collection_mode?: string;
+          run_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'm06_story_runs_run_id_fkey';
+            columns: ['run_id'];
+            isOneToOne: true;
+            referencedRelation: 'collector_runs';
+            referencedColumns: ['run_id'];
+          },
+        ];
+      };
       price_book: {
         Row: {
           provider: string;
@@ -3363,6 +3534,7 @@ export type Database = {
       accrue_fixed_costs: { Args: { p_day: string }; Returns: number };
       ack_media_batch: { Args: { p_execution_id: string; p_msg_ids: number[] }; Returns: undefined };
       ack_queue: { Args: { p_msg_ids: number[]; p_queue: string }; Returns: undefined };
+      ack_story_media_batch: { Args: { p_execution_id: string; p_msg_ids: number[] }; Returns: undefined };
       apify_runs_pending: { Args: { p_run_id: string }; Returns: number };
       authorize_apify_launch: { Args: { p: Json }; Returns: Json };
       claim_media_batch: { Args: { p_execution_id: string; p_limit?: number }; Returns: Json };
@@ -3374,6 +3546,7 @@ export type Database = {
           read_ct: number;
         }[];
       };
+      claim_story_media_batch: { Args: { p_execution_id: string; p_limit?: number }; Returns: Json };
       collector_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
       collector_finalize: { Args: { p_run_id: string }; Returns: Json };
       complete_apify_run: {
@@ -3385,6 +3558,7 @@ export type Database = {
       error_count_24h: { Args: { p_claim_notify?: boolean; p_workflow: string }; Returns: number };
       finish_media_batch: { Args: { p_execution_id: string }; Returns: Json };
       finish_run: { Args: { p_error?: string; p_run_id: string; p_status: string }; Returns: Json };
+      finish_story_media_batch: { Args: { p_execution_id: string }; Returns: Json };
       foundation_gateway_admit: {
         Args: {
           p_args: Json;
@@ -3479,6 +3653,7 @@ export type Database = {
         Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id: string };
         Returns: undefined;
       };
+      m06_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
       mark_website_page: {
         Args: { p_item_id?: string; p_status: string; p_url: string };
         Returns: undefined;
@@ -3495,6 +3670,7 @@ export type Database = {
       };
       reconcile_apify_launch: { Args: { p: Json }; Returns: Json };
       record_media_outcome: { Args: { p_execution_id: string; p_outcome: Json }; Returns: undefined };
+      record_story_media_outcome: { Args: { p_execution_id: string; p_outcome: Json }; Returns: undefined };
       register_apify_run: {
         Args: {
           p_account_ids: string[];
@@ -3519,6 +3695,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      save_bakeoff_rows: { Args: { p_rows: Json }; Returns: number };
       save_employee_snapshot: {
         Args: { p_account_id: string; p_coverage?: Json; p_people: Json; p_snapshot_date: string };
         Returns: Json;
@@ -3548,6 +3725,10 @@ export type Database = {
           p_workflow: string;
         };
         Returns: string;
+      };
+      story_bakeoff_snapshot: {
+        Args: { p_account_ids: string[]; p_from_day: string; p_to_day: string };
+        Returns: Json;
       };
       worker_gateway_admit: {
         Args: {

@@ -1,4 +1,4 @@
-// data-slayer adapter; source fields are locally qualified, not live acceptance.
+// data-slayer adapter qualified against retained public build1.0.32 output.
 const dataSlayerStories =
   typeof module !== 'undefined'
     ? // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -7,6 +7,7 @@ const dataSlayerStories =
 const dataSlayerStoryShape = {
   actor: 'data-slayer/instagram-stories-scraper',
   owner: 'creator_username',
+  summaryOwner: 'username',
   ids: ['id'],
   times: ['taken_at_ts', 'taken_at_date'],
   maxAccounts: 100,
@@ -15,6 +16,7 @@ const dataSlayerStoryShape = {
   thumbnails: (r) => [
     r.thumbnail_url,
     ...(Array.isArray(r.image_versions) ? r.image_versions.map((x) => x?.url) : []),
+    ...(Array.isArray(r.image_versions?.items) ? r.image_versions.items.map((x) => x?.url) : []),
   ],
   link: (r) => r.story_link_url,
   duration: (r) => r.video_duration,

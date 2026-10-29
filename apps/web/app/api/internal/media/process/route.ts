@@ -36,6 +36,7 @@ export const POST = createMediaProcessHandler({
       signal,
       onLost,
       config.batchSize,
+      config.lane,
     );
   },
 });

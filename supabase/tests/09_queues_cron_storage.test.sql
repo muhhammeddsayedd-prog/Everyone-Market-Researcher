@@ -5,7 +5,7 @@ select plan(13);
 grant n8n_writer to postgres with inherit false;
 grant n8n_writer to postgres with set true;
 select results_eq($$select queue_name::text from pgmq.list_queues() order by queue_name$$,
-  $$select name from (values('ai_extract'::text),('embed'),('media')) expected(name)$$,'three project queues exist');
+  $$select name from (values('ai_extract'::text),('embed'),('media'),('media_stories')) expected(name)$$,'four project queues include the isolated expiring-story media lane');
 select is((select count(*)::int from cron.job where jobname like 'emr-%'),2,'two housekeeping jobs registered');
 select is((select schedule from cron.job where jobname = 'emr-unlock-stale-accounts'),'15 * * * *','unlock cron schedule');
 select is((select schedule from cron.job where jobname = 'emr-archive-queue-cleanup'),'30 3 * * *','archive cron schedule');

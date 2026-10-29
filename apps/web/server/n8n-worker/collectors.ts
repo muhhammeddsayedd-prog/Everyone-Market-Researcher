@@ -4,6 +4,7 @@ import {
   collectorRequest,
   collectorPolicy,
   m05RunPolicy,
+  m06RunPolicy,
   collectorAccountIds,
   type CollectorPolicy,
   type CollectorRequest,
@@ -13,7 +14,7 @@ import { WorkerFailure } from './errors';
 import ingestion from '../../../../n8n/normalizers/prepare_ingest_groups.js';
 
 export interface CollectorConfig {
-  scope?: 'm04' | 'm05';
+  scope?: 'm04' | 'm05' | 'm06';
   audience: string;
   password: string;
   verifier: string;
@@ -25,21 +26,26 @@ export interface CollectorConfig {
 }
 export function collectorConfig(env: Record<string, string | undefined>): CollectorConfig {
   const isM05 = env.VERCEL_GIT_COMMIT_REF === 'm05-collectors-web-youtube-linkedin';
+  const isM06 = env.VERCEL_GIT_COMMIT_REF === 'm06-collectors-stories-upkeep';
   let accountIds: string[],
     policy: CollectorPolicy | null = null;
   try {
     accountIds = collectorAccountIds.parse(JSON.parse(env.EMR_COLLECTORS_ACCOUNT_IDS ?? ''));
     if (env.EMR_COLLECTORS_LIVE_POLICY)
-      policy = (isM05 ? m05RunPolicy : collectorPolicy).parse(JSON.parse(env.EMR_COLLECTORS_LIVE_POLICY));
+      policy = (isM06 ? m06RunPolicy : isM05 ? m05RunPolicy : collectorPolicy).parse(
+        JSON.parse(env.EMR_COLLECTORS_LIVE_POLICY),
+      );
   } catch {
     throw new WorkerFailure('unavailable', 503);
   }
   if (
     env.EMR_COLLECTORS_ENABLED !== 'true' ||
     env.VERCEL_ENV !== 'preview' ||
-    !['m04-collectors-vimeo-instagram', 'm05-collectors-web-youtube-linkedin'].includes(
-      env.VERCEL_GIT_COMMIT_REF ?? '',
-    ) ||
+    ![
+      'm04-collectors-vimeo-instagram',
+      'm05-collectors-web-youtube-linkedin',
+      'm06-collectors-stories-upkeep',
+    ].includes(env.VERCEL_GIT_COMMIT_REF ?? '') ||
     env.VERCEL_PROJECT_ID !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
     !/^everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(env.VERCEL_URL ?? '') ||
     !env.EMR_COLLECTORS_WRITER_PASSWORD ||
@@ -51,7 +57,7 @@ export function collectorConfig(env: Record<string, string | undefined>): Collec
   )
     throw new WorkerFailure('unavailable', 503);
   return {
-    scope: isM05 ? 'm05' : 'm04',
+    scope: isM06 ? 'm06' : isM05 ? 'm05' : 'm04',
     audience: 'https://' + env.VERCEL_URL,
     password: env.EMR_COLLECTORS_WRITER_PASSWORD,
     verifier: env.EMR_COLLECTORS_TOKEN_SHA256!,
@@ -118,9 +124,17 @@ export function createCollectorHandler(deps: Dependencies) {
       requestId = input.requestId;
       if (input.operation.startsWith('m05.') && config.scope !== 'm05')
         throw new WorkerFailure('forbidden', 403);
+      if (input.operation.startsWith('m06.') && config.scope !== 'm06')
+        throw new WorkerFailure('forbidden', 403);
       if (
         config.scope === 'm05' &&
         !input.operation.startsWith('m05.') &&
+        !['callback.classify', 'callback.process', 'request.status'].includes(input.operation)
+      )
+        throw new WorkerFailure('forbidden', 403);
+      if (
+        config.scope === 'm06' &&
+        !input.operation.startsWith('m06.') &&
         !['callback.classify', 'callback.process', 'request.status'].includes(input.operation)
       )
         throw new WorkerFailure('forbidden', 403);
@@ -162,7 +176,7 @@ export function createCollectorHandler(deps: Dependencies) {
       } else {
         const args = { ...input.args };
         let op: string = input.operation;
-        if (op === 'launch' || op === 'm05.launch') {
+        if (op === 'launch' || op === 'm05.launch' || op === 'm06.launch') {
           const p = config.policy,
             actor = String(args.actor_id) as keyof NonNullable<CollectorConfig['policy']>['actors'];
           if (!p || !p.actors[actor] || Number(args.results_limit) > p.max_results_per_profile)
@@ -184,6 +198,13 @@ export function createCollectorHandler(deps: Dependencies) {
             max_actor_starts: p.max_actor_starts,
             max_actor_usd: p.max_actor_usd,
             max_total_usd: p.max_total_usd,
+            ...(op === 'm06.launch'
+              ? {
+                  build_id: p.actors[actor]!.buildId,
+                  memory_mbytes: p.actors[actor]!.memoryMbytes,
+                  timeout_secs: p.actors[actor]!.timeoutSecs,
+                }
+              : {}),
             ...(op === 'm05.launch' && actor === 'apify/website-content-crawler'
               ? { max_website_urls_per_account: p.website_urls_per_account }
               : {}),
@@ -192,7 +213,7 @@ export function createCollectorHandler(deps: Dependencies) {
         if (op === 'request.status') op = 'status';
         if (op === 'callback.classify') op = 'classify';
         receipt = await deps.dispatch(input.requestId, op, args, config, controller.signal);
-        if (input.operation === 'm05.launch') {
+        if (input.operation === 'm05.launch' || input.operation === 'm06.launch') {
           const launch = receipt.result;
           if (
             !launch ||
@@ -210,10 +231,11 @@ export function createCollectorHandler(deps: Dependencies) {
             throw new WorkerFailure('reconciliation_required', 503);
         }
         if (
-          ['launch', 'm05.launch'].includes(input.operation) &&
+          ['launch', 'm05.launch', 'm06.launch'].includes(input.operation) &&
           receipt.result &&
           typeof receipt.result === 'object' &&
-          (input.operation !== 'm05.launch' || ('permit' in receipt.result && receipt.result.permit === true))
+          (!['m05.launch', 'm06.launch'].includes(input.operation) ||
+            ('permit' in receipt.result && receipt.result.permit === true))
         ) {
           const a = String(args.actor_id) as keyof NonNullable<CollectorConfig['policy']>['actors'];
           const build = config.policy!.actors[a]!;
@@ -225,10 +247,15 @@ export function createCollectorHandler(deps: Dependencies) {
                 billingModel: build.billingModel ?? 'PPE',
                 actorPath: a.replace('/', '~'),
                 build: build.build,
+                ...(input.operation === 'm06.launch'
+                  ? { actorId: build.actorId, ownerId: build.owner_id, buildId: build.buildId }
+                  : {}),
                 maxTotalChargeUsd: config.policy!.max_actor_usd,
-                maxItems: (args.account_ids as unknown[]).length * Number(args.results_limit),
-                timeout: 600,
-                memory: 1024,
+                ...(input.operation === 'm06.launch'
+                  ? { maxOutputItems: (args.account_ids as unknown[]).length * Number(args.results_limit) }
+                  : { maxItems: (args.account_ids as unknown[]).length * Number(args.results_limit) }),
+                timeout: input.operation === 'm06.launch' ? build.timeoutSecs : 600,
+                memory: input.operation === 'm06.launch' ? build.memoryMbytes : 1024,
               },
             },
           };

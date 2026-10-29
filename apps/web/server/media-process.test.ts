@@ -88,7 +88,7 @@ describe('M06 deployed media endpoint composition', () => {
       protectionBypass: environment.EMR_MEDIA_PROTECTION_BYPASS,
     });
     expect(t.open).toHaveBeenCalledWith(
-      { writerPassword: environment.EMR_MEDIA_WRITER_PASSWORD, batchSize: 1 },
+      { writerPassword: environment.EMR_MEDIA_WRITER_PASSWORD, batchSize: 1, lane: 'media' },
       '61001',
       expect.any(AbortSignal),
       expect.any(Function),
@@ -106,11 +106,23 @@ describe('M06 deployed media endpoint composition', () => {
     { NEXT_PUBLIC_SUPABASE_URL: 'https://hkiafqrcxaafdbcvjlzv.supabase.co' },
     { EMR_MEDIA_BATCH_SIZE: '0' },
     { EMR_MEDIA_BATCH_SIZE: '6' },
+    { EMR_MEDIA_QUEUE: 'arbitrary' },
   ])('missing/wrong binding fails before any I/O %o', async (changes) => {
     const t = fixture(changes);
     expect((await t.handler(req())).status).toBe(503);
     expect(t.transports).not.toHaveBeenCalled();
     expect(t.open).not.toHaveBeenCalled();
+  });
+  it('selects stories only from server configuration, never from request data', async () => {
+    const t = fixture({ EMR_MEDIA_QUEUE: 'stories' });
+    expect((await t.handler(req())).status).toBe(200);
+    expect(t.open).toHaveBeenCalledWith(
+      { writerPassword: environment.EMR_MEDIA_WRITER_PASSWORD, batchSize: 1, lane: 'stories' },
+      '61001',
+      expect.any(AbortSignal),
+      expect.any(Function),
+    );
+    expect((await t.handler(req({ execution_id: '61002', lane: 'media' }))).status).toBe(400);
   });
   it.each([{ 'x-emr-secret': 'wrong' }, { cookie: 'session=x' }, { origin: audience }] as Record<
     string,

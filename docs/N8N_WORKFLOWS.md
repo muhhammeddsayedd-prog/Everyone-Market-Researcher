@@ -8,6 +8,12 @@ Every workflow the pipeline needs, node by node. Platform inputs and field mappi
 
 ## 1. Conventions
 
+### M06 local stories integration — 29 October 2026
+
+`n8n/workflows/WF-12-instagram-stories.json` is a new inactive, unbound native blueprint for the three verified dev selectors; historical `WF-12.json`/WF-19 exports are preserved. The public usernames-only actor launch is asynchronous, without automatic POST retry. Gateway-owned registration closes separately from authoritative callback settlement; source ownership/options/INPUT and measured cost are verified server-side. A known actor ID alone is not acknowledgment of native launch options.
+
+`m06-stories-callback.ts` is locally connected to restricted SQL and the real-source normalizers. The native WF-19 route is still a required hosted change. `m06-story-media-handoff.mjs` supplies the finite committed-result → WF-31 child/receipt fragment, using the dedicated server-selected `media_stories` lane and the accepted Node/Sharp media component. Twelve fixture stories require three batches of five locally; generic FIFO work remains untouched. Hosted bindings, wider-batch timeout sizing and archive housekeeping are not claimed complete. See the [single next plan](../milestones/M06-collectors-stories-upkeep/evidence/stories-connected-dev-plan-20261029.md); no website branch or denied M05 action is reproduced here.
+
 | Topic | Rule |
 |---|---|
 | Name | `WF-XX · Name [dev]` / `WF-XX · Name [prod]`; sub-workflows `SUB · Name [env]` |

@@ -1,0 +1,131 @@
+{
+  "scope": "M06 T1 manual public-only source fixtures; no hosted ingestion",
+  "accounts": [
+    "everyone.film",
+    "goodpeoplefilms",
+    "bigfootfilms"
+  ],
+  "planObserved": "Starter monthly / Bronze",
+  "runs": [
+    {
+      "actor": "data-slayer/instagram-stories-scraper",
+      "actorId": "z1rvDd9bJrnT4LVee",
+      "expectedBuildId": "LbkXerigrUUa2dxt6",
+      "build": "1.0.32",
+      "timeoutSecs": 180,
+      "memoryMbytes": 1024,
+      "maxTotalChargeUsd": 0.5,
+      "state": "SUCCEEDED",
+      "runId": "T1A54M5kriDsFKnVM",
+      "actualBuildId": "LbkXerigrUUa2dxt6",
+      "startedAt": "2026-10-29T01:04:57.479Z",
+      "finishedAt": "2026-10-29T01:05:07.717Z",
+      "options": {
+        "build": "1.0.32",
+        "timeoutSecs": 180,
+        "memoryMbytes": 1024,
+        "maxTotalChargeUsd": 0.5,
+        "maxItems": 230,
+        "isMaxTotalChargeUsdSetByUser": true,
+        "diskMbytes": 2048
+      },
+      "usageTotalUsd": 0.03088,
+      "chargedEventCounts": {
+        "apify-actor-start": 1,
+        "apify-default-dataset-item": 14
+      },
+      "datasetId": "i1sshtnlXRdN4YRMt",
+      "rowCount": 14,
+      "storyRows": 12,
+      "noStoriesAccounts": [
+        "everyone.film",
+        "bigfootfilms"
+      ],
+      "storyAccounts": {
+        "goodpeoplefilms": 12
+      }
+    },
+    {
+      "actor": "igview-owner/instagram-story-viewer",
+      "actorId": "7eNb0Yr5dLwy1jfPS",
+      "expectedBuildId": "jhZNplLsVKuGelTTm",
+      "build": "1.0.16",
+      "timeoutSecs": 180,
+      "memoryMbytes": 4096,
+      "maxTotalChargeUsd": 0.5,
+      "state": "SUCCEEDED",
+      "runId": "b2ORwCMqJZ7z8Ywri",
+      "nativeCostObservedUsd": 0.12,
+      "actualBuildId": "jhZNplLsVKuGelTTm",
+      "startedAt": "2026-10-29T01:11:13.452Z",
+      "finishedAt": "2026-10-29T01:11:41.278Z",
+      "options": {
+        "build": "1.0.16",
+        "memoryMbytes": 4096,
+        "timeoutSecs": 180,
+        "maxTotalChargeUsd": 0.5,
+        "maxItems": 100,
+        "isMaxTotalChargeUsdSetByUser": true,
+        "diskMbytes": 8192
+      },
+      "usageTotalUsd": 0.19,
+      "chargedEventCounts": {
+        "apify-actor-start": 4,
+        "apify-default-dataset-item": 14
+      },
+      "datasetId": "Cb0dMPrVRvVBoC3gw",
+      "rowCount": 14,
+      "storyRows": 12,
+      "noStoriesAccounts": [
+        "everyone.film",
+        "bigfootfilms"
+      ],
+      "storyAccounts": {
+        "goodpeoplefilms": 12
+      }
+    },
+    {
+      "actor": "louisdeconinck/instagram-story-details-scraper",
+      "actorId": "9pQFsbs9nqUI64rDQ",
+      "expectedBuildId": "4QpIiw2A9YDJ2aneN",
+      "build": "0.0.10",
+      "timeoutSecs": 180,
+      "memoryMbytes": 256,
+      "maxTotalChargeUsd": 1,
+      "state": "SUCCEEDED",
+      "runId": "a6QclwQACLHDrgGcI",
+      "actualBuildId": "4QpIiw2A9YDJ2aneN",
+      "startedAt": "2026-10-29T01:15:54.148Z",
+      "finishedAt": "2026-10-29T01:15:59.929Z",
+      "options": {
+        "build": "0.0.10",
+        "memoryMbytes": 256,
+        "timeoutSecs": 180,
+        "maxTotalChargeUsd": 1,
+        "maxItems": null,
+        "isMaxTotalChargeUsdSetByUser": true,
+        "diskMbytes": 512
+      },
+      "usageTotalUsd": 0.109,
+      "chargedEventCounts": {
+        "results": 1,
+        "init": 1
+      },
+      "datasetId": "bSUaiWxuezYYkxL7s",
+      "rowCount": 12,
+      "storyRows": 12,
+      "noStoriesAccounts": [],
+      "unprovedAccounts": [
+        "everyone.film",
+        "bigfootfilms"
+      ],
+      "storyAccounts": {
+        "goodpeoplefilms": 12
+      }
+    }
+  ],
+  "hostedDatabaseMutation": false,
+  "totalActorStarts": 3,
+  "totalUsageUsd": 0.32988,
+  "allOwnedRunsTerminal": true
+}

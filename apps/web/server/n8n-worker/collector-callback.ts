@@ -10,6 +10,7 @@ import goat from '../../../../n8n/normalizers/goat255.js';
 import dltik from '../../../../n8n/normalizers/dltik.js';
 import ingestion from '../../../../n8n/normalizers/prepare_ingest_groups.js';
 import { createM05Callback } from './m05-callback';
+import { createM06StoriesCallback } from './m06-stories-callback';
 
 type Row = Record<string, unknown>;
 type Group = {
@@ -268,8 +269,10 @@ interface Dependencies {
  */
 export function createCollectorCallback(deps: Dependencies) {
   const m05 = createM05Callback(deps);
+  const m06 = createM06StoriesCallback(deps);
   return async (input: CollectorRequest, config: CollectorConfig, signal: AbortSignal) => {
     if (config.scope === 'm05') return m05(input, config, signal);
+    if (config.scope === 'm06') return m06(input, config, signal);
     const runId = input.args.apify_run_id;
     if (!external(runId)) throw bad();
     const call = async (step: string, operation: string, args: Row) =>
