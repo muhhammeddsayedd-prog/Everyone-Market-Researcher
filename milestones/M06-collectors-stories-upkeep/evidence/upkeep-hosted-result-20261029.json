@@ -1,0 +1,569 @@
+{
+  "observedAt": "2026-10-29T14:11:14.962Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "status": "bounded_hosted_upkeep_completed",
+  "initialSource": "6aa6a3ee7b9fe2903af06395b50eb6c96450076d",
+  "initialCi": 40881560538,
+  "recoverySource": "faca719541e3f7c83bd7ce7843137a72fb727bb6",
+  "recoveryCi": 40885573621,
+  "migration": {
+    "version": "20261029114814",
+    "sha256": "4dfb661015e9a57eca6fcf0bb30a49fa78a6e9dd0a6c6e647edc9e4c9f86e7c2",
+    "appliedOnce": true,
+    "historyCount": 24,
+    "prior23HashesPreserved": true,
+    "securityAdvisorFindings": 0,
+    "performanceAdvisorFindings": 0,
+    "hostedNativeTypeGeneration": false,
+    "local24TypeParityCiPassed": true
+  },
+  "native": {
+    "vimeo": {
+      "executionId": "31325",
+      "request": {
+        "version": 1,
+        "requestId": "c0640000-0002-4000-a000-000000007a5d",
+        "operation": "account.process",
+        "args": {
+          "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+          "platform": "vimeo",
+          "since": "2026-07-31",
+          "metrics_since": "2026-09-29"
+        }
+      },
+      "metadata": {
+        "status": 0,
+        "httpStatus": 404,
+        "provenance": "Transport returned status0 after capturing the native HTTP404 in its private diagnostic; completion evidence is native displayed success plus durable audit and exact replay, not retained execution metadata."
+      },
+      "replay": {
+        "status": 200,
+        "body": {
+          "version": 1,
+          "requestId": "c0640000-0002-4000-a000-000000007a5d",
+          "operation": "account.process",
+          "replayed": true,
+          "result": {
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "platform": "vimeo",
+            "since": "2026-07-31",
+            "metrics_since": "2026-09-29",
+            "metrics_updated": 5,
+            "eligible": true,
+            "reason": null,
+            "removal": {
+              "removed": 0,
+              "restored": 0,
+              "skipped": null
+            }
+          }
+        },
+        "closed": true
+      }
+    },
+    "youtube": {
+      "executionId": "31326",
+      "request": {
+        "version": 1,
+        "requestId": "c0640000-0002-4000-a000-000000007a5e",
+        "operation": "account.process",
+        "args": {
+          "account_id": "3dbf4ea2-3eae-4369-89cb-85df8fcd2e03",
+          "platform": "youtube",
+          "since": "2026-07-31",
+          "metrics_since": "2026-09-29"
+        }
+      },
+      "replay": {
+        "status": 200,
+        "body": {
+          "version": 1,
+          "requestId": "c0640000-0002-4000-a000-000000007a5e",
+          "operation": "account.process",
+          "replayed": true,
+          "result": {
+            "account_id": "3dbf4ea2-3eae-4369-89cb-85df8fcd2e03",
+            "platform": "youtube",
+            "since": "2026-07-31",
+            "metrics_since": "2026-09-29",
+            "metrics_updated": 0,
+            "eligible": false,
+            "reason": "empty_listing",
+            "removal": null
+          }
+        },
+        "closed": true
+      }
+    },
+    "instagramFirstAttempt": {
+      "executionId": "31327",
+      "request": {
+        "version": 1,
+        "requestId": "c0640000-0002-4000-a000-000000007a5f",
+        "operation": "account.process",
+        "args": {
+          "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+          "platform": "instagram",
+          "since": "2026-09-29",
+          "metrics_since": "2026-09-29"
+        }
+      },
+      "replay": {
+        "status": 200,
+        "body": {
+          "version": 1,
+          "requestId": "c0640000-0002-4000-a000-000000007a5f",
+          "operation": "account.process",
+          "replayed": true,
+          "result": {
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "platform": "instagram",
+            "since": "2026-09-29",
+            "metrics_since": "2026-09-29",
+            "metrics_updated": 0,
+            "eligible": false,
+            "reason": "instagram_posts_source_run_not_successful",
+            "removal": null
+          }
+        },
+        "closed": true
+      },
+      "sourceReadStatus": "failed_safe_no_mutation"
+    },
+    "instagramRecovery": {
+      "source": "faca719541e3f7c83bd7ce7843137a72fb727bb6",
+      "reason": "exact-owner metrics only from same registered datasets; preserve native31327",
+      "status": "native_complete_replayed",
+      "preview": {
+        "status": "created",
+        "id": "dpl_2QqDbS4gmyGE9v2h8mN2N1V2uypk",
+        "url": "everyone-market-researcher-svwji5sg4-muhammed-abdelrahman.vercel.app",
+        "source": "faca719541e3f7c83bd7ce7843137a72fb727bb6"
+      },
+      "executionId": "31331",
+      "request": {
+        "version": 1,
+        "requestId": "c0640000-0002-4000-a000-000000007a63",
+        "operation": "account.process",
+        "args": {
+          "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+          "platform": "instagram",
+          "since": "2026-09-29",
+          "metrics_since": "2026-09-29"
+        }
+      },
+      "replay": {
+        "status": 200,
+        "body": {
+          "version": 1,
+          "requestId": "c0640000-0002-4000-a000-000000007a63",
+          "operation": "account.process",
+          "replayed": true,
+          "result": {
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "platform": "instagram",
+            "since": "2026-09-29",
+            "metrics_since": "2026-09-29",
+            "metrics_updated": 2,
+            "eligible": false,
+            "reason": "instagram_posts_pinned_posts_not_covered",
+            "removal": null
+          }
+        },
+        "closed": true
+      }
+    },
+    "health": {
+      "executionId": "31328",
+      "requestId": "c0691000-0001-4000-a000-000000007a60",
+      "nativeResult": {
+        "projection": {
+          "version": "m06",
+          "failing_accounts": 0,
+          "stale_accounts": 89,
+          "queue_depths": {
+            "embed": 0,
+            "media": 267,
+            "ai_extract": 290
+          },
+          "story_queue_depth": null,
+          "zero_item_streaks": 0,
+          "story_capture_gap": 0.3076923076923077,
+          "media_missing_24h": 31,
+          "m06_signals_observed": true,
+          "over_budget": false,
+          "notification_mode": "local_only",
+          "sent": false
+        },
+        "sent": false,
+        "delivery": "local_only"
+      },
+      "evidenceMethod": "Observed native Verify local health delivery successful output table; no email node or call"
+    }
+  },
+  "itemEvidence": {
+    "vimeoChanged": [
+      {
+        "id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a",
+        "platform": "vimeo",
+        "metrics": {
+          "likes": 0,
+          "plays": null,
+          "comments": 0
+        },
+        "metrics_updated_at": "2026-10-29T13:32:36.39+00:00"
+      },
+      {
+        "id": "4d583ddd-7211-401a-a668-59b670c18bb6",
+        "platform": "vimeo",
+        "metrics": {
+          "likes": 0,
+          "plays": null,
+          "comments": 0
+        },
+        "metrics_updated_at": "2026-10-29T13:32:36.39+00:00"
+      },
+      {
+        "id": "9c72f29d-4329-41d1-96fe-0cfe3c54effd",
+        "platform": "vimeo",
+        "metrics": {
+          "likes": 0,
+          "plays": null,
+          "comments": 0
+        },
+        "metrics_updated_at": "2026-10-29T13:32:36.39+00:00"
+      },
+      {
+        "id": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+        "platform": "vimeo",
+        "metrics": {
+          "likes": 0,
+          "plays": null,
+          "comments": 0
+        },
+        "metrics_updated_at": "2026-10-29T13:32:36.39+00:00"
+      },
+      {
+        "id": "c84883ab-e850-48ad-8345-88142a121c3c",
+        "platform": "vimeo",
+        "metrics": {
+          "likes": 0,
+          "plays": null,
+          "comments": 0
+        },
+        "metrics_updated_at": "2026-10-29T13:32:36.39+00:00"
+      }
+    ],
+    "recoveryChanges": [
+      {
+        "id": "bd4b0ff3-73b1-4c7f-a6e3-19a325e86a94",
+        "external_id": "DeZgi_rDHGi",
+        "platform": "instagram",
+        "metricsBefore": {
+          "likes": 420,
+          "views": null,
+          "shares": null,
+          "comments": 54
+        },
+        "metrics": {
+          "likes": 420,
+          "views": null,
+          "shares": null,
+          "comments": 54
+        },
+        "metrics_updated_at": "2026-10-28T01:16:27.685+00:00",
+        "updated_at": "2026-10-29T13:57:31.165146+00:00"
+      },
+      {
+        "id": "e5d645b0-02f1-4b1f-b297-68a5ac62ef91",
+        "external_id": "DeEq2JLscE1",
+        "platform": "instagram",
+        "metricsBefore": {
+          "likes": 240,
+          "views": 11420,
+          "shares": null,
+          "comments": 15
+        },
+        "metrics": {
+          "likes": 240,
+          "views": 11420,
+          "shares": null,
+          "comments": 15
+        },
+        "metrics_updated_at": "2026-10-28T01:16:27.685+00:00",
+        "updated_at": "2026-10-29T13:57:31.165146+00:00"
+      }
+    ],
+    "invariants": {
+      "accounts": true,
+      "raw": true,
+      "ai": true,
+      "media": true,
+      "queues": true,
+      "campaign": true,
+      "selectedCount": true,
+      "recoveryProtectedExceptClock": true,
+      "recoverySearchVectors": true
+    },
+    "firstPassWholeRowLimitation": "Whole protected hash includes existing trigger-managed updated_at; projected ownership, locks, AI and thumbnail fields match. Do not claim that whole hash is unchanged."
+  },
+  "quiescence": {
+    "selected_live_claims": 0,
+    "campaign_unsettled_jobs": 0,
+    "campaign_running_parents": 0,
+    "selected_running_parents": 0,
+    "active_other_m06_sessions": 0,
+    "global_media_session_locks": 0,
+    "campaign_unprocessed_actors": 0,
+    "campaign_unregistered_launches": 0
+  },
+  "cleanup": {
+    "status": "verified_closed",
+    "nativeVacancy": true,
+    "workflows": [
+      {
+        "id": "vKzW8P9KPUx7pybW",
+        "deleteStatus": 200,
+        "absenceStatus": 404,
+        "verified": true
+      },
+      {
+        "id": "JQQ7u7M1RPBQVBA8",
+        "deleteStatus": 200,
+        "absenceStatus": 404,
+        "verified": true
+      }
+    ],
+    "credential": {
+      "id": "vQOKwQq3eY7ed3wl",
+      "deleteStatus": 200,
+      "absenceStatus": 404,
+      "verified": true
+    },
+    "deployments": [
+      {
+        "id": "dpl_96r2ii3sgB5ooemZW5fhCCFpARcd",
+        "deleteStatus": 200,
+        "state": "DELETED",
+        "absenceStatus": 404,
+        "verified": true
+      },
+      {
+        "id": "dpl_2QqDbS4gmyGE9v2h8mN2N1V2uypk",
+        "deleteStatus": 200,
+        "state": "DELETED",
+        "absenceStatus": 404,
+        "verified": true
+      }
+    ],
+    "envs": [
+      {
+        "id": "icFmMI8Eicd0dB8s",
+        "key": "EMR_UPKEEP_SOURCE_PINS",
+        "deleteStatus": 200
+      },
+      {
+        "id": "RPN1jfnwKZUrWXCC",
+        "key": "EMR_UPKEEP_APIFY_READ_TOKEN",
+        "deleteStatus": 200
+      },
+      {
+        "id": "A47nH2y4D1pQFvie",
+        "key": "EMR_UPKEEP_ACCOUNT_IDS",
+        "deleteStatus": 200
+      },
+      {
+        "id": "1AnTstLzXyQy6YMG",
+        "key": "EMR_UPKEEP_WRITER_PASSWORD",
+        "deleteStatus": 200
+      },
+      {
+        "id": "kROXp0cOE4XNz6zi",
+        "key": "EMR_UPKEEP_TOKEN_SHA256",
+        "deleteStatus": 200
+      },
+      {
+        "id": "KnA2iSJUnp7H4YCp",
+        "key": "EMR_UPKEEP_COMMIT_SHA",
+        "deleteStatus": 200
+      },
+      {
+        "id": "oHZu95bnE3FIwJNe",
+        "key": "EMR_UPKEEP_ENABLED",
+        "deleteStatus": 200
+      }
+    ],
+    "envsVerified": true,
+    "priorEnvironmentMetadataPreserved": true,
+    "retainedProviderOriginalBindings": [
+      {
+        "id": "3KJNlYI9eDI59QDV",
+        "key": "EMR_UPKEEP_YOUTUBE_API_KEY",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "m06-upkeep-local"
+      },
+      {
+        "id": "FZ3TUrI1YqAOtKt3",
+        "key": "EMR_UPKEEP_VIMEO_TOKEN",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "m06-upkeep-local"
+      }
+    ],
+    "bypass": {
+      "revokeStatus": 200,
+      "ownedAbsentAndCampaignMapIdentical": true
+    },
+    "campaign": {
+      "workflowDefinitionsAndVersionsIdentical": true,
+      "workflowVersions": [
+        {
+          "id": "8Wxh2Sybg7SjBRE9",
+          "active": true,
+          "versionId": "0884b238-785e-4d36-9c0f-c4c8ba364187",
+          "activeVersionId": "0884b238-785e-4d36-9c0f-c4c8ba364187"
+        },
+        {
+          "id": "ZlOfswfZfEoAwQxJ",
+          "active": true,
+          "versionId": "6442cdec-df31-4ae3-a83e-52d93fef7c19",
+          "activeVersionId": "6442cdec-df31-4ae3-a83e-52d93fef7c19"
+        },
+        {
+          "id": "2HFsCokTsG4Ub7LG",
+          "active": true,
+          "versionId": "5c88ae12-3cfc-4e5d-bf0c-3c214e742449",
+          "activeVersionId": "5c88ae12-3cfc-4e5d-bf0c-3c214e742449"
+        },
+        {
+          "id": "m0u623dOTHvzOSFR",
+          "active": true,
+          "versionId": "20424a64-eb86-4f63-879c-77a7a7db9ba7",
+          "activeVersionId": "20424a64-eb86-4f63-879c-77a7a7db9ba7"
+        },
+        {
+          "id": "qdnUg63aU6GRjFWi",
+          "active": true,
+          "versionId": "a4a6fda9-b52a-4d83-909f-15e0640164da",
+          "activeVersionId": "a4a6fda9-b52a-4d83-909f-15e0640164da"
+        }
+      ],
+      "deploymentStatus": 200,
+      "deploymentPinnedAndReady": true,
+      "webhookStatus": 200,
+      "webhook": {
+        "id": "account_hook_u0Ax1XlwPsPHCtsPgGXHy0kO",
+        "ownerId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+        "projectIds": [
+          "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu"
+        ],
+        "events": [
+          "deployment.created"
+        ],
+        "url": "https://muhhammedsayed.app.n8n.cloud/webhook/emr-m06-production-guard"
+      },
+      "webhookMatches": true
+    },
+    "database": {
+      "dataIdenticalToSettledFinal": true,
+      "queuesIdentical": true,
+      "campaignIdentical": true,
+      "auditsIdentical": true,
+      "quotaIdentical": true,
+      "history24": true,
+      "quiescent": true
+    },
+    "originalsRetained": true,
+    "privateCoordinatorStateDeleted": true,
+    "persistentDevOriginalsRetained": true,
+    "campaignPrivateStateRetained": true,
+    "retainedProviderOriginalsReason": "Owner-supplied reusable private native originals remain Sensitive and scoped only to Preview/m06-upkeep-local. Seven disposable runtime bindings, two owned test builds and exact nondefault token are removed; no original value was read or extracted.",
+    "credentialBearingChildrenClosed": true
+  },
+  "usage": {
+    "explicitCoordinatorAttempts": {
+      "vercel": 49,
+      "n8n": 39,
+      "database": 13,
+      "connector": 1,
+      "apifyGets": 8,
+      "application": 8
+    },
+    "nativeExecutions": 5,
+    "nativeGatewayRequests": 9,
+    "actorStarts": 0,
+    "actorUsd": 0,
+    "m06SourceCumulative": {
+      "actorStarts": 4,
+      "actorUsd": 0.35859,
+      "campaignActorStarts": 0
+    },
+    "youtubeQuotaIncrement": 2,
+    "vimeoHttpGetCount": null,
+    "apifyHostedHttpGetCount": null,
+    "note": "Counts are explicit coordinator attempts and actual native graph requests; browser background reads and exact hosted source GET totals were not instrumented. Do not present estimates as measured counts.",
+    "infrastructureUsd": null
+  },
+  "openEvidence": [
+    "No naturally removed/restored hosted example occurred.",
+    "Instagram pinned coverage and authoritative paid-source exhaustion remain unproved; removal blocked.",
+    "The first snapshot omitted updated_at/search-vector projections, so whole-row historical preservation is not retroactively proved. Projected fields and subsequent clock-excluded protection/search-vector checks match.",
+    "Health email and full freshness targets remain open.",
+    "Seven-day comparison/MA-16 remains open, fixed campaign unchanged."
+  ],
+  "productionChanged": false,
+  "merged": false,
+  "m07Started": false,
+  "sourceProvenance": [
+    {
+      "pass": "posts",
+      "run_id": "TiAgZhUqyHUu4nJ3c",
+      "owner_id": "nAuPNiU41ZLSsmcVx",
+      "actor_id": "shu8hvrXbJbY3Eb9W",
+      "build_id": "yvA3PQRWe95APBdIh",
+      "status": "SUCCEEDED",
+      "finished_at": "2026-10-28T01:16:27.685Z",
+      "dataset_id": "YQpFPMfNqB7DqLrMH",
+      "item_count": 8,
+      "actual_input": {
+        "directUrls": [
+          "https://www.instagram.com/everyone.film/"
+        ],
+        "resultsType": "posts",
+        "resultsLimit": 30,
+        "onlyPostsNewerThan": "2026-09-12",
+        "skipPinnedPosts": true,
+        "addParentData": false
+      },
+      "selection": "exact everyone.film owner only; authentic other-owner rows excluded"
+    },
+    {
+      "pass": "reels",
+      "run_id": "xBm5a79m30effeLYp",
+      "owner_id": "nAuPNiU41ZLSsmcVx",
+      "actor_id": "shu8hvrXbJbY3Eb9W",
+      "build_id": "yvA3PQRWe95APBdIh",
+      "status": "SUCCEEDED",
+      "finished_at": "2026-10-28T01:16:21.009Z",
+      "dataset_id": "euQ4tGMXwcU4sRdxe",
+      "item_count": 4,
+      "actual_input": {
+        "directUrls": [
+          "https://www.instagram.com/everyone.film/"
+        ],
+        "resultsType": "reels",
+        "resultsLimit": 30,
+        "onlyPostsNewerThan": "2026-09-12",
+        "skipPinnedPosts": null,
+        "addParentData": false
+      },
+      "selection": "exact everyone.film owner only; authentic other-owner rows excluded"
+    }
+  ]
+}
