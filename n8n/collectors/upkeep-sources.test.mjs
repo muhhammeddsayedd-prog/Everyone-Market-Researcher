@@ -153,21 +153,60 @@ test('Vimeo derives exhaustion from the exact owned official list response', asy
   assert.equal(new URL(ports.calls[0].url).pathname, '/users/42/videos');
 });
 
-test('Vimeo sorted traversal crosses requested date without borrowing a continuation', async () => {
+test('Vimeo range crossing is diagnostic only and traversal continues to actual exhaustion', async () => {
   const ports = requests([
     vimeoPage([vimeoVideo()], nextVimeo),
     vimeoPage([vimeoVideo('99', '2026-09-28T23:59:59Z')], '/users/42/videos?page=3', 2),
+    vimeoPage([vimeoVideo('102', '2026-10-27T00:00:00Z')], null, 3),
   ]);
   const receipt = await readUpkeepListing(vimeoTarget, ports, options);
-  assert.equal(receipt.pages_observed, 2);
+  assert.equal(receipt.pages_observed, 3);
   assert.equal(receipt.reached_since, true);
-  assert.equal(receipt.source_exhausted, false);
+  assert.equal(receipt.source_exhausted, true);
   assert.equal(receipt.next_cursor, null);
   assert.deepEqual(
     receipt.entries.map((r) => r.external_id),
-    ['101'],
+    ['101', '102'],
   );
   assert.equal(evaluateRemovalListing(vimeoTarget, receipt).eligible, true);
+});
+
+test('Vimeo older release first page never hides a current item on a later page', async () => {
+  const pages = [
+    vimeoPage([vimeoVideo('99', '2026-09-28T23:59:59Z')], nextVimeo),
+    vimeoPage([vimeoVideo('101', '2026-10-28T00:00:00Z')], null, 2),
+  ];
+  const receipt = await readUpkeepListing(vimeoTarget, requests(structuredClone(pages)), options);
+  assert.equal(receipt.pages_observed, 2);
+  assert.equal(receipt.range_complete, true);
+  assert.equal(receipt.source_exhausted, true);
+  assert.deepEqual(
+    receipt.entries.map((row) => row.external_id),
+    ['101'],
+  );
+  const capped = await readUpkeepListing(vimeoTarget, requests(structuredClone(pages)), {
+    ...options,
+    maxPages: 1,
+  });
+  assert.equal(capped.reached_since, true);
+  assert.equal(capped.range_complete, false);
+  assert.equal(capped.source_exhausted, false);
+  assert.equal(capped.hit_limit, true);
+  assert.equal(evaluateRemovalListing(vimeoTarget, capped).eligible, false);
+});
+
+test('Vimeo repeated identity across pages blocks removal as pagination drift', async () => {
+  const receipt = await readUpkeepListing(
+    vimeoTarget,
+    requests([vimeoPage([vimeoVideo()], nextVimeo), vimeoPage([vimeoVideo()], null, 2)]),
+    options,
+  );
+  assert.equal(receipt.status, 'FAILED');
+  assert.equal(receipt.reason, 'M06_UPKEEP_PAGINATION_REPEATED_ID');
+  assert.equal(receipt.range_complete, false);
+  assert.equal(receipt.source_exhausted, false);
+  assert.deepEqual(evaluateRemovalListing(vimeoTarget, receipt).metrics_external_ids, ['101']);
+  assert.equal(evaluateRemovalListing(vimeoTarget, receipt).eligible, false);
 });
 
 test('empty/capped Vimeo cannot mark removed; option complete is never evidence', async () => {
@@ -200,13 +239,12 @@ test('interrupted listing retains already validated metrics and blocks removal',
   assert.deepEqual(policy.metrics_external_ids, ['101']);
 });
 
-test('foreign pagination, owner, redirect and unsorted responses fail closed', async () => {
+test('foreign pagination, owner, redirect and nonterminal empty responses fail closed', async () => {
   const cases = [
     [vimeoPage([vimeoVideo()], 'https://evil.invalid/users/42/videos?page=2')],
     [vimeoPage([vimeoVideo()], '/users/999/videos?page=2')],
     [vimeoPage([{ ...vimeoVideo(), user: { uri: '/users/999' } }])],
     [() => ({ status: 302, body: {} })],
-    [vimeoPage([vimeoVideo('102', '2026-10-27T00:00:00Z'), vimeoVideo('101', '2026-10-28T00:00:00Z')])],
     [vimeoPage([], nextVimeo)],
   ];
   for (const bodies of cases) {

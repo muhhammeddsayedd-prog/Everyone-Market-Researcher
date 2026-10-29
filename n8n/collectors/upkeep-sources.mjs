@@ -181,8 +181,8 @@ async function readVimeo(target, ports, settings, signal) {
     endpoint = vimeoEndpoint(target);
   receipt.api_request_count = 0;
   if (!endpoint.resourcePath || endpoint.resolvePath) fail('M06_UPKEEP_SOURCE_IDENTITY_UNRESOLVED');
-  let previousDate = Infinity,
-    pageNumber = 1;
+  let pageNumber = 1;
+  const idsSeen = new Set();
   const urlFor = (n) =>
     'https://api.vimeo.com' +
     endpoint.resourcePath +
@@ -208,10 +208,12 @@ async function readVimeo(target, ports, settings, signal) {
         fail('M06_UPKEEP_SOURCE_CONTRACT_DRIFT');
       const dates = body.data.map((r) => iso(r?.release_time ?? r?.created_time));
       if (dates.some((d) => !d)) fail('M06_UPKEEP_SOURCE_CONTRACT_DRIFT');
+      const pageIds = new Set();
       for (let n = 0; n < dates.length; n++) {
-        const timestamp = Date.parse(dates[n]);
-        if (timestamp > previousDate) fail('M06_UPKEEP_PAGINATION_UNSORTED');
-        previousDate = timestamp;
+        const identity = /^\/videos\/(\d+)$/.exec(body.data[n]?.uri ?? '')?.[1];
+        if (!identity) fail('M06_UPKEEP_SOURCE_CONTRACT_DRIFT');
+        if (idsSeen.has(identity) || pageIds.has(identity)) fail('M06_UPKEEP_PAGINATION_REPEATED_ID');
+        pageIds.add(identity);
         if (
           endpoint.kind === 'users' &&
           body.data[n].user?.uri !== undefined &&
@@ -227,14 +229,15 @@ async function readVimeo(target, ports, settings, signal) {
       const next = vimeoNext(body.paging.next, endpoint.resourcePath, pageNumber);
       if (next !== null && !body.data.length) fail('M06_UPKEEP_PAGINATION_EMPTY_NONTERMINAL');
       addEntries(receipt, normalized.items, target, settings.now, settings.maxItems, settings.now);
+      for (const identity of pageIds) idsSeen.add(identity);
       receipt.pages_observed++;
       receipt.next_cursor = next;
       receipt.source_exhausted = next === null;
-      receipt.reached_since = dates.length > 0 && Date.parse(dates.at(-1)) < Date.parse(settings.cutoff);
-      if (receipt.source_exhausted || receipt.reached_since) {
+      // `sort=date` has endpoint-specific semantics; release_time is not a
+      // proof that later pages are older. Date crossing is diagnostic only.
+      receipt.reached_since ||= dates.some((date) => Date.parse(date) < Date.parse(settings.cutoff));
+      if (receipt.source_exhausted) {
         receipt.range_complete = true;
-        // A sorted range crossing is a terminal result for this requested range.
-        receipt.next_cursor = null;
         return receipt;
       }
       pageNumber++;
