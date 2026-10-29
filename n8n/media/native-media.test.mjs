@@ -81,6 +81,9 @@ test('generated workflow uses supported pinned nodes and Vercel Node image proce
   assert.equal(workflow.settings.saveExecutionProgress, false);
   assert.equal(workflow.settings.saveManualExecutions, false);
   assert.equal(workflow.settings.errorWorkflow, undefined);
+  assert.equal(workflow.settings.availableInMCP, false);
+  assert.deepEqual(named(graph, 'When called').parameters, { inputSource: 'passthrough' });
+  assert.notEqual(named(graph, 'When called').disabled, true);
   assert.equal(workflow.nodes.filter((n) => n.type === 'n8n-nodes-base.scheduleTrigger').length, 0);
   assert.deepEqual(
     workflow.nodes.map((n) => [n.type, n.typeVersion]),

@@ -383,7 +383,13 @@ describe.skipIf(process.env.EMR_M06_STORIES_LOCAL_SQL_TEST !== 'true')(
             const claimed = receipts[wakeCalls.length];
             expect(claimed).toBeDefined();
             expect(child.parameters.options.waitForSubWorkflow).toBe(true);
-            expect(child.parameters.workflowInputs.value).toEqual({});
+            expect(child.parameters.workflowInputs).toBeUndefined();
+            const empty = fragment.nodes.find((n: Row) => n.name === 'Prepare empty story media input');
+            expect(
+              runInNewContext('(function(){' + empty.parameters.jsCode + '})()', {
+                $input: { all: () => [{ json: next }] },
+              })[0].json,
+            ).toEqual({});
             wakeCalls.push(child.parameters.workflowId.value);
             const prior = next;
             next = runInNewContext('(function(){' + advance.parameters.jsCode + '})()', {

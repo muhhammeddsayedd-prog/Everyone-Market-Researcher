@@ -452,6 +452,20 @@
         ]
       },
       {
+        "id": "0aecf6fc-99c9-40f6-a0d9-764997bce353",
+        "name": "Prepare empty story media input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$input.all();if(r.length!==1||r[0].json?.action!==\"execute\")throw Error(\"M06_STORY_MEDIA_RESULT_INVALID\");return[{json:{},pairedItem:{item:0}}];"
+        },
+        "position": [
+          2500,
+          -300
+        ]
+      },
+      {
         "id": "86b10cd3-eb54-4f91-a028-c789cb432002",
         "name": "Process new story media",
         "type": "n8n-nodes-base.executeWorkflow",
@@ -463,14 +477,6 @@
             "__rl": true,
             "mode": "id",
             "value": "UNBOUND_EMR_STORY_MEDIA"
-          },
-          "workflowInputs": {
-            "mappingMode": "defineBelow",
-            "value": {},
-            "matchingColumns": [],
-            "schema": [],
-            "attemptToConvertTypes": false,
-            "convertFieldsToString": false
           },
           "options": {
             "waitForSubWorkflow": true
@@ -703,7 +709,7 @@
         "main": [
           [
             {
-              "node": "Process new story media",
+              "node": "Prepare empty story media input",
               "type": "main",
               "index": 0
             }
@@ -711,6 +717,17 @@
           [
             {
               "node": "Return stories callback outcome",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare empty story media input": {
+        "main": [
+          [
+            {
+              "node": "Process new story media",
               "type": "main",
               "index": 0
             }

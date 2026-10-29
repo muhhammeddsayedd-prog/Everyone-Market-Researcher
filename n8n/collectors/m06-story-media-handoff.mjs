@@ -92,6 +92,12 @@ export function buildM06StoryMediaHandoff(inputBindings, binding, ready = true) 
       [0, 0],
     ),
     test = booleanIf(key, 'Stories media continuation?', '={{ $json.action === "execute" }}', [200, 0]),
+    empty = code(
+      key,
+      'Prepare empty story media input',
+      'const r=$input.all();if(r.length!==1||r[0].json?.action!=="execute")throw Error("M06_STORY_MEDIA_RESULT_INVALID");return[{json:{},pairedItem:{item:0}}];',
+      [300, -100],
+    ),
     child = execute(b, key, 'Process new story media', 'WF-31', [], {}, true, [400, -100]),
     advance = code(
       key,
@@ -102,14 +108,19 @@ export function buildM06StoryMediaHandoff(inputBindings, binding, ready = true) 
     );
   child.retryOnFail = false;
   child.onError = 'stopWorkflow';
+  // The child accepts passthrough, while its authenticated runtime accepts only
+  // {}. Native ExecuteWorkflow1.4 requires omitting workflowInputs in this mode;
+  // the preceding Code node supplies exactly that empty object.
+  delete child.parameters.workflowInputs;
   return {
     state: 'local_native_fragment_only',
     entry: prepare.name,
     exit: { node: test.name, branch: 1 },
-    nodes: [prepare, test, child, advance],
+    nodes: [prepare, test, empty, child, advance],
     connections: {
       ...line(prepare.name, test.name),
-      [test.name]: { main: [[edge(child.name)], []] },
+      [test.name]: { main: [[edge(empty.name)], []] },
+      ...line(empty.name, child.name),
       ...line(child.name, advance.name, test.name),
     },
   };

@@ -3,6 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { buildNativeM06Callback, buildUnboundNativeM06Callback } from './build-native-m06-callback.mjs';
+import { buildNativeMedia } from '../media/build-native-media.mjs';
 const bindings = JSON.parse(
   readFileSync(new URL('../foundation/bindings.dev.json', import.meta.url), 'utf8'),
 );
@@ -138,8 +139,28 @@ async function runGraph(d, options = {}) {
       assert.equal(n.parameters.workflowId.value, media.workflowId);
       assert.equal(n.parameters.mode, 'once');
       assert.equal(n.parameters.options.waitForSubWorkflow, true);
-      assert.deepEqual(n.parameters.workflowInputs.value, {});
+      assert.equal(n.parameters.workflowInputs, undefined);
+      assert.deepEqual(JSON.parse(JSON.stringify(value)), {});
       assert.equal(n.retryOnFail, false);
+      // Exercise the actual accepted media preflight, not an invented child
+      // input port. It still rejects any nonempty caller object before I/O.
+      const child = buildNativeMedia({
+        audience: media.audience,
+        credential: {
+          id: 'LocalChildMediaAuth',
+          name: 'Local child media only',
+          type: 'httpCustomAuth',
+          environment: 'dev',
+        },
+      });
+      const preflight = child.workflow.nodes.find((x) => x.name === 'Validate media binding');
+      const prepared = runInNewContext(
+        '(function(){' + preflight.parameters.jsCode + '})()',
+        { $input: { all: () => [{ json: value }] }, $execution: { id: String(63010 + children + 1) } },
+        { timeout: 1000 },
+      );
+      assert.equal(prepared[0].json.url, media.audience + '/api/internal/media/process');
+      assert.equal(prepared[0].json.body.execution_id, String(63010 + children + 1));
       events.push('media');
       children++;
       value = options.mediaError

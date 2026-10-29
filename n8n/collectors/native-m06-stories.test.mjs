@@ -412,16 +412,23 @@ test('committed story ingestion immediately dispatches finite native media batch
   assert.equal(child.parameters.workflowId.value, mediaBinding.workflowId);
   assert.equal(child.parameters.mode, 'once');
   assert.equal(child.parameters.options.waitForSubWorkflow, true);
-  assert.deepEqual(child.parameters.workflowInputs.value, {});
+  assert.equal(child.parameters.workflowInputs, undefined);
   assert.equal(child.retryOnFail, false);
   const input = { state: 'completed', updated: true, media_dispatch: { queue: 'stories', items_new: 12 } };
   let state = runInNewContext('(function(){' + prepare.parameters.jsCode + '})()', {
     $input: { all: () => [{ json: input }] },
   })[0].json;
   const executions = [];
+  const empty = fragment.nodes.find((n) => n.name === 'Prepare empty story media input');
   for (const claimed of [5, 5, 2]) {
     assert.equal(state.action, 'execute');
-    executions.push({ workflowId: child.parameters.workflowId.value, input: {} });
+    const childRows = runInNewContext('(function(){' + empty.parameters.jsCode + '})()', {
+      $input: { all: () => [{ json: state }] },
+    });
+    assert.deepEqual(JSON.parse(JSON.stringify(childRows[0].pairedItem)), { item: 0 });
+    const childInput = childRows[0].json;
+    assert.deepEqual(JSON.parse(JSON.stringify(childInput)), {});
+    executions.push({ workflowId: child.parameters.workflowId.value, input: childInput });
     const prior = state;
     state = runInNewContext('(function(){' + advance.parameters.jsCode + '})()', {
       $input: { all: () => [{ json: mediaReceipt(claimed) }] },

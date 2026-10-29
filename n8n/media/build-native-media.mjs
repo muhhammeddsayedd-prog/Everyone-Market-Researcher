@@ -156,7 +156,15 @@ function definition(transport, ready) {
     };
   const nodes = [
     node(key, 'Manual dev check', 'manualTrigger', {}, [-240, -100]),
-    { ...trigger(key, []), position: [-240, 100] },
+    {
+      ...trigger(key, []),
+      // ExecuteWorkflowTrigger1.3 rejects an explicitly empty declared schema
+      // at publication (minRequiredFields:1). Accept data at the native entry;
+      // mediaPreflight still permits exactly one empty JSON object before I/O.
+      // https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/ExecuteWorkflow/ExecuteWorkflowTrigger/ExecuteWorkflowTrigger.node.ts
+      parameters: { inputSource: 'passthrough' },
+      position: [-240, 100],
+    },
     code(
       key,
       'Validate media binding',

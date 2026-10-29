@@ -366,7 +366,7 @@ function definition(input, transport, mediaBinding, ready, limits) {
         ),
         ...media.connections,
         [media.exit.node]: {
-          main: [[edge('Process new story media')], [edge('Return stories callback outcome')]],
+          main: [media.connections[media.exit.node].main[0], [edge('Return stories callback outcome')]],
         },
       },
       settings: privacy,
