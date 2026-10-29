@@ -1,79 +1,107 @@
-# M06 connected stories and seven-day comparison — next development plan
+# M06 connected stories and finite seven-day development comparison
 
-Prepared after the three [manual captures](story-fixture-capture-20261029.md). **Not executed or authorized by the manual-source instruction.** M06 remains open. No new spending-approval framework: estimates and finite launch settings are operational controls under standing development authorization. Hosted migration/ingestion, temporary security bindings and bounded recurring comparison need their corresponding scope decision before this plan runs.
+The owner accepted `e8dcee8`/CI40846983555 and now authorizes the finite comparison in section4, its necessary preparation/runtime and recorded shutdown. This supersedes this plan's earlier preparation-only status. Proceed after actual implementation qualification and supported native preflight; no second approval for this same scope is needed. Full M06 and MA-16 remain open. Estimates and finite execution options are operational controls under standing development spending authority, not owner financial ceilings.
 
-## 1. Preserve and inspect once
+## 1. Closed accepted state: preserve, do not replay
 
-- Preserve accepted media `cf30b39`/CI40795882887 and executions31261/31262. Do not repeat that thumbnail, drain/reorder generic `media`, reopen M05 or request stored credentials again.
-- Fresh read-only dev identity/history/hash and quiescence inventory: `zmotjsbzhzjvpelxvxlf`, existing21 versions; generic queue count/message identities (last observed267), story lane absent/empty before22, owned runs/claims/locks, inactive WF-91 and callback consumers. Reconcile legitimate changes; do not reset to this older snapshot.
-- Verify pending `20261029005731_m06_story_collection_bakeoff.sql` SHA256 `1811fef97bb381baa928583e4197725d56acc719d36079e54d211afd41fe578f`. Exact one-file dry run, then apply once under future hosted authorization. Preserve all21 hashes, seeded data and collected evidence. Reconcile history/schema before any retry. Generated22 types are local; run actual hosted field/grant/RLS/advisor readbacks separately.
-- Do not retro-register the three manual actor IDs as gateway-issued runs. They remain terminal fixture provenance. A future connected run needs its own genuine server allocation, native acknowledgment, registration and measured settlement.
+- Hosted dev `zmotjsbzhzjvpelxvxlf` already has22 migrations. Migration22 `20261029005731_m06_story_collection_bakeoff.sql` is applied and verified, SHA256 `1811fef97bb381baa928583e4197725d56acc719d36079e54d211afd41fe578f`. Do not repeat its migration/setup sequence; preserve all prior version/statement hashes.
+- Accepted application `8aed186`, workflow `780184f`, native collector31282 and Data Slayer `gYd3yRVWYdM3MO4th` yielded13 Good People stories and13 JPEGs. Provider callback HTTP200 in987ms, replay/unknown-run checks, exact USD0.02871 cost-once, quiescence and cleanup are closed evidence. [Actual result](stories-connected-native-20261029.md).
+- Preserve earlier accepted media `cf30b39`/CI40795882887 and31261/31262, all three terminal manual captures and their provenance, the13 accepted archived story deliveries, every item/raw/comparison/audit/object, and the267 generic media messages and full delivery hash. None count as a new campaign day.
+- The native configuration maximum is40minutes/2400seconds. The old45-minute proposal was rejected; it is not a setting to retry. The first smaller observation used its approved1800-second envelope; campaign processing below uses bounded continuation instead of a larger unsupported timeout.
 
-## 2. Required maintained callback and runtime changes
+## 2. Necessary campaign implementation and qualification
 
-Use the existing restricted gateway, credentials and supported native save contracts. No historical M03 workflow, denied M05 website correction or alternative implementation of that action is changed.
+Reuse the accepted restricted writer, registered source jobs, asynchronous callback admission/HTTP acknowledgment, actual source verification, durable story lane and media receipts. No M03 supervisor or denied M05 implementation is reopened.
 
-1. Install a separate owned M06 WF-12 from `WF-12-instagram-stories.json`, inactive until its exact bindings pass. Existing native Apify credential stays `apifyApi`; Machine transport stays `httpCustomAuth`. Build/owner/INPUT and acknowledged finite options must agree with the authentic server allocation. Known actor ID alone never authorizes another start.
-2. Add only registered `instagram_stories` routing to an owned maintained WF-19 definition. The new server branch verifies provider owner, actor/build, options, exact public `usernames` INPUT and actual usage, bounds the dataset and calls restricted `ops.m06_execute`. Unknown IDs reject before source reads/ingestion/cost; saved completed replay skips source reads. Preserve unrelated callback branches and closed historical dependencies. This native graph change is still pending, not a saved Cloud export.
-3. After a fresh committed ingest returns `media_dispatch`, attach `buildM06StoryMediaHandoff`: Code → If → supported Execute Workflow1.4 once/wait=true → receipt check. Bind a dedicated owned WF-31 story profile to the exact same protected Preview. `EMR_MEDIA_QUEUE=stories` is server-selected; no HTTP caller chooses a queue. Batch size5 must agree in server and handoff binding. The generic FIFO is untouched.
-4. Temporary collector configuration uses `EMR_COLLECTORS_ENABLED`, `EMR_COLLECTORS_WRITER_PASSWORD`, `EMR_COLLECTORS_APIFY_READ_TOKEN`, `EMR_COLLECTORS_TOKEN_SHA256`, `EMR_COLLECTORS_COMMIT_SHA`, `EMR_COLLECTORS_ACCOUNT_IDS`, `EMR_COLLECTORS_LIVE_POLICY`. M06 policy allows only the three approved story actors and empty input defaults, exact owner/build, per-source memory/timeout and finite charge/output/start settings. Native Preview/project/ref/revision identities must agree.
-5. Media configuration uses `EMR_MEDIA_PROCESS_ENABLED`, `EMR_MEDIA_UPLOAD_ENABLED`, `EMR_MEDIA_QUEUE=stories`, `EMR_MEDIA_BATCH_SIZE=5`, `EMR_MEDIA_COMMIT_SHA`, `EMR_MEDIA_WRITER_PASSWORD`, `EMR_MEDIA_PROTECTION_BYPASS`, `INTERNAL_WEBHOOK_SECRET`, exact dev `NEXT_PUBLIC_SUPABASE_URL` and signing-route-only `SUPABASE_SECRET_KEY`. Reuse encrypted development entries; Admin stays in a separate bounded migration child and never enters n8n/runtime.
-6. Temporary sole/default Vercel bypass has project-wide capability, including Production; its default may enter builds started while it exists. The old media bypass was revoked. A new exception must be explicit, used only with the exact M06 Preview, application authentication retained, concurrent Production builds monitored, and exact owned revocation verified. No Production request/deployment is part of this plan.
+- New pending migration23 `20261029092746_m06_story_campaign.sql` adds private finite campaign/slot state, immutable verified configuration, authoritative paid-launch cutoff, bounded known-job/media recovery, campaign-scoped report snapshot and narrow archive retention. It does not reinstall22 or install a campaign/schedule by itself. Before its one authorized dev application, verify actual22 history/hashes and exact one-file dry run. Local SQL/types/advisors and normal changed-head CI must pass first; they are still in progress at this planning checkpoint.
+- The existing `m06.launch` path enforces campaign ownership, fixed slot/day, roster/build/options and cutoff server-side. SQL ticks serialize slot selection; tick replay returns idle and never another paid permit. A known/uncertain paid start is reconciled by its original allocation/ID, never replaced blindly.
+- Maintained callback processing acknowledges durably accepted source work within HTTP limits, separately from ingestion/media completion. Campaign callbacks admit at most600 primary decoded/new story rows and process at most six WF-31 children of five items immediately. Six300-second child bounds plus8s admission/60s source processing/120s shutdown =1988seconds, within2400. Remaining items stay in `media_stories` and are serviced in bounded six-child recovery ticks. Comparison-only callbacks ingest no items and dispatch no media.
+- Fresh groups cannot advance while a registered source, owned media session/claim or story backlog needs reconciliation. Two bounded known-callback recovery attempts retain actual actor IDs. Only safe durable owned media outcomes can be acknowledged/finished automatically; uncertain PUT/save outcomes remain blocked and identifiable. Completed callback replay still creates no item, charge or media dispatch. Do not drain, reorder or process the generic queue.
+- Campaign story delivery archives are retained through shutdown+30days; the accepted pre-campaign13 remain protected. The narrow housekeeping function can affect only owned expired campaign archive receipts, never items/raw/comparison/audits or the generic queue. No unrelated cleanup machinery is used.
+- Focused generated-graph, replay/registration/cutoff, actual local SQL, continuation/recovery, report-denominator and source-error tests must pass. Keep required quality/unit/build/e2e/db-tests. Actual publication, binding, native timeout and future observations are separate evidence, not inferred from local tests.
 
-## 3. First connected development observation
+## 3. Stable owned runtime and protected Preview
 
-Fixed verified accounts (no substitution without a recorded reason):
+Use a pinned `m06-stories-campaign` branch/deployment and owned native workflow versions. The parallel `m06-upkeep-local` branch has no campaign environment binding and is refused by the runtime guards. Later upkeep pushes must not replace the deployed campaign revision.
 
-| Account | Story account UUID |
-|---|---|
-| everyone.film | `7c70141b-bb1e-4d0b-a54c-f957413400e1` |
-| goodpeoplefilms | `62a5fef9-78c3-418a-9010-d5ea54f29e45` |
-| bigfootfilms | `34b95d90-12e6-42da-84f8-3fd78cd19103` |
+Reuse original native Apify credentials and persistent CurrentUser-DPAPI development entries. Administrative access stays in a separate bounded migration/configuration path, never n8n/web runtime. Use separate owned campaign Machine/media transports rather than changing an unrelated shared credential. Missing bindings fail before I/O. Sign/upload remains the only runtime use of the dev Supabase Secret key.
 
-Target **one fresh asynchronous Data Slayer run**, same supported usernames-only INPUT, build1.0.32/buildID `LbkXerigrUUa2dxt6`,1024MiB/180s, dev-only provisional primary actor. This does not answer MA-16. Fresh source conditions may yield stories, explicit empty results or missing/error observations; never manufacture content.
+The owner explicitly authorizes the temporary sole/default Vercel automation bypass for this campaign and shutdown period, including its project-wide capability and default-build implications. Its use remains restricted to the exact dev Preview, with application authentication retained; no Production request, deployment or configuration mutation is authorized. The old bypass remains revoked. New exact owned identities and native readbacks are still pending; do not claim the runtime is already published.
 
-Start with a deliberately small callback envelope: `results_limit=12` permits twelve story items per account and36 decoded rows total, not a provider INPUT limit. Last observed result was14 rows including twelve Good People stories. If the fresh result exceeds either bound, fail closed and reconcile the already known provider run; inspect its size and adjust a subsequent bounded read/configuration safely instead of blindly starting a replacement. Provider-derived billing `maxItems` does not guarantee output cardinality. Planned charge option USD0.50 is adjustable operationally, not an owner ceiling; at14 rows the observed pricing gives USD0.03088. All actual usage is recorded even for a rejected oversized result.
+A project-scoped Vercel `deployment.created` webhook is being qualified through an owned n8n raw-body forwarder. Webhook2.2 `rawBody`/binary.data is bounded to32KiB before forwarding by HTTP4.5 binaryData to the exact pinned Preview, preserving signed bytes and only the signature header. The existing owned app/bypass credential is origin-restricted; no query-token URL or provider signing secret enters n8n. The Preview verifies raw-body HMAC-SHA1, exact project and event identity, then durably pauses only this dev campaign on signed Production-build metadata. No Vercel Management credential enters runtime, no Production resource is modified, and no bypass is revoked by that pause. Execution payload persistence stays off; transient native binary processing remains platform-managed. Actual webhook/publication/binding readback remains pending before activation. A pause stops new permits; already admitted work must still reconcile, and owned bypass revocation requires the separate supported shutdown path below.
 
-Required assertions:
+## 4. Authorized finite seven-day comparison
 
-- Correct writer identity and strict TLS, exact account/parent/pass ownership and complete registration barrier. A callback arriving before close cannot finish/release the parent early.
-- Actual native callback → raw/items/comparison observations → actual cost-once → terminal parent. A naturally empty result proves only that moment, not ingestion/media success.
-- New stories enter only `media_stories`. The expected twelve stories require three WF-31 child batches; the36-row maximum requires eight. Before staging, verify the native deployment accepts a2700-second callback timeout covering eight250-second worker bounds, callback overhead and closure. If the platform cannot support it, reduce the native grouping or use the supported finite continuation described below before admission; the old1800-second setting is insufficient for this maximum. Read back story-lane vacancy and binding identity first. This finite proof is not a universal priority/SLA claim.
-- Real Sharp JPEG conversion → exact immutable signed capability → Storage object/hash/dimensions → guarded SQL/audit → ACK. Reconcile409/uncertain write through existing receipt/object checks; never overwrite/adopt an unowned object.
-- Same valid callback replay changes no item/raw/comparison/cost/AI/media work or upload. Unknown-run callback rejects without ingestion/cost. Assert no outstanding owned run/claim/lock after completion and generic queue identities/count unchanged.
-- Retain collected rows, objects and projected evidence. Do not delete stories to clean a test. Source URL expiry is a recorded outcome; if no current usable image exists, record that exact missing observation rather than repeat the accepted old thumbnail test.
+Campaign ID: `451d4e89-d32f-412a-84f7-ddb5528f4539`. [Fixed configuration](campaign-config-20261029.json), [actual roster readback](campaign-roster-preflight-20261029.json) and [source/build/input/pricing/access readback](campaign-source-admission-20261029.json) are the public admission records. At09:32:39UTC29October all20 catalog identities matched, were active/not-applicable for backfill, and had no claim. No substitution was made. This does not establish current story availability.
 
-Expected setup/readback/shutdown use roughly150–250 management and150–350 gateway/provider reads, including recovery; these are planning ranges, not new approval ceilings. One native collection start plus three expected/eight maximum media child executions is the intended path. One necessary recovery observation must answer an established question after reconciling the first run. Actual Vercel/n8n/Storage/transfer allocation remains unknown; JPEG bytes and native counts are reported separately from actor cost.
+| Code | Public handle | Story account UUID |
+|---|---|---|
+| C001 | goodpeoplefilms | `62a5fef9-78c3-418a-9010-d5ea54f29e45` |
+| C015 | maradonafilms | `094f3df4-8467-4805-abb7-d2c12991a1fe` |
+| C083 | telfaz11 | `aee74605-1714-4620-9e6c-95e0229db7ae` |
+| C130 | bigfootfilms | `34b95d90-12e6-42da-84f8-3fd78cd19103` |
+| C131 | butter__films | `5105a7d9-282c-49dc-87be-dfe8034f6fdb` |
+| C133 | cats__films | `93277ab3-f5d9-4f1d-b936-8bf4b84adb73` |
+| C139 | film.dna | `5afae789-690b-40a0-a143-bd6c447920e9` |
+| C149 | light_housefilm | `539f213a-6d96-4770-a964-0f32fadd9562` |
+| C150 | lobster_films | `f63b965d-b30c-4f0b-8e45-93d1b581f09f` |
+| C163 | rhinoproductions | `f665e025-29f4-4d57-97c7-3c81d1e2500f` |
+| C170 | yellowduckfilms | `ca308821-eb96-439f-83b3-e868799bbac1` |
+| C173 | aflam_productions | `6c7c9eaa-5ce8-4ae1-b288-d61890d845ad` |
+| C179 | darb.productions | `1c585991-c16b-499b-bded-aa333cdac1f4` |
+| C184 | filmpudding | `44c98fd0-7f85-4f40-bf5f-e2930cfd0ece` |
+| C186 | hekka_sa | `26c61574-6217-4fd5-b2c3-1ac32a4f358c` |
+| C226 | bigkahunafilms | `34a466f4-9863-48df-b290-1c1b94286a6c` |
+| C228 | camouflage.productions | `3c909586-932b-4f87-99ae-1eba86a0740d` |
+| C235 | dejavusocial | `a1576f93-83ec-4b02-86c7-eb727a6b79db` |
+| C270 | thetalkies | `7d3e3de8-e820-4e69-a247-764893a769a3` |
+| C280 | vipfilms | `64a8412d-00c0-403f-a24d-1db785770e65` |
 
-## 4. Seven-day comparison and capture evidence
+### Dates, schedule and grouping
 
-Proposed fixed20 pilot selectors from the checked-in catalog:
+Seven consecutive planned observation dates: **31October,1,2,3,4,5,6November2026**, beginning at06:00 Africa/Cairo (04:00UTC on these dates). Good People's latest genuine success makes its next due30October04:43:47UTC/06:43:47Cairo, so30October06:00 is not eligible.31October06:00 is the first planned fully eligible slot after readiness; watermarks/due times are not reset or forced. Reconfirm eligibility before actual activation. If readiness misses a proposed slot, do not backdate an observation; record the actual supported next finite calendar explicitly before admission.
 
-| Rank/code | Public handle | Rank/code | Public handle |
-|---|---|---|---|
-|1 /C001|goodpeoplefilms|11 /C163|rhinoproductions|
-|2 /C130|bigfootfilms|12 /C173|aflam_productions|
-|3 /C270|thetalkies|13 /C139|film.dna|
-|4 /C226|bigkahunafilms|14 /C228|camouflage.productions|
-|5 /C184|filmpudding|15 /C179|darb.productions|
-|6 /C150|lobster_films|16 /C170|yellowduckfilms|
-|7 /C280|vipfilms|17 /C186|hekka_sa|
-|8 /C133|cats__films|18 /C149|light_housefilm|
-|9 /C083|telfaz11|19 /C235|dejavusocial|
-|10 /C131|butter__films|20 /C015|maradonafilms|
+Owned ScheduleTrigger1.4 runs calendar-specific five-minute ticks06:00–17:55 for31October and1–7November, timezone Africa/Cairo. The seven source days have fresh-start window06:00–12:00. SQL refuses any new campaign source permit at or after **6November12:00Cairo/10:00UTC**, or on an unassigned/eighth date; native guards independently check the fixed year/dates.7November is recovery/shutdown only, with no eighth source day. Failed/missed slots remain failed/missed; the calendar does not extend itself to manufacture seven successes.
 
-These are proposed identities, not a claim all20 currently post stories or were freshly read from hosted dev. Before the bounded comparison, verify current story UUIDs/status and available M04 activity; record any approved-pilot substitution and its reason. Everyone baseline participates in the three-account connection proof, not a waiver of20 pilots.
+| Order | Group | Accounts | Mode / admitted decoded output | Build / runtime |
+|---|---|---|---|---|
+| 1 | igview | Fixed20 | `bakeoff`,50/account,1000 total | 1.0.16 / `jhZNplLsVKuGelTTm`,4096MiB,180s |
+| 2 | Louis | Fixed20 | `bakeoff`,50/account,1000 total | 0.0.10 / `4QpIiw2A9YDJ2aneN`,256MiB,180s |
+| 3 | Data Slayer | Fixed20 | Provisional primary `ingest`,30/account,600 total | 1.0.32 / `LbkXerigrUUa2dxt6`,1024MiB,180s |
 
-- Seven distinct days at06:00 Cairo,20 accounts/run, one run/actor/day = **21 planned starts**, separate from the one connection start. Data Slayer primary `ingest` also persists comparison rows; igview/Louis run `bakeoff` only. Comparison-only paths never advance primary health/due/watermarks or add items/AI/media. Respect due claims; start the comparison only when the primary accounts are eligible, without altering real watermarks. No18:00 slot or ongoing recurrence is enabled by this preparation.
-- Pin the observed builds/options and recheck access/pricing at admission: Data Slayer1.0.32/1024MiB, igview1.0.16/4096MiB, Louis0.0.10/256MiB;180-second actor runtimes initially.20 is within igview's50-user contract. `results_limit=50` allows at most1000 decoded rows/run; this is not evidence the source is complete. Stop/exclude login/cookie/challenge-required sources. Missing accounts remain unknown.
-- **Media scaling is a real integration boundary before the20-account ingestion stage:** the current1800-second sequential callback handoff proves the small three-child case, not200 worst-case child batches. Size the primary grouping/native timeout using supported platform limits and observed item counts before admission; if it cannot cover processing and safe closure, use a supported finite native continuation of the existing WF-31 path with durable reconciliation. Do not claim a six-hour guarantee from the local fixture, silently drain generic work, or start the wider stage while this remains unresolved. No general supervisor is required.
-- Extend queue archive housekeeping for the new lane before unattended operation, preserving collected data/audits. The bounded connected test can retain its archive records. Review change locally first; do not invoke old M03 cleanup machinery.
-- Indicative busy-day scenario12 stories/account/day →1680 story rows/actor/week. Current observed Bronze units imply Data Slayer~USD3.6491, igview~USD9.24 including four startup units/day, Louis up toUSD3.29 if140 nonempty account-days bill one profile result each: **~USD16.1791** actor usage, plus the separate connection run. Empty summaries/retries can change billing; current Louis one-result observation is not guaranteed future semantics. Unknown reads/proxy/storage/transfer/shared infrastructure stay unknown. Configure finite per-launch charge/time/output settings appropriate to admission, adjust under standing authorization and reconcile actual cost, not an arbitrary fixed owner threshold.
-- Record actual run IDs, authoritative provider completion dates, source observations and union by exact story key, thumbnail/mention/link rates, failures, missing account-days, cost per1k and capture lag. `scripts/bakeoff-report.ts` produces the report; twenty accounts/seven days and eligible-source evidence remain required. No unobserved examples or Instagram-wide completeness claim.
-- MA-16 selects the final actor and twice-daily decision only after the comparison evidence; no actor switch, cadence setter or production migration is inferred. Original AC1/AC2 still require actual capture/coverage and timely stored thumbnails, not merely a report or20 requested usernames.
+All three use the actually supported public `{"usernames":[...]}` INPUT, with no login/cookies/session or unsupported parameters. Build owner, run options, allocation and native acknowledgment must agree. The observed account remains STARTER/BRONZE, permitting the current Louis access without an upgrade. Current actor schemas/pricing/build access were read29October09:45UTC; no campaign actor was started to obtain that metadata. Login/cookie/checkpoint/challenge-required sources are excluded with a controlled reason; provider errors are not explicit no-stories observations.
 
-## 5. Reconciliation and shutdown
+The first tick targets igview06:00; Louis approximately06:05 and primary approximately06:10 only after actual predecessor/claim settlement. Those are estimates, not fabricated simultaneous capture timestamps. Comparison-only results preserve primary health/due/watermarks and create no product items, AI or media work. Their account claims restore prior ownership. Primary media is continued through the same dedicated story lane, with six batch5 children per bounded callback/tick, until durable vacancy or a specific uncertain outcome stops progress.
 
-On uncertainty, retain the known actor ID/allocation and reconcile native state before another paid start. Account ownership and server-issued settings remain immutable for admitted work. Close or terminally reconcile owned launches, registration, callbacks, media batches/locks; no overlapping uncertain work. Restore exact workflow definitions/publication/error links and Machine audience/credential references from encrypted owned snapshots after a drift recheck. Do not overwrite legitimate newer changes. Remove temporary Preview/env bindings and owned credentials only after their consumers close; verify bypass revoked/absent. Persistent encrypted originals stay. Retain sanitized run/database/media evidence and record any unfinished queue work explicitly.
+### Usage estimate and finite options
 
-No production, emails, private R2, merge, M07 or open-ended schedules. M05 website remains independently open. Full M06 upkeep/removal/metrics/health and production criteria are not waived by this plan.
+Target **3 source starts/day ×7days =21 starts**, plus only justified, reconciled recovery under standing development authorization. The old21-start estimate was never an owner spending ceiling. Current immutable configuration uses finite40-start, USD6/start and USD240 aggregate options; these are adjustable operational controls for subsequent work, not new owner financial approval gates. Do not change already admitted options before reconciliation, spend unused headroom on new scope, or replace an uncertain start.
+
+For12 stories/account/day,1680 rows/source/week, current BRONZE units imply:
+
+| Source | Estimate formula | USD |
+|---|---|---|
+| Data Slayer |1680 ×0.00217 +7 ×0.0005 (1GiB start)|3.6491|
+| igview |1680 ×0.005 +7 ×4 ×0.03 (4GiB start)|9.2400|
+| Louis |140 profile-results ×0.019 +7 ×0.09|3.2900|
+| Total source scenario |21 planned starts, excluding exceptional recovery|**16.1791**|
+
+This scenario is not guaranteed billing/output. Explicit-empty summary rows, missing profiles, startup units, source changes and justified recovery can alter actual charges. Louis bills profiles, not stories; one old manual result does not establish every future account-day billing shape. Record actual provider usage and cost-once settlement. Existing M06 source cumulative remains four terminal starts/USD0.35859 before this campaign; no new capture has occurred at this preparation checkpoint. Infrastructure, proxy/read/storage/transfer/n8n/Vercel allocations remain unknown, not USD0. Five-minute control ticks, callback reads, recovery and shutdown are separate infrastructure/control usage, not actor costs or financial approval ceilings.
+
+### Campaign-specific report and retention
+
+Persist actual daily source/run/account observations, source failures/missing/explicit-empty results, actual charges, comparison rows and media outcomes. `ops.m06_campaign_snapshot(campaign_id)` scopes data by installed dates and actual campaign run IDs; prior manual fixtures and the accepted one-account observation are provenance only. Report comparative coverage, source failures, missing account-days, actual costs, thumbnail delivery and story-discovery lag separately.
+
+For timely thumbnails use all eligible captured campaign stories as the denominator, retaining missing media through LEFT JOIN. Missing thumbnails and storage after first-seen+6hours count as failures; never inner-join away a failure. Preserve null/unknown where the required source/receipt is absent. Rapid media after one ingestion is not seven-day capture completeness, a general six-hour SLA or a reason to enable18:00 collection. After actual campaign close, produce the scoped report and an MA-16 recommendation; the owner chooses the final actor and cadence.
+
+## 5. Supported shutdown and remaining manual step
+
+The finite launch cutoff is automatic. **Workflow deactivation, credential/binding/build deletion and bypass revocation are not automatic** and must not be represented as effects of that cutoff.
+
+The recorded recovery/shutdown period ends **7November2026 at18:00Africa/Cairo/16:00UTC**. Before activation, preserve exact owned resource IDs, rollback snapshots and pinned revisions/bindings outside Git; verify the original credentials remain unaffected. Collection runs without this chat open. Operational shutdown requires this Codex session or another explicitly authorized coordinator to resume after the last observation and before that deadline. The owner can resume this repository/session with: `Run M06 campaign shutdown for 451d4e89-d32f-412a-84f7-ddb5528f4539; reconcile owned work and revoke the recorded temporary runtime.` This is an execution reminder, not another approval request. An actually expired native Vercel session may require its existing-account private `vercel login` consent; do not request renewal based on age alone.
+
+On a signed Production conflict, pause new campaign permits and resume the supported owner/session cleanup path promptly. Pausing does not revoke the project-wide bypass or stop already admitted known work. No automatic resume after a conflict is allowed. Preserve the conflict's controlled metadata/audit and reconcile before any consequential continuation.
+
+Shutdown order: stop fresh starts; reconcile known actors, registration/jobs/account claims and story-media outcomes; unpublish owned schedule/callback/children after their consumers close; restore exact owned definitions/publication/bindings from drift-checked snapshots; remove only owned temporary credentials, branch settings and builds; revoke the exact owned bypass with `regenerate:false` and verify absence/protection. Keep persistent encrypted originals and every collected item/raw/comparison/object/audit plus protected accepted13 archive deliveries. Record any unresolved work explicitly. Do not use the old M03 cleanup system or touch the generic267 backlog.
+
+Parallel upkeep stays isolated on `m06-upkeep-local` at96bf7b9/CI40851431271 (all five jobs), with21 focused local removal/metrics/health tests. Concrete removal RPC/source bindings and native WF-40/health delivery remain unfinished. No hosted removal mutations, health email, final cadence change, Production, merge, private R2 or M07 is authorized.

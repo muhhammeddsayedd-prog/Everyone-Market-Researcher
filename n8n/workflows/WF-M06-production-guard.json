@@ -1,0 +1,270 @@
+{
+  "key": "WF-M06-PRODUCTION-GUARD",
+  "kind": "native-json-blueprint",
+  "runnableWorkflow": true,
+  "liveEnabled": false,
+  "hostedAcceptance": false,
+  "definitionProfile": "inactive_native_staging",
+  "bindingManifest": {
+    "ready": false,
+    "environment": "dev",
+    "audience": "https://everyone-market-researcher-unbound.vercel.app",
+    "credential": {
+      "id": "UNBOUND_EMR_CAMPAIGN_AUTH",
+      "name": "UNBOUND EMR campaign dev",
+      "type": "httpCustomAuth"
+    }
+  },
+  "security": {
+    "originalBytes": "webhook_rawBody_binary_data_to_HTTP_binaryData",
+    "signatureVerification": "pinned_preview_HMAC_and_durable_campaign_pause",
+    "maxBytes": 32768,
+    "providerSecretInN8n": false,
+    "managementCredentialsInRuntime": false,
+    "queryTokenUrl": false,
+    "retention": "execution_progress_success_error_manual_off; transient_native_binary_processing_remains_platform_managed"
+  },
+  "workflow": {
+    "name": "M06 · Production-build conflict guard [dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "1d8e8ce1-b42d-4242-ae9e-59427c741667",
+        "name": "Vercel production-build event",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "emr-m06-production-guard",
+          "authentication": "none",
+          "responseMode": "responseNode",
+          "options": {
+            "rawBody": true
+          }
+        },
+        "webhookId": "d6e88c0c-ba2f-44cd-a8aa-9caca4b75665"
+      },
+      {
+        "id": "696ec464-6931-4acc-ae37-6adfcdb1f428",
+        "name": "Bound original signed event",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M06_PRODUCTION_GUARD_BINDING_REQUIRED');\nasync function prepareM06ProductionGuard(rows, readBinary) {\n  const reject = () => [{ json: { forward: false, statusCode: 403, response: { rejected: true } } }];\n  if (\n    !Array.isArray(rows) ||\n    rows.length !== 1 ||\n    !rows[0]?.json ||\n    typeof rows[0].json !== 'object' ||\n    Array.isArray(rows[0].json) ||\n    !rows[0].binary?.data ||\n    typeof readBinary !== 'function'\n  )\n    return reject();\n  const headers = rows[0].json.headers;\n  const signature = headers?.['x-vercel-signature'];\n  if (typeof signature !== 'string' || !/^[a-f0-9]{40}$/.test(signature)) return reject();\n  const length = headers?.['content-length'];\n  if (\n    length !== undefined &&\n    (typeof length !== 'string' || !/^[0-9]{1,9}$/.test(length) || Number(length) > 32768)\n  )\n    return reject();\n  try {\n    const raw = await readBinary(0, 'data');\n    if (\n      !raw ||\n      !Number.isSafeInteger(raw.length) ||\n      raw.length < 1 ||\n      raw.length > 32768 ||\n      raw.byteLength !== raw.length\n    )\n      return reject();\n    // Keep only the required signature and original binary reference. Discard\n    // parsed body, cookies, query, provider headers and any input-selected URL.\n    return [\n      { json: { forward: true, signature }, binary: { data: rows[0].binary.data }, pairedItem: { item: 0 } },\n    ];\n  } catch {\n    return reject();\n  }\n}\nreturn await prepareM06ProductionGuard($input.all(),(index,field)=>this.helpers.getBinaryDataBuffer(index,field));"
+        },
+        "position": [
+          250,
+          0
+        ]
+      },
+      {
+        "id": "cd317b16-9471-434d-ac1a-ec0eadbc7dd8",
+        "name": "Forward bounded signature?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "d051bea6-6efd-4e3d-a945-758f0227d815",
+                "leftValue": "={{ $json.forward === true }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          500,
+          0
+        ]
+      },
+      {
+        "id": "101166af-2282-4c55-a7c4-c1ac7193019b",
+        "name": "Forward original signed bytes",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-unbound.vercel.app/api/internal/m06/production-conflict",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": true,
+          "specifyHeaders": "keypair",
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "x-vercel-signature",
+                "value": "={{ $json.signature }}"
+              },
+              {
+                "name": "content-type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {
+            "timeout": 10000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          750,
+          -100
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "UNBOUND_EMR_CAMPAIGN_AUTH",
+            "name": "UNBOUND EMR campaign dev"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "stopWorkflow"
+      },
+      {
+        "id": "2adc4e11-362b-4caa-adde-5b299a43bd83",
+        "name": "Verify durable conflict result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "function verifyM06ProductionGuardReceipt(rows) {\n  const retry = () => [{ json: { statusCode: 503, response: { accepted: false, retryable: true } } }];\n  if (!Array.isArray(rows) || rows.length !== 1 || !rows[0]?.json) return retry();\n  const r = rows[0].json,\n    body = r.body;\n  if (r.statusCode === 403) return [{ json: { statusCode: 403, response: { rejected: true } } }];\n  if (\n    r.statusCode !== 200 ||\n    !body ||\n    typeof body !== 'object' ||\n    Array.isArray(body) ||\n    Object.keys(body).sort().join(',') !== 'accepted,production_conflict' ||\n    body.accepted !== true ||\n    typeof body.production_conflict !== 'boolean'\n  )\n    return retry();\n  return [\n    {\n      json: { statusCode: 200, response: { accepted: true, production_conflict: body.production_conflict } },\n    },\n  ];\n}\nreturn verifyM06ProductionGuardReceipt($input.all());"
+        },
+        "position": [
+          1000,
+          -100
+        ]
+      },
+      {
+        "id": "465132c5-314c-4f2c-aa96-5a255edc6737",
+        "name": "Acknowledge verified guard result",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1250,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json.response }}",
+          "options": {
+            "responseCode": "={{ $json.statusCode }}",
+            "enableStreaming": false
+          }
+        }
+      }
+    ],
+    "pinData": {},
+    "tags": [],
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 30,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "connections": {
+      "Vercel production-build event": {
+        "main": [
+          [
+            {
+              "node": "Bound original signed event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Bound original signed event": {
+        "main": [
+          [
+            {
+              "node": "Forward bounded signature?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Forward bounded signature?": {
+        "main": [
+          [
+            {
+              "node": "Forward original signed bytes",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Acknowledge verified guard result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Forward original signed bytes": {
+        "main": [
+          [
+            {
+              "node": "Verify durable conflict result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify durable conflict result": {
+        "main": [
+          [
+            {
+              "node": "Acknowledge verified guard result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

@@ -163,9 +163,12 @@ async function runGraph(d, options = {}) {
       assert.equal(prepared[0].json.body.execution_id, String(63010 + children + 1));
       events.push('media');
       children++;
+      const queued = options.mediaQueue;
+      const claimed = queued ? Math.min(queued.length, 5) : children < 3 ? 5 : 2;
+      if (queued && !options.mediaError) queued.splice(0, claimed);
       value = options.mediaError
         ? { ...receipt(5, 63010 + children), state: 'reconciliation_required', held: 1 }
-        : receipt(children < 3 ? 5 : 2, 63010 + children);
+        : receipt(claimed, 63010 + children);
     }
     seen.set(name, value);
     const next = d.workflow.connections[name]?.main?.[branch] ?? [];
@@ -213,6 +216,35 @@ test('completed replay uses strict completion-body extraction and never dispatch
   const recovered = await runGraph(graph(), { recovery: true, replay: true });
   assert.deepEqual(recovered.outputs, []);
   assert.equal(recovered.value.replayed, true);
+});
+
+test('campaign callback bounds120 committed stories to six children and leaves durable continuation; replay does not wake again', async () => {
+  const d = buildNativeM06Callback(bindings, transport, media, {
+    maxOutputItems: 600,
+    executionTimeout: 2400,
+    maxMediaBatches: 6,
+  });
+  const pending = Array.from({ length: 120 }, (_, i) => `synthetic-story-${i}`);
+  const completed = {
+    ...completion(),
+    groups: [{ account_id: account, status: 'success', items_seen: 120, items_new: 120, error: null }],
+    media_dispatch: { queue: 'stories', items_new: 120 },
+  };
+  const r = await runGraph(d, { complete: completed, mediaQueue: pending });
+  assert.equal(r.children, 6);
+  assert.equal(pending.length, 90);
+  assert.equal(r.value.media.queue_reconciliation_required, true);
+  assert.deepEqual(r.events.slice(0, 3), ['callback.admit', 'respond:200', 'callback.process']);
+  const replay = await runGraph(d, { replay: true, mediaQueue: pending });
+  assert.equal(replay.children, 0);
+  assert.equal(pending.length, 90);
+  assert.equal(replay.value.media.queue_reconciliation_required, false);
+  const failedQueue = Array.from({ length: 120 }, (_, i) => `synthetic-story-${i}`);
+  await assert.rejects(
+    runGraph(d, { complete: completed, mediaQueue: failedQueue, mediaError: true }),
+    /RECONCILIATION_REQUIRED/,
+  );
+  assert.equal(failedQueue.length, 120);
 });
 test('unknown IDs and admission transport failures cannot receive a success ACK or process source data', async () => {
   for (const status of [403, 503]) {
@@ -268,7 +300,7 @@ test('the declared output and complete child/shutdown envelope must fit before I
     executionTimeout: 1800,
   });
   assert.equal(smaller.workflow.settings.executionTimeout, 1800);
-  assert.equal(graph().workflow.settings.executionTimeout, 2700);
+  assert.equal(graph().workflow.settings.executionTimeout, 2400);
   await assert.rejects(
     runGraph(smaller, {
       complete: {

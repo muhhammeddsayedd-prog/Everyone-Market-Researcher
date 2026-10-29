@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { buildBakeoffReport, renderBakeoffMarkdown } from './bakeoff-report';
+import {
+  buildBakeoffReport,
+  renderBakeoffMarkdown,
+  buildCampaignBakeoffReport,
+  renderCampaignBakeoffMarkdown,
+} from './bakeoff-report';
 
 const actors = ['data-slayer/instagram-stories-scraper', 'igview-owner/instagram-story-viewer'] as const;
 const account = '90000000-0000-4000-8000-000000000001';
@@ -48,6 +53,61 @@ function sample() {
     ],
   };
 }
+
+describe('campaign-specific delivery denominator', () => {
+  function campaign() {
+    return {
+      ...sample(),
+      campaign_id: account,
+      run_ids: [account],
+      actor_run_ids: ['runA', 'runB'],
+      to_day: '2026-11-04',
+      thumbnail_items: [
+        {
+          item_id: '90000000-0000-4000-8000-000000000002',
+          apify_run_id: 'runA',
+          eligible: true,
+          first_seen_at: '2026-10-29T06:00:00Z',
+          published_at: '2026-10-29T04:00:00Z',
+          stored_at: '2026-10-29T07:00:00Z',
+        },
+        {
+          item_id: '90000000-0000-4000-8000-000000000003',
+          apify_run_id: 'runA',
+          eligible: true,
+          first_seen_at: '2026-10-29T06:00:00Z',
+          published_at: '2026-10-29T04:00:00Z',
+          stored_at: null,
+        },
+        {
+          item_id: '90000000-0000-4000-8000-000000000004',
+          apify_run_id: 'runA',
+          eligible: true,
+          first_seen_at: '2026-10-29T06:00:00Z',
+          published_at: '2026-10-29T04:00:00Z',
+          stored_at: '2026-10-29T12:00:01Z',
+        },
+      ],
+    };
+  }
+  it('counts missing and late media as failures without an inner-join denominator', () => {
+    const r = buildCampaignBakeoffReport(campaign());
+    expect(r.thumbnails).toMatchObject({
+      eligible_captured_stories: 3,
+      timely: 1,
+      missing: 1,
+      late: 1,
+      failed: 2,
+      timely_percent: 33.33,
+    });
+    expect(r.discovery_lag_seconds.map((i) => i.seconds)).toEqual([7200, 7200, 7200]);
+    expect(renderCampaignBakeoffMarkdown(campaign())).toContain('Missing media remains in the denominator');
+  });
+  it('does not turn earlier fixture runs into campaign observations', () => {
+    expect(() => buildCampaignBakeoffReport({ ...campaign(), actor_run_ids: ['unrelated'] })).toThrow();
+    expect(() => buildCampaignBakeoffReport({ ...campaign(), to_day: '2026-11-05' })).toThrow();
+  });
+});
 
 describe('offline story comparison report', () => {
   it('reports the actual three manual captures without inventing Louis empty observations or a seven-day recommendation', () => {

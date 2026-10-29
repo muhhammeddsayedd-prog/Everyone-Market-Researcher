@@ -47,6 +47,68 @@ function setup(env = environment) {
     handler: createCollectorHandler({ environment: () => env, dispatch, processCallback }),
   };
 }
+
+describe('M06 pinned development campaign access', () => {
+  const policy = {
+    approval_id: id,
+    max_actor_starts: 200,
+    max_actor_usd: 6,
+    max_total_usd: 1200,
+    max_results_per_profile: 50,
+    actors: {},
+  };
+  const campaignEnv = {
+    ...environment,
+    VERCEL_GIT_COMMIT_REF: 'm06-stories-campaign',
+    EMR_COLLECTORS_LIVE_POLICY: JSON.stringify(policy),
+  };
+  it('allows the fixed campaign tick only for its configured identity', async () => {
+    const t = setup(campaignEnv);
+    expect(
+      (await t.handler(req('m06.campaign_tick', { campaign_id: id, execution_id: '73001' }))).status,
+    ).toBe(200);
+    expect(t.dispatch).toHaveBeenCalledWith(
+      id,
+      'm06.campaign_tick',
+      { campaign_id: id, execution_id: '73001' },
+      expect.objectContaining({ scope: 'm06' }),
+      expect.any(AbortSignal),
+    );
+    expect(
+      (
+        await t.handler(
+          req('m06.campaign_tick', {
+            campaign_id: '27000000-0000-4000-8000-000000000002',
+            execution_id: '73001',
+          }),
+        )
+      ).status,
+    ).toBe(403);
+    expect(t.dispatch).toHaveBeenCalledTimes(1);
+  });
+  it.each([
+    { VERCEL_ENV: 'production' },
+    { VERCEL_GIT_COMMIT_REF: 'm06-upkeep-local' },
+    { EMR_COLLECTORS_COMMIT_SHA: 'b'.repeat(40) },
+  ])('refuses production, upkeep branches and a changed admitted revision before I/O', async (change) => {
+    const t = setup({ ...campaignEnv, ...change });
+    expect(
+      (await t.handler(req('m06.campaign_tick', { campaign_id: id, execution_id: '73001' }))).status,
+    ).toBe(503);
+    expect(t.dispatch).not.toHaveBeenCalled();
+  });
+  it('does not accept an owner-selected timestamp or account override', () => {
+    for (const extra of [{ now: '2026-10-31T04:00:00Z' }, { account_ids: [id] }])
+      expect(() =>
+        collectorRequest({
+          version: 1,
+          requestId: id,
+          operation: 'm06.campaign_tick',
+          args: { campaign_id: id, execution_id: '73001', ...extra },
+        }),
+      ).toThrow();
+  });
+});
 describe('M04 fixed collector gateway, local HTTP integration', () => {
   it('isolates M05 operations by exact Preview branch and rejects public registry reads', async () => {
     const old = setup();

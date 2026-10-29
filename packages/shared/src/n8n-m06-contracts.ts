@@ -17,6 +17,16 @@ const ids = z
 const actor = z.enum(m06StoryActors);
 const purpose = z.literal('daily');
 const collectionMode = z.enum(['ingest', 'bakeoff']);
+export const m06CampaignConflictEvent = z.object({
+  id: external,
+  type: z.literal('deployment.created'),
+  createdAt: z.union([z.number().int().positive(), z.iso.datetime({ offset: true })]),
+  payload: z.object({
+    project: z.object({ id: z.literal('prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu') }),
+    target: z.string().nullable(),
+    deployment: z.object({ id: z.string().regex(/^dpl_[A-Za-z0-9]+$/) }),
+  }),
+});
 const item = z.strictObject({
   platform: z.literal('instagram_stories'),
   external_id: external,
@@ -46,6 +56,10 @@ const comparisonRow = z.strictObject({
   has_link: z.boolean(),
 });
 export const m06StoryArgs = {
+  'm06.campaign_tick': z.strictObject({
+    campaign_id: id,
+    execution_id: z.string().regex(/^[0-9]{1,15}$/),
+  }),
   'm06.start': z.strictObject({
     workflow: z.literal('WF-12'),
     platform: z.literal('instagram_stories'),
@@ -100,6 +114,12 @@ export const m06StoryArgs = {
 // Provider-read/settlement operations are server-only. A Machine caller cannot
 // submit a fabricated source result, measured usage or comparison observation.
 export const m06StoryInternalArgs = {
+  'm06.campaign_conflict': z.strictObject({
+    campaign_id: id,
+    event_id: external,
+    deployment_id: external,
+    observed_at: z.iso.datetime({ offset: true }),
+  }),
   'm06.lookup': z.strictObject({ apify_run_id: external }),
   'm06.classify': z.strictObject({ apify_run_id: external }),
   'm06.settle': z.strictObject({

@@ -4,7 +4,7 @@ import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
 /** A committed source result wakes only the dedicated story queue. This is a
  * finite product handoff, not a scheduler or retry controller. A failed native
  * child stops; its durable queue/worker receipt is reconciled before recovery. */
-export function prepareM06StoryMediaHandoff(result, binding) {
+export function prepareM06StoryMediaHandoff(result, binding, maxBatches = null) {
   if (
     !binding ||
     Object.keys(binding).sort().join(',') !== 'audience,batchSize,environment,queue,workflowId' ||
@@ -16,7 +16,8 @@ export function prepareM06StoryMediaHandoff(result, binding) {
     /(?:unbound|placeholder)/i.test(binding.audience) ||
     !Number.isSafeInteger(binding.batchSize) ||
     binding.batchSize < 1 ||
-    binding.batchSize > 5
+    binding.batchSize > 5 ||
+    (maxBatches !== null && maxBatches !== 6)
   )
     throw Error('M06_STORY_MEDIA_BINDING_REQUIRED');
   if (!result || result.state !== 'completed' || typeof result.updated !== 'boolean')
@@ -33,11 +34,13 @@ export function prepareM06StoryMediaHandoff(result, binding) {
     wake.items_new > 1000
   )
     throw Error('M06_STORY_MEDIA_RESULT_INVALID');
+  const totalBatches = Math.ceil(wake.items_new / binding.batchSize);
   return {
     action: 'execute',
-    remaining: Math.ceil(wake.items_new / binding.batchSize),
+    remaining: maxBatches === null ? totalBatches : Math.min(totalBatches, maxBatches),
     batches: 0,
     itemsNew: wake.items_new,
+    ...(maxBatches === null ? {} : { deferredBatches: Math.max(0, totalBatches - maxBatches) }),
   };
 }
 
@@ -67,6 +70,7 @@ export function advanceM06StoryMediaHandoff(state, receipt) {
     remaining: state.remaining - 1,
     batches: state.batches + 1,
     itemsNew: state.itemsNew,
+    ...(state.deferredBatches === undefined ? {} : { deferredBatches: state.deferredBatches }),
   };
 }
 
@@ -75,10 +79,10 @@ export function advanceM06StoryMediaHandoff(state, receipt) {
 // The owned WF-31 binding must be read back against this exact Preview whose
 // server configuration is EMR_MEDIA_QUEUE=stories before hosted activation.
 // https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/ExecuteWorkflow/ExecuteWorkflow/ExecuteWorkflow.node.ts
-export function buildM06StoryMediaHandoff(inputBindings, binding, ready = true) {
+export function buildM06StoryMediaHandoff(inputBindings, binding, ready = true, maxBatches = null) {
   // An unbound inactive callback export may carry placeholders; its runtime
   // binding guard still rejects them before any child execution.
-  if (ready) prepareM06StoryMediaHandoff({ state: 'completed', updated: false }, binding);
+  if (ready) prepareM06StoryMediaHandoff({ state: 'completed', updated: false }, binding, maxBatches);
   const b = parseN8nBindings(inputBindings);
   b.workflowRefs['WF-31'] = { ...b.workflowRefs['WF-31'], id: binding.workflowId };
   const key = 'WF-19',
@@ -88,6 +92,7 @@ export function buildM06StoryMediaHandoff(inputBindings, binding, ready = true) 
       prepareM06StoryMediaHandoff.toString() +
         '\nconst rows=$input.all();if(rows.length!==1||rows[0].binary)throw Error("M06_STORY_MEDIA_RESULT_INVALID");return[{json:prepareM06StoryMediaHandoff(rows[0].json,' +
         JSON.stringify(binding) +
+        (maxBatches === null ? '' : ',' + JSON.stringify(maxBatches)) +
         ')}];',
       [0, 0],
     ),

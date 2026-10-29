@@ -147,23 +147,31 @@ export function m06CallbackCompletion(response, prior, maxOutputItems) {
 function definition(input, transport, mediaBinding, ready, limits) {
   if (
     !limits ||
-    Object.keys(limits).sort().join(',') !== 'executionTimeout,maxOutputItems' ||
+    !['executionTimeout,maxOutputItems', 'executionTimeout,maxMediaBatches,maxOutputItems'].includes(
+      Object.keys(limits).sort().join(','),
+    ) ||
+    (limits.maxMediaBatches !== undefined && limits.maxMediaBatches !== 6) ||
     !Number.isSafeInteger(limits.maxOutputItems) ||
     limits.maxOutputItems < 1 ||
     limits.maxOutputItems > 1000 ||
     !Number.isSafeInteger(limits.executionTimeout) ||
     limits.executionTimeout < 1 ||
-    limits.executionTimeout > 86400 ||
+    limits.executionTimeout > 2400 ||
     !Number.isSafeInteger(mediaBinding?.batchSize) ||
     mediaBinding.batchSize < 1 ||
     mediaBinding.batchSize > 5 ||
-    Math.ceil(limits.maxOutputItems / mediaBinding.batchSize) * 300 + 8 + 60 + 120 > limits.executionTimeout
+    Math.min(Math.ceil(limits.maxOutputItems / mediaBinding.batchSize), limits.maxMediaBatches ?? 1000) *
+      300 +
+      8 +
+      60 +
+      120 >
+      limits.executionTimeout
   )
     throw Error('M06_CALLBACK_RUNTIME_ENVELOPE_INVALID');
   const b = parseN8nBindings(input),
     c = ready ? parseCollectorTransport(transport) : transport,
     key = 'WF-19';
-  const media = buildM06StoryMediaHandoff(b, mediaBinding, ready),
+  const media = buildM06StoryMediaHandoff(b, mediaBinding, ready, limits.maxMediaBatches ?? null),
     privacy = settings(b, key);
   delete privacy.errorWorkflow;
   Object.assign(privacy, {
@@ -299,7 +307,11 @@ function definition(input, transport, mediaBinding, ready, limits) {
       key,
       'Return stories callback outcome',
       one +
-        "const c=$('Verify story callback completion').first().json;return[{json:{accepted:true,state:'completed',apify_run_id:c.apify_run_id,replayed:!c.updated,media:{batches:j.batches,items_new:j.itemsNew}}}];",
+        "const c=$('Verify story callback completion').first().json;return[{json:{accepted:true,state:'completed',apify_run_id:c.apify_run_id,replayed:!c.updated,media:{batches:j.batches,items_new:j.itemsNew" +
+        (limits.maxMediaBatches === undefined
+          ? ''
+          : ',queue_reconciliation_required:(j.deferredBatches??0)>0') +
+        '}}}];',
       [2800, 0],
     ),
   ];
@@ -384,7 +396,7 @@ export function buildNativeM06Callback(
   input,
   transport,
   mediaBinding,
-  limits = { maxOutputItems: 36, executionTimeout: 2700 },
+  limits = { maxOutputItems: 30, executionTimeout: 2400 },
 ) {
   return definition(input, transport, mediaBinding, true, limits);
 }
@@ -403,6 +415,6 @@ export function buildUnboundNativeM06Callback(input) {
       batchSize: 5,
     },
     false,
-    { maxOutputItems: 36, executionTimeout: 2700 },
+    { maxOutputItems: 30, executionTimeout: 2400 },
   );
 }

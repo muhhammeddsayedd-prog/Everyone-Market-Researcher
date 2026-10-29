@@ -26,7 +26,9 @@ export interface CollectorConfig {
 }
 export function collectorConfig(env: Record<string, string | undefined>): CollectorConfig {
   const isM05 = env.VERCEL_GIT_COMMIT_REF === 'm05-collectors-web-youtube-linkedin';
-  const isM06 = env.VERCEL_GIT_COMMIT_REF === 'm06-collectors-stories-upkeep';
+  const isM06 = ['m06-collectors-stories-upkeep', 'm06-stories-campaign'].includes(
+    env.VERCEL_GIT_COMMIT_REF ?? '',
+  );
   let accountIds: string[],
     policy: CollectorPolicy | null = null;
   try {
@@ -45,6 +47,7 @@ export function collectorConfig(env: Record<string, string | undefined>): Collec
       'm04-collectors-vimeo-instagram',
       'm05-collectors-web-youtube-linkedin',
       'm06-collectors-stories-upkeep',
+      'm06-stories-campaign',
     ].includes(env.VERCEL_GIT_COMMIT_REF ?? '') ||
     env.VERCEL_PROJECT_ID !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
     !/^everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(env.VERCEL_URL ?? '') ||
@@ -123,6 +126,11 @@ export function createCollectorHandler(deps: Dependencies) {
         throw new WorkerFailure('invalid_request', 400);
       }
       requestId = input.requestId;
+      if (
+        input.operation === 'm06.campaign_tick' &&
+        (!config.policy || input.args.campaign_id !== config.policy.approval_id)
+      )
+        throw new WorkerFailure('forbidden', 403);
       if (input.operation.startsWith('m05.') && config.scope !== 'm05')
         throw new WorkerFailure('forbidden', 403);
       if (input.operation.startsWith('m06.') && config.scope !== 'm06')

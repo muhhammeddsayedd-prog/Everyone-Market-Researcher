@@ -235,6 +235,14 @@ export function createM06StoriesCallback(deps: Dependencies) {
         throw bad();
       return {
         status: String(d.status).replace('TIMED-OUT', 'TIMED_OUT'),
+        // Retain only a controlled exclusion flag. Provider free-text errors
+        // can contain sensitive transport details and never enter our ledger.
+        login_required:
+          typeof d.statusMessage === 'string' &&
+          !/\bno (?:instagram )?login required\b/i.test(d.statusMessage) &&
+          /(?:requires? (?:an? )?(?:instagram )?log ?in|(?:login|checkpoint|captcha|challenge).{0,30}(?:required|detected|blocked)|cookie.{0,30}(?:required|missing|invalid))/i.test(
+            d.statusMessage,
+          ),
         usage_usd: d.usageTotalUsd,
         dataset_id: external(d.defaultDatasetId) ? d.defaultDatasetId : null,
         kvs_id: d.defaultKeyValueStoreId,
@@ -294,8 +302,9 @@ export function createM06StoriesCallback(deps: Dependencies) {
       }
     }
     let groups: (Group & { observation: 'stories' | 'no_stories' | 'error'; source_evidence: boolean })[];
-    const failure =
-      terminal.status !== 'SUCCEEDED'
+    const failure = terminal.login_required
+      ? 'stories_actor_login_required'
+      : terminal.status !== 'SUCCEEDED'
         ? 'stories_actor_' + terminal.status.toLowerCase()
         : !terminal.cap_acknowledged
           ? 'stories_actor_cap_unacknowledged'

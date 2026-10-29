@@ -3173,6 +3173,95 @@ export type Database = {
         };
         Relationships: [];
       };
+      m06_story_campaign_slots: {
+        Row: {
+          allocated_at: string | null;
+          campaign_id: string;
+          day: string;
+          error_code: string | null;
+          group_key: string;
+          ordinal: number;
+          run_id: string | null;
+          selection: NonNullable<Json>;
+          state: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          allocated_at?: string | null;
+          campaign_id: string;
+          day: string;
+          error_code?: string | null;
+          group_key: string;
+          ordinal: number;
+          run_id?: string | null;
+          selection: NonNullable<Json>;
+          state?: string;
+        };
+        Update: {
+          allocated_at?: string | null;
+          campaign_id?: string;
+          day?: string;
+          error_code?: string | null;
+          group_key?: string;
+          ordinal?: number;
+          run_id?: string | null;
+          selection?: NonNullable<Json>;
+          state?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'm06_story_campaign_slots_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'm06_story_campaigns';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'm06_story_campaign_slots_run_id_fkey';
+            columns: ['run_id'];
+            isOneToOne: true;
+            referencedRelation: 'scrape_runs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      m06_story_campaigns: {
+        Row: {
+          configuration: NonNullable<Json>;
+          created_at: string;
+          ends_on: string;
+          id: string;
+          protected_archive_ids: number[];
+          shutdown_at: string;
+          starts_on: string;
+          stop_new_at: string;
+          stopped_at: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          configuration: NonNullable<Json>;
+          created_at?: string;
+          ends_on: string;
+          id: string;
+          protected_archive_ids?: number[];
+          shutdown_at: string;
+          starts_on: string;
+          stop_new_at: string;
+          stopped_at?: string | null;
+        };
+        Update: {
+          configuration?: NonNullable<Json>;
+          created_at?: string;
+          ends_on?: string;
+          id?: string;
+          protected_archive_ids?: number[];
+          shutdown_at?: string;
+          starts_on?: string;
+          stop_new_at?: string;
+          stopped_at?: string | null;
+        };
+        Relationships: [];
+      };
       m06_story_jobs: {
         Row: {
           actor_input: NonNullable<Json>;
@@ -3652,6 +3741,18 @@ export type Database = {
       m05_resolve_youtube: {
         Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id: string };
         Returns: undefined;
+      };
+      m06_campaign_conflict: {
+        Args: { p_campaign_id: string; p_deployment_id: string; p_event_id: string; p_observed_at: string };
+        Returns: Json;
+      };
+      m06_campaign_housekeeping: { Args: { p_campaign_id: string }; Returns: Json };
+      m06_campaign_install: { Args: { p: Json }; Returns: Json };
+      m06_campaign_snapshot: { Args: { p_campaign_id: string }; Returns: Json };
+      m06_campaign_stop: { Args: { p_campaign_id: string }; Returns: Json };
+      m06_campaign_tick: {
+        Args: { p_campaign_id: string; p_execution_id: string; p_request_id: string };
+        Returns: Json;
       };
       m06_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
       mark_website_page: {
