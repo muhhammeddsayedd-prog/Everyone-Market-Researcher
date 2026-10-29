@@ -184,6 +184,10 @@ test('registration-close races report an already completed parent accurately', (
 });
 test('native graph is inactive, private, asynchronous and uses existing native credentials', () => {
   const d = buildNativeStories(bindings, transport, selection());
+  assert.equal(
+    d.workflow.nodes.find((n) => n.name === 'Manual dev stories check').type,
+    'n8n-nodes-base.manualTrigger',
+  );
   assert.equal(d.workflow.active, false);
   assert.equal(d.hostedAcceptance, false);
   assert.equal(d.workflow.settings.availableInMCP, false);
@@ -203,6 +207,12 @@ test('native graph is inactive, private, asynchronous and uses existing native c
   const start = d.workflow.nodes.find((n) => n.name === 'Start asynchronous stories actor');
   assert.equal(start.parameters.nodeCredentialType, 'apifyApi');
   assert.equal(start.credentials.apifyApi.id, bindings.credentials.apify.id);
+  const webhook = JSON.parse(
+    Buffer.from(decodeURIComponent(start.parameters.url.match(/&webhooks=([^\"]+)/)[1]), 'base64').toString(
+      'utf8',
+    ),
+  );
+  assert.equal(webhook[0].requestUrl, bindings.instanceUrl + '/webhook/emr-m06-stories-callback');
   assert.match(start.parameters.url, /waitForFinish=0&restartOnError=false/);
   assert.match(start.parameters.url, /maxTotalChargeUsd/);
 });

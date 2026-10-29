@@ -83,6 +83,7 @@ interface Dependencies {
     config: CollectorConfig,
     signal: AbortSignal,
   ) => Promise<unknown>;
+  admitCallback?: (input: CollectorRequest, config: CollectorConfig, signal: AbortSignal) => Promise<unknown>;
   deadlineMs?: number;
 }
 export function createCollectorHandler(deps: Dependencies) {
@@ -126,6 +127,8 @@ export function createCollectorHandler(deps: Dependencies) {
         throw new WorkerFailure('forbidden', 403);
       if (input.operation.startsWith('m06.') && config.scope !== 'm06')
         throw new WorkerFailure('forbidden', 403);
+      if (input.operation === 'callback.admit' && config.scope !== 'm06')
+        throw new WorkerFailure('forbidden', 403);
       if (
         config.scope === 'm05' &&
         !input.operation.startsWith('m05.') &&
@@ -135,7 +138,9 @@ export function createCollectorHandler(deps: Dependencies) {
       if (
         config.scope === 'm06' &&
         !input.operation.startsWith('m06.') &&
-        !['callback.classify', 'callback.process', 'request.status'].includes(input.operation)
+        !['callback.classify', 'callback.process', 'callback.admit', 'request.status'].includes(
+          input.operation,
+        )
       )
         throw new WorkerFailure('forbidden', 403);
       const selected = input.args.account_ids;
@@ -166,7 +171,15 @@ export function createCollectorHandler(deps: Dependencies) {
         throw new WorkerFailure('invalid_request', 400);
       if (controller.signal.aborted) throw new WorkerFailure('outcome_unknown', 503);
       let receipt: { replayed: boolean; result: unknown };
-      if (input.operation === 'callback.process') {
+      if (input.operation === 'callback.admit') {
+        if (!deps.admitCallback) throw new WorkerFailure('unavailable', 503);
+        const result = await deps.admitCallback(input, config, controller.signal);
+        receipt = {
+          replayed:
+            result !== null && typeof result === 'object' && 'replayed' in result && result.replayed === true,
+          result,
+        };
+      } else if (input.operation === 'callback.process') {
         const result = await deps.processCallback(input, config, controller.signal);
         receipt = {
           replayed:

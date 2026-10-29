@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 vi.mock('server-only', () => ({}));
 import { createCollectorHandler, type CollectorDispatch } from './collectors';
 import { dispatchCollectorDatabase } from './collector-database';
-import { createM06StoriesCallback } from './m06-stories-callback';
+import { createM06StoriesCallback, createM06StoriesAdmission } from './m06-stories-callback';
 import type { WorkerClient, WorkerPool } from './database';
 import type { CollectorRequest } from '@emr/shared';
 // Load the actual Node generator without Vite rewriting imported function
@@ -251,6 +251,7 @@ describe.skipIf(process.env.EMR_M06_STORIES_LOCAL_SQL_TEST !== 'true')(
           environment: () => environment,
           dispatch,
           processCallback: callback,
+          admitCallback: createM06StoriesAdmission({ dispatch }),
         });
         const send = async (request: CollectorRequest) => {
           const response = await handler(
@@ -311,6 +312,40 @@ describe.skipIf(process.env.EMR_M06_STORIES_LOCAL_SQL_TEST !== 'true')(
           return state;
         }
         let state = await admitted('ingest', '60101');
+        const admissionInput = {
+          version: 1 as const,
+          requestId: randomUUID(),
+          operation: 'callback.admit' as const,
+          args: { apify_run_id: providerId },
+        };
+        const beforeAdmissionReads = providerReads;
+        const accepted = await send(admissionInput),
+          duplicateAdmission = await send({ ...admissionInput, requestId: randomUUID() });
+        expect(accepted.body.result).toMatchObject({
+          accepted: true,
+          durable: true,
+          state: 'pending',
+          replayed: false,
+          run_id: state.runId,
+          apify_run_id: providerId,
+        });
+        expect(duplicateAdmission.body.result).toMatchObject({
+          accepted: true,
+          durable: true,
+          state: 'pending',
+          replayed: true,
+        });
+        expect(providerReads).toBe(beforeAdmissionReads);
+        // WF-12's original registration plus one stable callback admission;
+        // a duplicate webhook delivery creates no additional register row.
+        expect(
+          (
+            await inspect(
+              "select count(*)::int n from ops.collector_requests where operation='m06.register' and result->>'apify_run_id'=$1",
+              [providerId],
+            )
+          ).rows[0].n,
+        ).toBe(2);
         const callbackInput = {
           version: 1 as const,
           requestId: randomUUID(),
@@ -434,6 +469,21 @@ describe.skipIf(process.env.EMR_M06_STORIES_LOCAL_SQL_TEST !== 'true')(
         deliverMedia(replay.body.result);
         expect(wakeCalls).toHaveLength(3);
         expect(providerReads).toBe(readsBeforeReplay);
+        const completedAdmission = await send({ ...admissionInput, requestId: randomUUID() });
+        expect(completedAdmission.body.result).toMatchObject({
+          state: 'completed',
+          replayed: true,
+          durable: true,
+        });
+        expect(providerReads).toBe(readsBeforeReplay);
+        expect(
+          (
+            await inspect(
+              "select count(*)::int n from ops.collector_requests where operation='m06.register' and result->>'apify_run_id'=$1",
+              [providerId],
+            )
+          ).rows[0].n,
+        ).toBe(2);
         expect((await inspect(countsSql, [accountIds, providerId])).rows[0]).toEqual(delivered);
         const healthSql = `select id,last_run_id,last_success_at,last_error_at,next_due_at,consecutive_failures,last_item_published_at,last_external_id,items_count,cadence::text from app.competitor_accounts where id=any($1) order by id`;
         const health = (await inspect(healthSql, [accountIds])).rows;

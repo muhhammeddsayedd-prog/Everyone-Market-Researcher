@@ -1,0 +1,33 @@
+# M06 first connected stories observation — 29 October 2026
+
+## Authority and preserved evidence
+
+Owner accepts `c1f4da0`/CI40804061050 and authorizes sections1–3/5 of the existing [connected plan](stories-connected-dev-plan-20261029.md): native implementation/CI, exact pending22, protected M06 Preview and owned bindings/webhook publication, one genuinely allocated Data Slayer run, actual ingestion/media/replay/unknown-run checks and reconciliation/cleanup. The temporary sole/default bypass exception explicitly includes its project-wide/Production-build implications; use remains exact-dev-Preview only with application authentication and conflict monitoring. Standing development spending applies. Section4 seven-day comparison is **not authorized**. No emails, Production operation, merge or M07.
+
+Accepted media and three terminal manual runs remain closed/provenance only. They are not retro-registered. The generic267-message backlog is neither drained nor reordered. Denied M05 files/historical workflow graphs and draft-PR403 remain separate and unchanged.
+
+## Completed local native connection
+
+- Maintained new `WF-19-M06-stories.json` uses unique `/webhook/emr-m06-stories-callback`, preserving the unrelated shared callback path and branches. WF-12's supported Manual Trigger and generated actor webhook point here.
+- Authenticated M06-only `callback.admit` verifies the same owned registered job, account allowlist, source build and run configuration, then commits a stable idempotent `m06.register` request-ledger admission. A concurrent settlement gets one bounded readback and is accepted only if durably settled. No migration change or provider read is needed for admission.
+- Native8-second admission HTTP → strict receipt validation → RespondToWebhook200 → authoritative source processing → exact full-response body/completion extraction → dedicated story-media handoff. Accepted/pending is explicitly distinct from ingestion/media completion. Unknown IDs receive403 and failed admission503, with no ingestion or cost changes.
+- Completed replay uses the durable settlement, with no provider reads, extra ingestion/charge or media dispatch. Post-ACK processing failure remains an owned pending registered job; media failure/uncertainty remains identifiable in the existing story queue and durable worker audits. Reconcile known work rather than resubmit a paid start.
+- Finite builder envelope includes300seconds per child,8seconds admission,60seconds source processing and120seconds shutdown. Planned36 total new items/batch5 require2700seconds; the12-item/three-child alternative fits1800. Runtime refuses a result beyond its declared envelope without discarding durable queue work.
+
+Focused qualification:18 native generated-graph tests,92 affected web tests and actual local SQL admission/replay integration pass, plus TypeScript/owned lint/format checks. The SQL proof counts original registration plus one stable admission row across repeated delivery; no fabricated provider result or hosted acceptance is implied. Migration22 SHA256 remains `1811fef97bb381baa928583e4197725d56acc719d36079e54d211afd41fe578f`. Normal changed-head CI is required before mutation.
+
+## Current native/time and access evidence
+
+Current official [n8n Cloud webhook HTTP response limit](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/common-issues) is100seconds; [Apify webhook timeout](https://docs.apify.com/integrations/webhooks/actions) is2minutes. Neither supports holding HTTP open for thumbnail processing. Paid-plan workflow maximum is not established by execution quota.
+
+Pinned2.43.5 native Settings Save validates against the server-advertised maximum ([frontend](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/frontend/editor-ui/src/features/workflows/components/WorkflowSettings/WorkflowSettings.vue#L635)); the server supplies that maximum from execution configuration ([service](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/services/frontend.service.ts#L194)). API save/readback alone is insufficient because runtime may clamp. Verify intended2700 through the exact owned callback's native Settings→Save and reopen; if it does not fit, use the authorized Good People-only12-item/1800-second alternative and record the narrower selection. This is configuration evidence, not a measured maximum-duration execution.
+
+The existing Vercel session was actually expired at first metadata read, with zero network/auth requests. Owner renewed it; fresh metadata now covers75minutes. Three bounded native project GETs confirm the exact Next.js project/root, existing protection, zero bypasses and zero conflicting in-progress Production builds. Unrelated branch Preview env metadata is preserved. n8n MCP search returns an internal error; the existing signed-in browser works, so no credential replacement/login loop is started.
+
+## Read-only database admission
+
+[Preflight SQL](stories-connected-preflight-20261029.sql) and [actual receipt](stories-connected-preflight-20261029.json) verify21 exact history hashes, all three selected active/due/claim-free dev identities and zero running parents, unprocessed selected actors, unregistered launches, unfinished media batches, active M06 sessions or media locks. Story lane/jobs do not exist yet. Generic queue267 identity SHA256 is `2d37e038b415f6dae1f1f42de8a020a23faf779ed525f91ffefa7c167517b352`; full delivery hash and message IDs are retained for final parity. Client, bounded child and scratch close/delete checks pass. The approved separate Admin path performs only this read; runtime receives no administrator credential.
+
+## Actual execution and shutdown
+
+Pending qualification, native timeout save/readback, exact one-file dry-run/push and owned staging. No connected actor start or hosted story ingestion is claimed yet. Record native launch/callback IDs and acknowledgment timing, admitted settings, actual account/source/item/object IDs, usage, replay/unknown-run assertions, retained data and all restoration/revocation/quiescence receipts here before handoff. Do not repeat accepted media/manual captures or execute the comparison while completing this authorized operation.

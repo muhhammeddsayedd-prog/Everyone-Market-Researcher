@@ -29,6 +29,9 @@ const normalize: Record<M06StoryActor, StoryNormalizer> = {
 };
 const object = (v: unknown): v is Row => v !== null && typeof v === 'object' && !Array.isArray(v);
 const external = (v: unknown): v is string => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);
+const uuid = (v: unknown): v is string =>
+  typeof v === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const bad = () => new WorkerFailure('m06_story_provider_reconciliation_required', 503);
 const canonical = (v: unknown): string =>
   Array.isArray(v)
@@ -69,11 +72,14 @@ function registered(value: unknown, runId: string, config: CollectorConfig) {
     new Set(value.accounts.map((a) => a.account_id)).size !== value.accounts.length ||
     value.accounts.some((a) => !(value.account_ids as unknown[]).includes(a.account_id)) ||
     !object(value.actor_input) ||
+    !uuid(value.run_id) ||
+    !uuid(value.launch_id) ||
     typeof value.settled !== 'boolean' ||
     !external(value.build_id) ||
     !Number.isSafeInteger(value.memory_mbytes) ||
     Number(value.memory_mbytes) < 128 ||
     Number(value.memory_mbytes) > 32768 ||
+    (Number(value.memory_mbytes) & (Number(value.memory_mbytes) - 1)) !== 0 ||
     !Number.isSafeInteger(value.timeout_secs) ||
     Number(value.timeout_secs) < 30 ||
     Number(value.timeout_secs) > 600 ||
@@ -81,6 +87,11 @@ function registered(value: unknown, runId: string, config: CollectorConfig) {
     Number(value.results_limit) < 1 ||
     Number(value.results_limit) > 1000 ||
     Number(value.results_limit) * value.account_ids.length > 1000 ||
+    typeof value.max_actor_usd !== 'number' ||
+    !Number.isFinite(value.max_actor_usd) ||
+    value.max_actor_usd <= 0 ||
+    value.max_actor_usd > 999999.999999 ||
+    !/^\d+(?:\.\d{1,6})?$/.test(String(value.max_actor_usd)) ||
     !['ingest', 'bakeoff'].includes(String(value.collection_mode)) ||
     value.approval_id !== config.policy?.approval_id ||
     typeof value.launch_created_at !== 'string' ||
@@ -96,6 +107,81 @@ function registered(value: unknown, runId: string, config: CollectorConfig) {
     settled: boolean;
     build_id: string;
     launch_created_at: string;
+    run_id: string;
+    launch_id: string;
+  };
+}
+
+/** Fast durable admission reuses the existing owned job and idempotent register
+ * operation. One stable register request per provider run records acceptance;
+ * it never starts a provider or claims that ingestion has finished. */
+export function createM06StoriesAdmission(deps: Pick<Dependencies, 'dispatch'>) {
+  return async (input: CollectorRequest, config: CollectorConfig, signal: AbortSignal): Promise<Row> => {
+    if (config.scope !== 'm06' || !external(input.args.apify_run_id))
+      throw new WorkerFailure('forbidden', 403);
+    const runId = input.args.apify_run_id;
+    const lookup = async () => {
+      const value = (
+        await deps.dispatch(
+          child(input.requestId, 'admission-lookup'),
+          'm06.lookup',
+          { apify_run_id: runId },
+          config,
+          signal,
+        )
+      ).result;
+      const job = registered(value, runId, config),
+        pin = config.policy?.actors[job.actor_id];
+      if (!pin || pin.buildId !== job.build_id || (job.settled && !object(job.processing_result)))
+        throw bad();
+      return job;
+    };
+    let job = await lookup(),
+      replayed = job.settled;
+    if (!job.settled) {
+      try {
+        const receipt = await deps.dispatch(
+          child(runId, 'admission-register:' + config.policy!.approval_id),
+          'm06.register',
+          {
+            run_id: job.run_id,
+            launch_id: job.launch_id,
+            apify_run_id: runId,
+            actor_id: job.actor_id,
+            pass: 'primary',
+            account_ids: job.account_ids,
+            purpose: 'daily',
+          },
+          config,
+          signal,
+        );
+        if (
+          !object(receipt.result) ||
+          receipt.result.registered !== true ||
+          receipt.result.run_id !== job.run_id ||
+          receipt.result.apify_run_id !== runId ||
+          typeof receipt.replayed !== 'boolean'
+        )
+          throw bad();
+        replayed = receipt.replayed;
+      } catch {
+        // Settlement can win between lookup and registration. Only its durable
+        // completed result permits this bounded race recovery to acknowledge.
+        job = await lookup();
+        if (!job.settled) throw bad();
+        replayed = true;
+      }
+    }
+    return {
+      scope: 'm06',
+      accepted: true,
+      durable: true,
+      apify_run_id: runId,
+      run_id: job.run_id,
+      launch_id: job.launch_id,
+      state: job.settled ? 'completed' : 'pending',
+      replayed,
+    };
   };
 }
 

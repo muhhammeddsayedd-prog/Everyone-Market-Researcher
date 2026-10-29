@@ -75,8 +75,10 @@ export function advanceM06StoryMediaHandoff(state, receipt) {
 // The owned WF-31 binding must be read back against this exact Preview whose
 // server configuration is EMR_MEDIA_QUEUE=stories before hosted activation.
 // https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/ExecuteWorkflow/ExecuteWorkflow/ExecuteWorkflow.node.ts
-export function buildM06StoryMediaHandoff(inputBindings, binding) {
-  prepareM06StoryMediaHandoff({ state: 'completed', updated: false }, binding);
+export function buildM06StoryMediaHandoff(inputBindings, binding, ready = true) {
+  // An unbound inactive callback export may carry placeholders; its runtime
+  // binding guard still rejects them before any child execution.
+  if (ready) prepareM06StoryMediaHandoff({ state: 'completed', updated: false }, binding);
   const b = parseN8nBindings(inputBindings);
   b.workflowRefs['WF-31'] = { ...b.workflowRefs['WF-31'], id: binding.workflowId };
   const key = 'WF-19',

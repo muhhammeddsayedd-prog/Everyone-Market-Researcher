@@ -1,0 +1,771 @@
+{
+  "key": "WF-19",
+  "kind": "native-json-blueprint",
+  "hostedAcceptance": false,
+  "runnableWorkflow": true,
+  "liveEnabled": false,
+  "definitionProfile": "inactive_native_staging",
+  "bindingManifest": {
+    "ready": false,
+    "environment": "dev",
+    "audience": "https://everyone-market-researcher-unbound.vercel.app",
+    "credential": {
+      "id": "UNBOUND_EMR_STORIES_AUTH",
+      "name": "UNBOUND EMR stories dev",
+      "type": "httpCustomAuth"
+    },
+    "media": {
+      "environment": "dev",
+      "queue": "stories",
+      "workflowId": "UNBOUND_EMR_STORY_MEDIA",
+      "audience": "https://everyone-market-researcher-unbound.vercel.app",
+      "batchSize": 5
+    }
+  },
+  "executionEnvelope": {
+    "maxOutputItems": 36,
+    "executionTimeout": 2700,
+    "mediaChildDeadlineSeconds": 300,
+    "admissionDeadlineSeconds": 8,
+    "processingDeadlineSeconds": 60,
+    "shutdownReserveSeconds": 120
+  },
+  "durability": {
+    "admission": "existing_registered_job_and_idempotent_registration_request",
+    "acknowledgment": "after_durable_admission_before_provider_or_media",
+    "recovery": "known_job_until_settled_and_owned_story_queue_receipts",
+    "migration": "20261029005731_only_unchanged"
+  },
+  "workflow": {
+    "name": "WF-19-M06 · Stories callback [dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "e2b3b49e-ac20-454d-a8bd-553e819ad6d0",
+        "name": "Apify stories callback",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "emr-m06-stories-callback",
+          "authentication": "none",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "position": [
+          0,
+          -150
+        ],
+        "webhookId": "e2b3b49e-ac20-454d-a8bd-553e819ad6d0"
+      },
+      {
+        "id": "c7035617-8c76-4f16-ac5d-4cd0e436905d",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "apify_run_id",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              },
+              {
+                "name": "transport",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b6b68523-cb9c-4678-acfb-ada293bb36a6",
+        "name": "Validate story callback source",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M06_CALLBACK_BINDING_REQUIRED');\nconst rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_CALLBACK_INPUT_INVALID');const j=rows[0].json;\nfunction m06CallbackSource(value) {\n  const external = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);\n  if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error('M06_CALLBACK_INPUT_INVALID');\n  if (Object.hasOwn(value, 'body')) {\n    const body = value.body;\n    if (\n      !body ||\n      typeof body !== 'object' ||\n      Array.isArray(body) ||\n      !['ACTOR.RUN.SUCCEEDED', 'ACTOR.RUN.FAILED', 'ACTOR.RUN.TIMED_OUT', 'ACTOR.RUN.ABORTED'].includes(\n        body.eventType,\n      ) ||\n      !body.resource ||\n      typeof body.resource !== 'object' ||\n      Array.isArray(body.resource) ||\n      !external(body.resource.id)\n    )\n      throw Error('M06_CALLBACK_INPUT_INVALID');\n    return { apify_run_id: body.resource.id, transport: 'webhook' };\n  }\n  if (\n    Object.keys(value).sort().join(',') !== 'apify_run_id,env,transport' ||\n    value.env !== 'dev' ||\n    value.transport !== 'recovery' ||\n    !external(value.apify_run_id)\n  )\n    throw Error('M06_CALLBACK_INPUT_INVALID');\n  return { apify_run_id: value.apify_run_id, transport: 'recovery' };\n}\nreturn[{json:m06CallbackSource(j)}];"
+        },
+        "position": [
+          200,
+          0
+        ]
+      },
+      {
+        "id": "b6d787ca-a1dc-437a-ad35-1f69169470d3",
+        "name": "Prepare story callback admission",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_CALLBACK_INPUT_INVALID');const j=rows[0].json;\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\nreturn[{json:{source:j,request:{version:1,requestId:m06StoryRequestId(String($execution.id),1),operation:'callback.admit',args:{apify_run_id:j.apify_run_id}}}}];"
+        },
+        "position": [
+          400,
+          0
+        ]
+      },
+      {
+        "id": "1411836c-2eba-4f44-ad81-5ef19d23584c",
+        "name": "Admit owned story callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-unbound.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 8000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          600,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "UNBOUND_EMR_STORIES_AUTH",
+            "name": "UNBOUND EMR stories dev"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "3cde76a9-a5d1-4045-a5e8-fe9487382593",
+        "name": "Verify durable story admission",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_CALLBACK_INPUT_INVALID');const j=rows[0].json;\nfunction m06CallbackAdmission(response, prior) {\n  const b = response?.body,\n    source = prior?.source;\n  if (!source || !prior.request) throw Error('M06_CALLBACK_ADMISSION_INVALID');\n  if (response.statusCode !== 200) {\n    return { ...source, accepted: false, statusCode: response.statusCode === 403 ? 403 : 503 };\n  }\n  const r = b?.result,\n    uuid = (v) =>\n      typeof v === 'string' &&\n      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);\n  if (\n    b?.version !== 1 ||\n    b.requestId !== prior.request.requestId ||\n    b.operation !== 'callback.admit' ||\n    typeof b.replayed !== 'boolean' ||\n    !r ||\n    Object.keys(r).sort().join(',') !==\n      'accepted,apify_run_id,durable,launch_id,replayed,run_id,scope,state' ||\n    r.scope !== 'm06' ||\n    r.accepted !== true ||\n    r.durable !== true ||\n    r.apify_run_id !== source.apify_run_id ||\n    !uuid(r.run_id) ||\n    !uuid(r.launch_id) ||\n    !['pending', 'completed'].includes(r.state) ||\n    typeof r.replayed !== 'boolean' ||\n    r.replayed !== b.replayed ||\n    (r.state === 'completed' && !r.replayed)\n  )\n    throw Error('M06_CALLBACK_ADMISSION_INVALID');\n  return { ...source, accepted: true, admission: r };\n}\nreturn[{json:m06CallbackAdmission(j,$('Prepare story callback admission').item.json)}];"
+        },
+        "position": [
+          800,
+          0
+        ]
+      },
+      {
+        "id": "fc562718-0c94-47e0-aed2-3d95ad241de9",
+        "name": "Story callback admitted?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "e804614e-6de2-4a51-a8c1-6e91b56266d6",
+                "leftValue": "={{ $json.accepted === true }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1000,
+          0
+        ]
+      },
+      {
+        "id": "7199b125-2b73-41ed-a4e6-78ed882d47da",
+        "name": "Rejected story webhook?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "6909825f-79c4-460f-a274-8026be42fd15",
+                "leftValue": "={{ $json.transport === 'webhook' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1200,
+          300
+        ]
+      },
+      {
+        "id": "215995c5-8972-44d1-aba5-519c56f8912c",
+        "name": "Reject story callback",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:false,rejected:true,retryable:$json.statusCode===503} }}",
+          "options": {
+            "responseCode": "={{ $json.statusCode }}",
+            "enableStreaming": false
+          }
+        },
+        "position": [
+          1400,
+          250
+        ]
+      },
+      {
+        "id": "7e04a3f9-3b59-428d-a341-2939c71cb88a",
+        "name": "Return rejected story callback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_CALLBACK_INPUT_INVALID');const j=rows[0].json;\nif(j.transport==='recovery')throw Error('M06_CALLBACK_NOT_ADMITTED');return[{json:{accepted:false,rejected:true,statusCode:j.statusCode}}];"
+        },
+        "position": [
+          1600,
+          400
+        ]
+      },
+      {
+        "id": "0a495c91-3752-4e47-ac64-51b39dd1e2e3",
+        "name": "Accepted story webhook?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "095e8a2d-2e62-4541-a2db-a09099830f02",
+                "leftValue": "={{ $json.transport === 'webhook' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1200,
+          -200
+        ]
+      },
+      {
+        "id": "2aeae64d-ec1b-4f82-a650-9278aa9505e6",
+        "name": "Acknowledge durable story callback",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:true,accepted:true,state:$json.admission.state,replayed:$json.admission.replayed} }}",
+          "options": {
+            "responseCode": 200,
+            "enableStreaming": false
+          }
+        },
+        "position": [
+          1400,
+          -300
+        ]
+      },
+      {
+        "id": "a41b174c-1b69-4cdb-a137-ea0d55869849",
+        "name": "Prepare authoritative story processing",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_CALLBACK_INPUT_INVALID');const j=rows[0].json;\nfunction m06StoryRequestId(execution, sequence) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M06_STORIES_EXECUTION_INVALID');\n  return `c06c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\nif(j.accepted!==true)throw Error('M06_CALLBACK_NOT_ADMITTED');return[{json:{source:j,request:{version:1,requestId:m06StoryRequestId(String($execution.id),2),operation:'callback.process',args:{apify_run_id:j.apify_run_id}}}}];"
+        },
+        "position": [
+          1600,
+          -200
+        ]
+      },
+      {
+        "id": "9cc79827-3c85-4de1-ac7b-3ef8dfe6efcc",
+        "name": "Process authoritative story callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-unbound.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 60000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1800,
+          -200
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "UNBOUND_EMR_STORIES_AUTH",
+            "name": "UNBOUND EMR stories dev"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "a60a9a5d-ac20-4f8b-a28b-bb0ca2882eb3",
+        "name": "Verify story callback completion",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_CALLBACK_INPUT_INVALID');const j=rows[0].json;\nfunction m06CallbackCompletion(response, prior, maxOutputItems) {\n  const b = response?.body,\n    r = b?.result;\n  if (\n    response?.statusCode !== 200 ||\n    b?.version !== 1 ||\n    b.requestId !== prior?.request?.requestId ||\n    b.operation !== 'callback.process' ||\n    typeof b.replayed !== 'boolean' ||\n    !r ||\n    typeof r !== 'object' ||\n    Array.isArray(r) ||\n    r.state !== 'completed' ||\n    typeof r.updated !== 'boolean' ||\n    b.replayed !== !r.updated ||\n    !Array.isArray(r.groups) ||\n    r.groups.length < 1 ||\n    r.groups.length > 100\n  )\n    throw Error('M06_CALLBACK_RECONCILIATION_REQUIRED');\n  let n = 0;\n  const ids = new Set();\n  for (const g of r.groups) {\n    if (\n      !g ||\n      typeof g.account_id !== 'string' ||\n      ids.has(g.account_id) ||\n      !['success', 'failed'].includes(g.status) ||\n      !Number.isSafeInteger(g.items_new) ||\n      g.items_new < 0 ||\n      g.items_new > 1000 ||\n      (g.status === 'failed' && g.items_new !== 0)\n    )\n      throw Error('M06_CALLBACK_RECONCILIATION_REQUIRED');\n    ids.add(g.account_id);\n    n += g.items_new;\n  }\n  if (\n    !Number.isSafeInteger(maxOutputItems) ||\n    maxOutputItems < 1 ||\n    maxOutputItems > 1000 ||\n    n > maxOutputItems ||\n    (!r.updated && r.media_dispatch !== null)\n  )\n    throw Error('M06_CALLBACK_RECONCILIATION_REQUIRED');\n  if (r.media_dispatch !== null) {\n    const d = r.media_dispatch;\n    if (\n      !r.updated ||\n      !d ||\n      Object.keys(d).sort().join(',') !== 'items_new,queue' ||\n      d.queue !== 'stories' ||\n      d.items_new !== n ||\n      n < 1\n    )\n      throw Error('M06_CALLBACK_RECONCILIATION_REQUIRED');\n  }\n  return { ...r, apify_run_id: prior.source.apify_run_id };\n}\nreturn[{json:m06CallbackCompletion(j,$('Prepare authoritative story processing').item.json,36)}];"
+        },
+        "position": [
+          2000,
+          -200
+        ]
+      },
+      {
+        "id": "8e26c37e-a0e6-4c5f-a261-064f552ddd41",
+        "name": "Prepare committed story media",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "function prepareM06StoryMediaHandoff(result, binding) {\n  if (\n    !binding ||\n    Object.keys(binding).sort().join(',') !== 'audience,batchSize,environment,queue,workflowId' ||\n    binding.environment !== 'dev' ||\n    binding.queue !== 'stories' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(binding.workflowId ?? '') ||\n    /(?:unbound|placeholder)/i.test(binding.workflowId) ||\n    !/^https:\\/\\/everyone-market-researcher-[a-z0-9-]+\\.vercel\\.app$/.test(binding.audience ?? '') ||\n    /(?:unbound|placeholder)/i.test(binding.audience) ||\n    !Number.isSafeInteger(binding.batchSize) ||\n    binding.batchSize < 1 ||\n    binding.batchSize > 5\n  )\n    throw Error('M06_STORY_MEDIA_BINDING_REQUIRED');\n  if (!result || result.state !== 'completed' || typeof result.updated !== 'boolean')\n    throw Error('M06_STORY_MEDIA_RESULT_INVALID');\n  if (!result.updated || result.media_dispatch === null || result.media_dispatch === undefined)\n    return { action: 'done', batches: 0, itemsNew: 0 };\n  const wake = result.media_dispatch;\n  if (\n    !wake ||\n    Object.keys(wake).sort().join(',') !== 'items_new,queue' ||\n    wake.queue !== 'stories' ||\n    !Number.isSafeInteger(wake.items_new) ||\n    wake.items_new < 1 ||\n    wake.items_new > 1000\n  )\n    throw Error('M06_STORY_MEDIA_RESULT_INVALID');\n  return {\n    action: 'execute',\n    remaining: Math.ceil(wake.items_new / binding.batchSize),\n    batches: 0,\n    itemsNew: wake.items_new,\n  };\n}\nconst rows=$input.all();if(rows.length!==1||rows[0].binary)throw Error(\"M06_STORY_MEDIA_RESULT_INVALID\");return[{json:prepareM06StoryMediaHandoff(rows[0].json,{\"environment\":\"dev\",\"queue\":\"stories\",\"workflowId\":\"UNBOUND_EMR_STORY_MEDIA\",\"audience\":\"https://everyone-market-researcher-unbound.vercel.app\",\"batchSize\":5})}];"
+        },
+        "position": [
+          2200,
+          -200
+        ]
+      },
+      {
+        "id": "d41f0809-a1b0-43a8-acf3-2efbfba4bf64",
+        "name": "Stories media continuation?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "9a273e04-b2e7-4371-a1e0-e9e563c127fa",
+                "leftValue": "={{ $json.action === \"execute\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          2400,
+          -200
+        ]
+      },
+      {
+        "id": "86b10cd3-eb54-4f91-a028-c789cb432002",
+        "name": "Process new story media",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "UNBOUND_EMR_STORY_MEDIA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          2600,
+          -300
+        ],
+        "retryOnFail": false,
+        "onError": "stopWorkflow"
+      },
+      {
+        "id": "bef853d1-18ce-41dd-a929-e51067763bf7",
+        "name": "Advance story media delivery",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "function advanceM06StoryMediaHandoff(state, receipt) {\n  if (\n    state?.action !== 'execute' ||\n    !Number.isSafeInteger(state.remaining) ||\n    state.remaining < 1 ||\n    state.remaining > 1000 ||\n    !receipt ||\n    receipt.version !== 1 ||\n    !/^[1-9][0-9]{0,19}$/.test(receipt.execution_id ?? '') ||\n    receipt.state !== 'completed' ||\n    receipt.held !== 0 ||\n    receipt.retryable !== 0 ||\n    receipt.reconciliation_required !== 0 ||\n    receipt.infrastructure_cost_usd !== null ||\n    !['claimed', 'processed', 'stored', 'skipped', 'expired'].every(\n      (k) => Number.isSafeInteger(receipt[k]) && receipt[k] >= 0 && receipt[k] <= 50,\n    ) ||\n    receipt.processed !== receipt.claimed ||\n    receipt.stored + receipt.skipped + receipt.expired !== receipt.processed\n  )\n    throw Error('M06_STORY_MEDIA_RECONCILIATION_REQUIRED');\n  return {\n    action: state.remaining === 1 || receipt.claimed === 0 ? 'done' : 'execute',\n    remaining: state.remaining - 1,\n    batches: state.batches + 1,\n    itemsNew: state.itemsNew,\n  };\n}\nconst rows=$input.all();if(rows.length!==1||rows[0].binary)throw Error(\"M06_STORY_MEDIA_RECONCILIATION_REQUIRED\");return[{json:advanceM06StoryMediaHandoff($(\"Stories media continuation?\").item.json,rows[0].json)}];"
+        },
+        "position": [
+          2800,
+          -300
+        ]
+      },
+      {
+        "id": "95845c85-1031-4fa8-a52f-f59b6d703c28",
+        "name": "Return stories callback outcome",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_CALLBACK_INPUT_INVALID');const j=rows[0].json;\nconst c=$('Verify story callback completion').first().json;return[{json:{accepted:true,state:'completed',apify_run_id:c.apify_run_id,replayed:!c.updated,media:{batches:j.batches,items_new:j.itemsNew}}}];"
+        },
+        "position": [
+          2800,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "Apify stories callback": {
+        "main": [
+          [
+            {
+              "node": "Validate story callback source",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate story callback source",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate story callback source": {
+        "main": [
+          [
+            {
+              "node": "Prepare story callback admission",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare story callback admission": {
+        "main": [
+          [
+            {
+              "node": "Admit owned story callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Admit owned story callback": {
+        "main": [
+          [
+            {
+              "node": "Verify durable story admission",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify durable story admission": {
+        "main": [
+          [
+            {
+              "node": "Story callback admitted?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Story callback admitted?": {
+        "main": [
+          [
+            {
+              "node": "Accepted story webhook?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Rejected story webhook?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Rejected story webhook?": {
+        "main": [
+          [
+            {
+              "node": "Reject story callback",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return rejected story callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reject story callback": {
+        "main": [
+          [
+            {
+              "node": "Return rejected story callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Accepted story webhook?": {
+        "main": [
+          [
+            {
+              "node": "Acknowledge durable story callback",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare authoritative story processing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Acknowledge durable story callback": {
+        "main": [
+          [
+            {
+              "node": "Prepare authoritative story processing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare authoritative story processing": {
+        "main": [
+          [
+            {
+              "node": "Process authoritative story callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process authoritative story callback": {
+        "main": [
+          [
+            {
+              "node": "Verify story callback completion",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify story callback completion": {
+        "main": [
+          [
+            {
+              "node": "Prepare committed story media",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare committed story media": {
+        "main": [
+          [
+            {
+              "node": "Stories media continuation?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stories media continuation?": {
+        "main": [
+          [
+            {
+              "node": "Process new story media",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return stories callback outcome",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process new story media": {
+        "main": [
+          [
+            {
+              "node": "Advance story media delivery",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance story media delivery": {
+        "main": [
+          [
+            {
+              "node": "Stories media continuation?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 2700,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  },
+  "limitations": [
+    "Inactive local definition until owned bindings/publication/readback. No M05 website or historical callback changes.",
+    "ACK confirms durable owned work, not successful provider ingestion or media delivery. Failed processing/media requires supported known-job/queue reconciliation.",
+    "Finite media batches cover the selected observation; story-lane inventory, batch size and runtime/shutdown capacity must be verified before hosted admission."
+  ]
+}

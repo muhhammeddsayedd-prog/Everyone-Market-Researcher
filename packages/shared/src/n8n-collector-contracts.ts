@@ -151,6 +151,7 @@ export const collectorArgs = {
   close_registration: z.strictObject({ run_id: id }),
   'request.status': z.strictObject({ request_id: id }),
   'callback.classify': z.strictObject({ apify_run_id: external }),
+  'callback.admit': z.strictObject({ apify_run_id: external }),
   'callback.process': z.strictObject({ apify_run_id: external }),
   'execution.error': collectorExecutionErrorArgs,
 };

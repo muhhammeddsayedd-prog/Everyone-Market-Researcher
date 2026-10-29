@@ -1,6 +1,7 @@
 import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
 import {
   code,
+  node,
   trigger,
   settings,
   tags,
@@ -46,12 +47,13 @@ function definition(input, transport, selection, ready) {
     JSON.stringify([
       {
         eventTypes: ['ACTOR.RUN.SUCCEEDED', 'ACTOR.RUN.FAILED', 'ACTOR.RUN.TIMED_OUT', 'ACTOR.RUN.ABORTED'],
-        requestUrl: b.instanceUrl + '/webhook/emr-apify-callback',
+        requestUrl: b.instanceUrl + '/webhook/emr-m06-stories-callback',
       },
     ]),
     'utf8',
   ).toString('base64');
   const nodes = [
+    node(key, 'Manual dev stories check', 'manualTrigger', {}, [0, -200]),
     trigger(key, [['env', 'string']]),
     code(
       key,
@@ -138,6 +140,7 @@ function definition(input, transport, selection, ready) {
       tags: tags(b, ['env:dev', 'layer:collector', 'platform:instagram_stories']),
       pinData: {},
       connections: {
+        ...line('Manual dev stories check', 'Initialize fixed stories selection'),
         ...line('When called', 'Initialize fixed stories selection', 'Stories gateway action?'),
         'Stories gateway action?': {
           main: [[edge('Prepare stories gateway')], [edge('Stories actor action?')]],

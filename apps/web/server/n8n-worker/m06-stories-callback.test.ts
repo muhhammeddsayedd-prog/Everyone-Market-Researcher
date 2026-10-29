@@ -1,11 +1,12 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
-import { createM06StoriesCallback } from './m06-stories-callback';
+import { createM06StoriesCallback, createM06StoriesAdmission } from './m06-stories-callback';
 import { createCollectorHandler } from './collectors';
 import type { CollectorConfig, CollectorDispatch } from './collectors';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { WorkerFailure } from './errors';
 const account = '62000000-0000-4000-8000-000000000001',
   approval = '62000000-0000-4000-8000-000000000002';
 const actor = 'data-slayer/instagram-stories-scraper';
@@ -475,5 +476,151 @@ describe('M06 existing gateway scope', () => {
       max_actor_usd: 1.25,
       max_total_usd: 2.5,
     });
+  });
+  it('routes authenticated M06 admission through the bounded existing-job helper only', async () => {
+    const dispatch = vi.fn<CollectorDispatch>(async () => ({ replayed: false, result: null }));
+    const admitCallback = vi.fn(async () => ({
+      scope: 'm06',
+      accepted: true,
+      durable: true,
+      apify_run_id: 'SyntheticRun',
+      run_id: approval,
+      launch_id: account,
+      state: 'pending',
+      replayed: false,
+    }));
+    const handler = createCollectorHandler({
+      environment,
+      dispatch,
+      processCallback: async () => ({}),
+      admitCallback,
+    });
+    const response = await handler(request('callback.admit', { apify_run_id: 'SyntheticRun' }));
+    expect(response.status).toBe(200);
+    expect((await response.json()).result.state).toBe('pending');
+    expect(admitCallback).toHaveBeenCalledTimes(1);
+    expect(dispatch).not.toHaveBeenCalled();
+    const other = createCollectorHandler({
+      environment: () => ({
+        ...environment(),
+        VERCEL_GIT_COMMIT_REF: 'm04-collectors-vimeo-instagram',
+        EMR_COLLECTORS_LIVE_POLICY: undefined,
+      }),
+      dispatch,
+      processCallback: async () => ({}),
+      admitCallback,
+    });
+    expect((await other(request('callback.admit', { apify_run_id: 'SyntheticRun' }))).status).toBe(403);
+  });
+});
+
+describe('M06 fast durable callback admission', () => {
+  const input = {
+    version: 1 as const,
+    requestId: approval,
+    operation: 'callback.admit' as const,
+    args: { apify_run_id: 'SyntheticRun' },
+  };
+  it('commits one stable registration receipt per known run while duplicate delivery never creates provider work', async () => {
+    const requests = new Set<string>(),
+      calls: { id: string; operation: string; args: Record<string, unknown> }[] = [];
+    const dispatch: CollectorDispatch = async (id, operation, args) => {
+      calls.push({ id, operation, args });
+      if (operation === 'm06.lookup') return { replayed: false, result: job };
+      expect(operation).toBe('m06.register');
+      const replayed = requests.has(id);
+      requests.add(id);
+      return { replayed, result: { registered: true, run_id: job.run_id, apify_run_id: job.apify_run_id } };
+    };
+    const admit = createM06StoriesAdmission({ dispatch });
+    const first = await admit(input, config, new AbortController().signal),
+      second = await admit({ ...input, requestId: account }, config, new AbortController().signal);
+    expect(first).toMatchObject({
+      scope: 'm06',
+      accepted: true,
+      durable: true,
+      state: 'pending',
+      replayed: false,
+      run_id: job.run_id,
+      launch_id: job.launch_id,
+      apify_run_id: job.apify_run_id,
+    });
+    expect(second.replayed).toBe(true);
+    expect(requests.size).toBe(1);
+    expect(calls.filter((c) => c.operation === 'm06.register').map((c) => c.args)).toEqual(
+      [0, 1].map(() => ({
+        run_id: job.run_id,
+        launch_id: job.launch_id,
+        apify_run_id: job.apify_run_id,
+        actor_id: job.actor_id,
+        pass: 'primary',
+        account_ids: job.account_ids,
+        purpose: 'daily',
+      })),
+    );
+    expect(calls.every((c) => ['m06.lookup', 'm06.register'].includes(c.operation))).toBe(true);
+  });
+  it('completed durable replay acknowledges without another registration, provider read, cost or media dispatch', async () => {
+    const dispatch = vi.fn<CollectorDispatch>(async () => ({
+      replayed: false,
+      result: { ...job, settled: true, processing_result: { updated: true, groups: [] } },
+    }));
+    const result = await createM06StoriesAdmission({ dispatch })(input, config, new AbortController().signal);
+    expect(result).toMatchObject({ state: 'completed', replayed: true, durable: true });
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(result).not.toHaveProperty('media_dispatch');
+  });
+  it('a registration/settlement race is acknowledged only after one durable completed readback', async () => {
+    for (const settled of [true, false]) {
+      let reads = 0,
+        registers = 0;
+      const dispatch: CollectorDispatch = async (_id, op) => {
+        if (op === 'm06.register') {
+          registers++;
+          throw new WorkerFailure('reconciliation_required', 503);
+        }
+        reads++;
+        return {
+          replayed: false,
+          result: {
+            ...job,
+            settled: reads === 2 && settled,
+            processing_result: reads === 2 && settled ? { updated: true, groups: [] } : null,
+          },
+        };
+      };
+      const result = createM06StoriesAdmission({ dispatch })(input, config, new AbortController().signal);
+      if (settled) expect(await result).toMatchObject({ state: 'completed', replayed: true });
+      else await expect(result).rejects.toThrow();
+      expect(reads).toBe(2);
+      expect(registers).toBe(1);
+    }
+  });
+  it('unknown IDs, changed identity/build/allowlist and malformed immutable settings cannot be admitted', async () => {
+    for (const patch of [
+      { run_id: 'bad' },
+      { launch_id: 'bad' },
+      { build_id: 'OtherBuild' },
+      { account_ids: [approval] },
+      { memory_mbytes: 129 },
+      { max_actor_usd: NaN },
+      { max_actor_usd: 0 },
+    ]) {
+      const dispatch = vi.fn<CollectorDispatch>(async () => ({
+        replayed: false,
+        result: { ...job, ...patch },
+      }));
+      await expect(
+        createM06StoriesAdmission({ dispatch })(input, config, new AbortController().signal),
+      ).rejects.toThrow();
+      expect(dispatch).toHaveBeenCalledTimes(1);
+    }
+    const dispatch = vi.fn<CollectorDispatch>(async () => {
+      throw new WorkerFailure('forbidden', 403);
+    });
+    await expect(
+      createM06StoriesAdmission({ dispatch })(input, config, new AbortController().signal),
+    ).rejects.toMatchObject({ status: 403 });
+    expect(dispatch).toHaveBeenCalledTimes(1);
   });
 });

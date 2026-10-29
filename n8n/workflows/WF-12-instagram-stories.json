@@ -31,6 +31,17 @@
     "active": false,
     "nodes": [
       {
+        "id": "7a9fca49-e23e-4628-ad21-75b7a1c2b831",
+        "name": "Manual dev stories check",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {},
+        "position": [
+          0,
+          -200
+        ]
+      },
+      {
         "id": "7333112d-bfa2-46e0-a7ff-563bc2ef6973",
         "name": "When called",
         "type": "n8n-nodes-base.executeWorkflowTrigger",
@@ -229,7 +240,7 @@
         "typeVersion": 4.5,
         "parameters": {
           "method": "POST",
-          "url": "={{ \"https://api.apify.com/v2/acts/\"+$json.launchDescriptor.actorPath+\"/runs?waitForFinish=0&restartOnError=false&timeout=\"+$json.launchDescriptor.timeout+\"&memory=\"+$json.launchDescriptor.memory+\"&build=\"+encodeURIComponent($json.launchDescriptor.build)+\"&maxTotalChargeUsd=\"+$json.launchDescriptor.maxTotalChargeUsd+\"&webhooks=W3siZXZlbnRUeXBlcyI6WyJBQ1RPUi5SVU4uU1VDQ0VFREVEIiwiQUNUT1IuUlVOLkZBSUxFRCIsIkFDVE9SLlJVTi5USU1FRF9PVVQiLCJBQ1RPUi5SVU4uQUJPUlRFRCJdLCJyZXF1ZXN0VXJsIjoiaHR0cHM6Ly9tdWhoYW1tZWRzYXllZC5hcHAubjhuLmNsb3VkL3dlYmhvb2svZW1yLWFwaWZ5LWNhbGxiYWNrIn1d\" }}",
+          "url": "={{ \"https://api.apify.com/v2/acts/\"+$json.launchDescriptor.actorPath+\"/runs?waitForFinish=0&restartOnError=false&timeout=\"+$json.launchDescriptor.timeout+\"&memory=\"+$json.launchDescriptor.memory+\"&build=\"+encodeURIComponent($json.launchDescriptor.build)+\"&maxTotalChargeUsd=\"+$json.launchDescriptor.maxTotalChargeUsd+\"&webhooks=W3siZXZlbnRUeXBlcyI6WyJBQ1RPUi5SVU4uU1VDQ0VFREVEIiwiQUNUT1IuUlVOLkZBSUxFRCIsIkFDVE9SLlJVTi5USU1FRF9PVVQiLCJBQ1RPUi5SVU4uQUJPUlRFRCJdLCJyZXF1ZXN0VXJsIjoiaHR0cHM6Ly9tdWhoYW1tZWRzYXllZC5hcHAubjhuLmNsb3VkL3dlYmhvb2svZW1yLW0wNi1zdG9yaWVzLWNhbGxiYWNrIn1d\" }}",
           "authentication": "predefinedCredentialType",
           "nodeCredentialType": "apifyApi",
           "sendQuery": false,
@@ -325,6 +336,17 @@
     ],
     "pinData": {},
     "connections": {
+      "Manual dev stories check": {
+        "main": [
+          [
+            {
+              "node": "Initialize fixed stories selection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "When called": {
         "main": [
           [
