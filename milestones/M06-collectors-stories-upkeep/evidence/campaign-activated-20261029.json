@@ -1,0 +1,738 @@
+{
+  "observedAt": "2026-10-29T10:40:37.898Z",
+  "status": "finite_campaign_active_first_observation_pending",
+  "campaignId": "451d4e89-d32f-412a-84f7-ddb5528f4539",
+  "sourceHead": "8ba0eb72ce42c0b85ec150b0bcbf43d5d4fba2be",
+  "qualifiedCi": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40855309608",
+  "qualifiedJobs": [
+    "quality",
+    "unit",
+    "build",
+    "e2e",
+    "db-tests"
+  ],
+  "frozenBranch": "m06-stories-campaign",
+  "developmentTarget": "zmotjsbzhzjvpelxvxlf",
+  "migration": {
+    "version": "20261029092746",
+    "sha256": "042b463f17a87f6c23e4aaf151ac820b4bc0c2e3aa4a284251d8ef7549b84b84",
+    "appliedOnce": true,
+    "historyCount": 23,
+    "previous22Preserved": true,
+    "advisors": {
+      "security": 0,
+      "performance": 0
+    }
+  },
+  "deployment": {
+    "id": "dpl_A8H8K8zu2Mi2uxsoE3mtGTfN1Mww",
+    "audience": "https://everyone-market-researcher-2ro0fv5ud-muhammed-abdelrahman.vercel.app",
+    "readyState": "READY",
+    "gitBranch": "m06-stories-campaign",
+    "commitSha": "8ba0eb72ce42c0b85ec150b0bcbf43d5d4fba2be"
+  },
+  "native": {
+    "media": {
+      "id": "8Wxh2Sybg7SjBRE9",
+      "name": "WF-31-M06 · Stories media [dev]",
+      "active": true,
+      "activeVersionId": "0884b238-785e-4d36-9c0f-c4c8ba364187",
+      "nodeCount": 5,
+      "timeoutSeconds": 300,
+      "timezone": "Africa/Cairo",
+      "triggerCount": 0,
+      "scheduleRules": [],
+      "credentialIds": [
+        "iJ8Kjt0kw1bjNe82"
+      ],
+      "childWorkflowIds": [],
+      "privacyVerified": true,
+      "pinDataEmpty": true,
+      "publishedAt": "2026-10-29T10:32:04.411Z"
+    },
+    "collector": {
+      "id": "ZlOfswfZfEoAwQxJ",
+      "name": "WF-12-M06 · Stories observation [dev]",
+      "active": true,
+      "activeVersionId": "6442cdec-df31-4ae3-a83e-52d93fef7c19",
+      "nodeCount": 11,
+      "timeoutSeconds": 1800,
+      "timezone": "Africa/Cairo",
+      "triggerCount": 0,
+      "scheduleRules": [],
+      "credentialIds": [
+        "1Vz3pealky9KpXPI",
+        "EYmaOt0rd45ysq0J"
+      ],
+      "childWorkflowIds": [],
+      "privacyVerified": true,
+      "pinDataEmpty": true,
+      "publishedAt": "2026-10-29T10:32:17.050Z"
+    },
+    "callback": {
+      "id": "2HFsCokTsG4Ub7LG",
+      "name": "WF-19-M06 · Stories callback [dev]",
+      "active": true,
+      "activeVersionId": "5c88ae12-3cfc-4e5d-bf0c-3c214e742449",
+      "nodeCount": 21,
+      "timeoutSeconds": 2400,
+      "timezone": "Africa/Cairo",
+      "triggerCount": 1,
+      "scheduleRules": [],
+      "credentialIds": [
+        "1Vz3pealky9KpXPI"
+      ],
+      "childWorkflowIds": [
+        "8Wxh2Sybg7SjBRE9"
+      ],
+      "privacyVerified": true,
+      "pinDataEmpty": true,
+      "publishedAt": "2026-10-29T10:32:21.337Z"
+    },
+    "guard": {
+      "id": "qdnUg63aU6GRjFWi",
+      "name": "M06 · Production-build conflict guard [dev]",
+      "active": true,
+      "activeVersionId": "a4a6fda9-b52a-4d83-909f-15e0640164da",
+      "nodeCount": 6,
+      "timeoutSeconds": 30,
+      "timezone": "Africa/Cairo",
+      "triggerCount": 1,
+      "scheduleRules": [],
+      "credentialIds": [
+        "1Vz3pealky9KpXPI"
+      ],
+      "childWorkflowIds": [],
+      "privacyVerified": true,
+      "pinDataEmpty": true,
+      "publishedAt": "2026-10-29T10:32:25.839Z"
+    },
+    "schedule": {
+      "id": "m0u623dOTHvzOSFR",
+      "name": "WF-12-M06 · Seven-day comparison [dev]",
+      "active": true,
+      "activeVersionId": "20424a64-eb86-4f63-879c-77a7a7db9ba7",
+      "nodeCount": 23,
+      "timeoutSeconds": 2400,
+      "timezone": "Africa/Cairo",
+      "triggerCount": 1,
+      "scheduleRules": [
+        [
+          {
+            "field": "cronExpression",
+            "expression": "0 */5 6-17 31 10 *"
+          },
+          {
+            "field": "cronExpression",
+            "expression": "0 */5 6-17 1-7 11 *"
+          }
+        ]
+      ],
+      "credentialIds": [
+        "1Vz3pealky9KpXPI"
+      ],
+      "childWorkflowIds": [
+        "ZlOfswfZfEoAwQxJ",
+        "2HFsCokTsG4Ub7LG",
+        "8Wxh2Sybg7SjBRE9"
+      ],
+      "privacyVerified": true,
+      "pinDataEmpty": true,
+      "publishedAt": "2026-10-29T10:36:08.708Z"
+    }
+  },
+  "activatedAt": "2026-10-29T10:36:09.602Z",
+  "calendar": {
+    "timezone": "Africa/Cairo",
+    "observationDates": [
+      "2026-10-31",
+      "2026-11-01",
+      "2026-11-02",
+      "2026-11-03",
+      "2026-11-04",
+      "2026-11-05",
+      "2026-11-06"
+    ],
+    "scheduledLocalTime": "06:00",
+    "nextExpectedExecution": "2026-10-31T06:00:00+02:00",
+    "nextExpectedExecutionBasis": "actual published Cairo cron and server-side immutable date pins; no native scheduler next-job timestamp exposed",
+    "sourceLaunchCutoff": "2026-11-06T12:00:00+02:00",
+    "recoveryShutdownDeadline": "2026-11-07T18:00:00+02:00",
+    "nativeMaxSeconds": 2400,
+    "firstObservationOccurred": false
+  },
+  "roster": [
+    {
+      "name": "Good People",
+      "handle": "goodpeoplefilms",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "62a5fef9-78c3-418a-9010-d5ea54f29e45",
+      "next_due_at": "2026-10-30T04:43:47.245404+00:00",
+      "company_code": "C001",
+      "locked_until": null,
+      "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+      "backfill_status": "not_applicable",
+      "last_success_at": "2026-10-29T08:43:47.245404+00:00"
+    },
+    {
+      "name": "Maradona Films",
+      "handle": "maradonafilms",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "094f3df4-8467-4805-abb7-d2c12991a1fe",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C015",
+      "locked_until": null,
+      "competitor_id": "7720a8b9-29bb-4bf3-9c0a-82e45c9697b3",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Telfaz11",
+      "handle": "telfaz11",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "aee74605-1714-4620-9e6c-95e0229db7ae",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C083",
+      "locked_until": null,
+      "competitor_id": "36326843-79a2-447a-892e-e25e79d220e6",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Bigfoot Films",
+      "handle": "bigfootfilms",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "34b95d90-12e6-42da-84f8-3fd78cd19103",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C130",
+      "locked_until": null,
+      "competitor_id": "7ba084a1-52a1-49d5-b3a9-e488289cb504",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Butter Films",
+      "handle": "butter__films",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "5105a7d9-282c-49dc-87be-dfe8034f6fdb",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C131",
+      "locked_until": null,
+      "competitor_id": "111cc7db-cea4-40a0-9bda-a8dd1cac48e3",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Cats Films",
+      "handle": "cats__films",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "93277ab3-f5d9-4f1d-b936-8bf4b84adb73",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C133",
+      "locked_until": null,
+      "competitor_id": "53015134-ea18-442a-8894-c9e71da25be7",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Film DNA",
+      "handle": "film.dna",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "5afae789-690b-40a0-a143-bd6c447920e9",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C139",
+      "locked_until": null,
+      "competitor_id": "597f19b5-50be-4aef-8184-5b408e9cdc1c",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "LightHouse",
+      "handle": "light_housefilm",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "539f213a-6d96-4770-a964-0f32fadd9562",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C149",
+      "locked_until": null,
+      "competitor_id": "b61c8256-4645-4feb-96c1-bf8169a82f68",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Lobster Films",
+      "handle": "lobster_films",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "f63b965d-b30c-4f0b-8e45-93d1b581f09f",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C150",
+      "locked_until": null,
+      "competitor_id": "9db7fa4f-2ff6-4598-a737-c76ab38ac586",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Rhino & Oxpecker Productions",
+      "handle": "rhinoproductions",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "f665e025-29f4-4d57-97c7-3c81d1e2500f",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C163",
+      "locked_until": null,
+      "competitor_id": "a4ced17d-101c-42fa-a571-4cca01126735",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Yellow Duck Films",
+      "handle": "yellowduckfilms",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "ca308821-eb96-439f-83b3-e868799bbac1",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C170",
+      "locked_until": null,
+      "competitor_id": "c705bcca-ffc9-4991-add9-c3821b2667be",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "AFLAM Productions",
+      "handle": "aflam_productions",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "6c7c9eaa-5ce8-4ae1-b288-d61890d845ad",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C173",
+      "locked_until": null,
+      "competitor_id": "4cc858dd-782a-4f18-8ae7-f38aac8e7c44",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Darb Productions",
+      "handle": "darb.productions",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "1c585991-c16b-499b-bded-aa333cdac1f4",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C179",
+      "locked_until": null,
+      "competitor_id": "87ed808c-6e1a-4230-b282-765f1a946324",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Film Pudding",
+      "handle": "filmpudding",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "44c98fd0-7f85-4f40-bf5f-e2930cfd0ece",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C184",
+      "locked_until": null,
+      "competitor_id": "4f4907f8-3d97-460f-bca3-8832b1b05b55",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Hekka",
+      "handle": "hekka_sa",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "26c61574-6217-4fd5-b2c3-1ac32a4f358c",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C186",
+      "locked_until": null,
+      "competitor_id": "4df094db-8df9-489e-895f-22c2033ccb87",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Big Kahuna Films",
+      "handle": "bigkahunafilms",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "34a466f4-9863-48df-b290-1c1b94286a6c",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C226",
+      "locked_until": null,
+      "competitor_id": "1cd50dba-b2de-4740-b28c-6d53ebd2b08d",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Camouflage Production",
+      "handle": "camouflage.productions",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "3c909586-932b-4f87-99ae-1eba86a0740d",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C228",
+      "locked_until": null,
+      "competitor_id": "87c6f55b-b069-42e0-9ab4-66e9032379b7",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "Dejavu",
+      "handle": "dejavusocial",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "a1576f93-83ec-4b02-86c7-eb727a6b79db",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C235",
+      "locked_until": null,
+      "competitor_id": "06d2e80c-ec38-49e3-8d6e-182e73ad1c39",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "The Talkies",
+      "handle": "thetalkies",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "7d3e3de8-e820-4e69-a247-764893a769a3",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C270",
+      "locked_until": null,
+      "competitor_id": "db652794-e33e-4723-ab48-cf75e0b8ae68",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    },
+    {
+      "name": "VIP Films",
+      "handle": "vipfilms",
+      "status": "active",
+      "platform": "instagram_stories",
+      "account_id": "64a8412d-00c0-403f-a24d-1db785770e65",
+      "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+      "company_code": "C280",
+      "locked_until": null,
+      "competitor_id": "a32a3c72-14f5-4b16-8375-7f63babf5376",
+      "backfill_status": "not_applicable",
+      "last_success_at": null
+    }
+  ],
+  "grouping": [
+    {
+      "key": "a_igview",
+      "actor": "igview-owner/instagram-story-viewer",
+      "mode": "bakeoff",
+      "accounts": 20,
+      "resultsLimit": 50
+    },
+    {
+      "key": "b_louis",
+      "actor": "louisdeconinck/instagram-story-details-scraper",
+      "mode": "bakeoff",
+      "accounts": 20,
+      "resultsLimit": 50
+    },
+    {
+      "key": "c_primary",
+      "actor": "data-slayer/instagram-stories-scraper",
+      "mode": "ingest",
+      "accounts": 20,
+      "resultsLimit": 30
+    }
+  ],
+  "actorPins": {
+    "data-slayer/instagram-stories-scraper": {
+      "billingModel": "PPE",
+      "owner_id": "nAuPNiU41ZLSsmcVx",
+      "actorId": "z1rvDd9bJrnT4LVee",
+      "build": "1.0.32",
+      "buildId": "LbkXerigrUUa2dxt6",
+      "memoryMbytes": 1024,
+      "timeoutSecs": 180
+    },
+    "igview-owner/instagram-story-viewer": {
+      "billingModel": "PPE",
+      "owner_id": "nAuPNiU41ZLSsmcVx",
+      "actorId": "7eNb0Yr5dLwy1jfPS",
+      "build": "1.0.16",
+      "buildId": "jhZNplLsVKuGelTTm",
+      "memoryMbytes": 4096,
+      "timeoutSecs": 180
+    },
+    "louisdeconinck/instagram-story-details-scraper": {
+      "billingModel": "PPE",
+      "owner_id": "nAuPNiU41ZLSsmcVx",
+      "actorId": "9pQFsbs9nqUI64rDQ",
+      "build": "0.0.10",
+      "buildId": "4QpIiw2A9YDJ2aneN",
+      "memoryMbytes": 256,
+      "timeoutSecs": 180
+    }
+  },
+  "expectedInitialStarts": 21,
+  "operationalSettings": {
+    "maxActorStarts": 40,
+    "maxActorUsd": 6,
+    "maxTotalUsd": 240,
+    "areOwnerFinancialCeilings": false
+  },
+  "currentCampaign": {
+    "jobs": 0,
+    "slots": 21,
+    "parents": 0,
+    "launches": 0,
+    "cost_rows": 0,
+    "failed_slots": 0,
+    "missed_slots": 0,
+    "settled_jobs": 0,
+    "campaign_rows": 1,
+    "planned_slots": 21,
+    "captured_items": 0,
+    "allocated_slots": 0,
+    "roster_accounts": 20,
+    "observation_days": 7,
+    "recorded_cost_usd": 0,
+    "registered_actors": 0,
+    "measured_actor_usd": 0,
+    "unknown_actor_costs": 0,
+    "account_observations": 0,
+    "infrastructure_cost_usd": null
+  },
+  "quiescence": {
+    "active_m06_sessions": 0,
+    "campaign_unsettled_jobs": 0,
+    "campaign_running_parents": 0,
+    "global_media_session_locks": 0,
+    "campaign_unprocessed_actors": 0,
+    "campaign_live_account_claims": 0,
+    "campaign_unregistered_launches": 0,
+    "campaign_unfinished_media_batches": 0
+  },
+  "queues": {
+    "story_queued": 0,
+    "story_archived": 13,
+    "generic_media_count": 267,
+    "generic_delivery_sha256": "72eac5883b5e49c9d4e4d379c68d2bca37073a7d03193fad0b2178c8a37c7ada",
+    "generic_identity_sha256": "2d37e038b415f6dae1f1f42de8a020a23faf779ed525f91ffefa7c167517b352",
+    "protected_archives_missing": 0,
+    "accepted_generic_delivery_unchanged": true
+  },
+  "preflight": {
+    "mediaUnauthorized": {
+      "status": 401,
+      "body": null,
+      "closed": true,
+      "elapsedMs": 1202,
+      "childClosed": true,
+      "nativeExit": 0
+    },
+    "mediaAuthorized": {
+      "status": 204,
+      "body": null,
+      "closed": true,
+      "elapsedMs": 879,
+      "childClosed": true,
+      "nativeExit": 0
+    },
+    "nativeProvider": {
+      "id": "EYmaOt0rd45ysq0J",
+      "name": "Apify account",
+      "type": "apifyApi"
+    },
+    "guardNative": {
+      "eventId": "emr-m06-native-preview-check-c12e8f8a-6474-4510-88c6-71b4d3544037",
+      "synthetic": true,
+      "target": "preview",
+      "observedAt": "2026-10-29T10:33:51.419Z",
+      "status": 200,
+      "body": {
+        "accepted": true,
+        "production_conflict": false
+      },
+      "closed": true,
+      "elapsedMs": 3083,
+      "childClosed": true,
+      "nativeExit": 0
+    },
+    "guardDirect": {
+      "observedAt": "2026-10-29T10:33:03.321Z",
+      "synthetic": true,
+      "target": "preview",
+      "status": 403,
+      "body": {
+        "rejected": true
+      },
+      "closed": true,
+      "elapsedMs": 1010,
+      "childClosed": true,
+      "nativeExit": 0
+    },
+    "guardInitialDiagnostic": {
+      "synthetic": true,
+      "target": "preview",
+      "status": 403,
+      "reason": "coordinator used its earlier provisional local secret; provider-issued secret direct check returns200; no configuration mutation or database pause",
+      "observedAt": "2026-10-29T10:33:48.336Z"
+    },
+    "guardInvalid": {
+      "synthetic": true,
+      "target": "preview",
+      "observedAt": "2026-10-29T10:34:08.479Z",
+      "status": 403,
+      "body": {
+        "rejected": true
+      },
+      "closed": true,
+      "elapsedMs": 3095,
+      "childClosed": true,
+      "nativeExit": 0
+    },
+    "productionConflict": {
+      "observedAt": "2026-10-29T10:34:39.819Z",
+      "httpStatus": 200,
+      "conflicts": [],
+      "pageComplete": true,
+      "returned": 8
+    },
+    "campaignTick": {
+      "requestId": "4a51b769-5130-4d0c-86b0-bb179a8931b7",
+      "syntheticPrestartAccessCheck": true,
+      "observedAt": "2026-10-29T10:35:55.028Z",
+      "status": 200,
+      "body": {
+        "version": 1,
+        "requestId": "4a51b769-5130-4d0c-86b0-bb179a8931b7",
+        "operation": "m06.campaign_tick",
+        "result": {
+          "action": "idle",
+          "reason": "outside_campaign_launch_window",
+          "campaign_id": "451d4e89-d32f-412a-84f7-ddb5528f4539"
+        },
+        "replayed": false
+      },
+      "closed": true,
+      "elapsedMs": 859,
+      "childClosed": true,
+      "nativeExit": 0
+    },
+    "campaignTickMalformed": {
+      "requestId": "4a51b769-5130-4d0c-86b0-bb179a8931b7",
+      "syntheticPrestartAccessCheck": true,
+      "observedAt": "2026-10-29T10:35:36.890Z",
+      "status": 400,
+      "body": {
+        "requestId": null,
+        "error": {
+          "code": "invalid_request"
+        }
+      },
+      "closed": true,
+      "elapsedMs": 1682,
+      "childClosed": true,
+      "nativeExit": 0,
+      "reason": "manual preflight omitted required version:1; schema rejected before DB"
+    },
+    "webhookReadback": {
+      "observedAt": "2026-10-29T10:38:18.027Z",
+      "id": "account_hook_u0Ax1XlwPsPHCtsPgGXHy0kO",
+      "url": "https://muhhammedsayed.app.n8n.cloud/webhook/emr-m06-production-guard",
+      "events": [
+        "deployment.created"
+      ],
+      "projectIds": [
+        "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu"
+      ],
+      "httpStatus": 200
+    },
+    "protectionReadback": {
+      "observedAt": "2026-10-29T10:38:56.574Z",
+      "ownedSole": true,
+      "defaultEnvironmentVariable": true,
+      "ssoUnchanged": true,
+      "applicationAuthenticationRetained": true
+    },
+    "runningExecutions": {
+      "observedAt": "2026-10-29T10:39:00.854Z",
+      "counts": {
+        "collector": 0,
+        "callback": 0,
+        "media": 0,
+        "schedule": 0,
+        "guard": 0
+      }
+    }
+  },
+  "setupRequests": {
+    "n8n": 45,
+    "vercel": 35,
+    "providerReads": 1,
+    "preview": 9,
+    "includesFailedAttempts": true,
+    "excludesSeparateBoundedAdministrativeDatabaseCalls": true
+  },
+  "costs": {
+    "campaignActorStarts": 0,
+    "campaignActorUsd": 0,
+    "preservedEarlierM06ActorStarts": 4,
+    "preservedEarlierM06ActorUsd": 0.35859,
+    "weeklySourceScenarioUsd": 16.1791,
+    "scenario": "12 stories per account per source per day; 20 accounts; 7 days; 21 initial starts; actual may differ",
+    "infrastructureUsd": null,
+    "proxyStorageTransferUnknown": true
+  },
+  "ownership": {
+    "temporaryCredentialIds": [
+      "1Vz3pealky9KpXPI",
+      "iJ8Kjt0kw1bjNe82"
+    ],
+    "temporaryEnvironmentCount": 18,
+    "providerWebhook": {
+      "observedAt": "2026-10-29T10:38:18.027Z",
+      "id": "account_hook_u0Ax1XlwPsPHCtsPgGXHy0kO",
+      "url": "https://muhhammedsayed.app.n8n.cloud/webhook/emr-m06-production-guard",
+      "events": [
+        "deployment.created"
+      ],
+      "projectIds": [
+        "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu"
+      ],
+      "httpStatus": 200
+    },
+    "soleDefaultBypassOwned": true,
+    "bypassValueExcluded": true,
+    "persistentEncryptedOriginalsRetained": true,
+    "privateCampaignStateRetained": true,
+    "temporaryBuilds": [
+      {
+        "id": "dpl_A8H8K8zu2Mi2uxsoE3mtGTfN1Mww",
+        "state": "READY",
+        "createdAt": 1793269292166
+      }
+    ]
+  },
+  "shutdown": {
+    "automaticCutoff": true,
+    "automaticBypassRevocation": false,
+    "automaticRuntimeDeletion": false,
+    "resumedCoordinatorRequired": true,
+    "deadline": "2026-11-07T18:00:00+02:00",
+    "existingNativeVercelLoginOnlyIfActuallyExpired": true,
+    "resumeInstruction": "Run M06 campaign shutdown for 451d4e89-d32f-412a-84f7-ddb5528f4539; reconcile owned work and revoke the recorded temporary runtime.",
+    "privateStatePath": "%LOCALAPPDATA%/Everyone-Market-Radar-Private/m06/stories-campaign-state.dpapi",
+    "retained": "all collected items, raw data, comparison observations, media objects and audit evidence; protected13 prior story deliveries; generic267 queue untouched"
+  },
+  "limitations": [
+    "Seven future observation dates have not occurred.",
+    "Synthetic Preview guard verification is not a Production deployment test.",
+    "Native guard execution data persistence is disabled; HTTP receipts prove forwarding, not a retained execution-payload record.",
+    "Missing/late media and source account-day gaps remain reportable failures, not omitted denominators.",
+    "MA-16 final actor/cadence decision remains with owner.",
+    "M05 denied action and GitHub draft-PR403 remain unchanged."
+  ]
+}
