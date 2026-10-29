@@ -1,0 +1,152 @@
+{
+  "observedAt": "2026-10-29T09:04:23.543Z",
+  "operation": "f42df40f-c325-4a3a-9f99-4da5616d95e3",
+  "target": "emr-dev / zmotjsbzhzjvpelxvxlf",
+  "applicationRevision": "8aed186e0be57d1d1d55d99d19e6e804aefd5842",
+  "workflowRevision": "780184f30c13bd16c51aeb6c9a403c37fdd10eab",
+  "workflowCi": 40838715168,
+  "actorStarts": 1,
+  "actorUsageUsd": 0.02871,
+  "native": {
+    "parent": "31282",
+    "actor": "gYd3yRVWYdM3MO4th",
+    "media": [
+      "31284",
+      "31285",
+      "31286"
+    ]
+  },
+  "replay": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "accepted": true,
+      "state": "completed",
+      "replayed": true
+    },
+    "closed": true,
+    "probeDurationMs": 3769,
+    "childClosed": true,
+    "nativeExit": 0
+  },
+  "unknown": {
+    "status": 403,
+    "body": {
+      "ok": false,
+      "rejected": true,
+      "retryable": false
+    },
+    "closed": true,
+    "probeDurationMs": 3993,
+    "childClosed": true,
+    "nativeExit": 0
+  },
+  "resources": {
+    "observedAt": "2026-10-29T08:59:13.949Z",
+    "bypassAbsent": true,
+    "protectionUnchanged": true,
+    "ownedBuildsAbsent": true,
+    "ownedEnvBindingsAbsent": true,
+    "unrelatedEnvironmentRowsPreserved": 7,
+    "productionConflicts": 0,
+    "workflows": [
+      {
+        "kind": "callback",
+        "id": "2HFsCokTsG4Ub7LG",
+        "active": false,
+        "nodes": 0,
+        "credentials": 0,
+        "versionId": "f4885bdb-c412-4f1b-aea1-8bdeec8d359f"
+      },
+      {
+        "kind": "media",
+        "id": "8Wxh2Sybg7SjBRE9",
+        "active": false,
+        "nodes": 0,
+        "credentials": 0,
+        "versionId": "237af84f-31e0-4993-a542-88dcbccd13fc"
+      },
+      {
+        "kind": "collector",
+        "id": "ZlOfswfZfEoAwQxJ",
+        "active": false,
+        "nodes": 0,
+        "credentials": 0,
+        "versionId": "b433c7f9-75de-407d-bb38-5e158a5da3f7"
+      }
+    ],
+    "credentials": [
+      {
+        "id": "ZfnIJEHDkNrt6gVP",
+        "httpStatus": 404,
+        "childClosed": true
+      },
+      {
+        "id": "uoi1qDUQ7r3cOSci",
+        "httpStatus": 404,
+        "childClosed": true
+      }
+    ],
+    "originalMachineMetadataUnchanged": true,
+    "nativeRunning": [
+      {
+        "kind": "callback",
+        "workflowId": "2HFsCokTsG4Ub7LG",
+        "running": 0
+      },
+      {
+        "kind": "media",
+        "workflowId": "8Wxh2Sybg7SjBRE9",
+        "running": 0
+      },
+      {
+        "kind": "collector",
+        "workflowId": "ZlOfswfZfEoAwQxJ",
+        "running": 0
+      }
+    ],
+    "database": {
+      "history22": true,
+      "prior21Exact": true,
+      "unchangedDataAfterShutdown": true,
+      "globalVacancyAllZero": true,
+      "genericMediaMessages": 267,
+      "genericIdentityAndDeliveryUnchanged": true
+    }
+  },
+  "deletedDeploymentIds": [
+    "dpl_EpZzHwVWEJpJagwM9rn5RUQ9sQim",
+    "dpl_9M6KFPk8nfWBAcuHmrQBmjZmpfuz"
+  ],
+  "deletedEnvironmentIds": [
+    "3whqvOPevTyzMHhY",
+    "1XoJkI81xOHAX3SM",
+    "TKlMsTjT9Qg8rAoG",
+    "ZtuvXRnMtR5AgWKx",
+    "Qoz5z3ct8qDDJa7U",
+    "1fq9FyeQcJahksms",
+    "64ZwwtAisW0NG0Qi",
+    "NiVXyQLQcaoUNEnP",
+    "LeDRKymZeDzCqQUr",
+    "x5YDgqbqZ8dQPrWS",
+    "zV0DQE6KE49taGgD",
+    "976BJvU2YmBuy6dK",
+    "3h61DrmML3COIPcv",
+    "Ii0cR8fhMnX8wWkW",
+    "6KEPAioeWHIQQLHt",
+    "Cp5eWmVtBKD3MxGV",
+    "YOiG0RfHExAk5FFP"
+  ],
+  "directCoordinatorRequests": {
+    "n8n": 92,
+    "vercel": 73,
+    "providerReads": 4,
+    "preview": 5,
+    "excludes": "Native workflow-internal gateway/provider/CDN/Storage operations, SQL reads, CI and browser operations"
+  },
+  "credentialBearingChildrenClosed": true,
+  "databaseClientsClosed": true,
+  "persistentOriginalsPreserved": true,
+  "temporaryRuntimeStateDeleted": true,
+  "persistentOriginalsPresent": 5
+}

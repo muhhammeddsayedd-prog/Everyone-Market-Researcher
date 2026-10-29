@@ -1,0 +1,51 @@
+{
+  "observedAt": "2026-10-29T08:53:28.397Z",
+  "actor": {
+    "id": "gYd3yRVWYdM3MO4th",
+    "actId": "z1rvDd9bJrnT4LVee",
+    "status": "SUCCEEDED",
+    "startedAt": "2026-10-29T08:43:20.150Z",
+    "finishedAt": "2026-10-29T08:43:24.835Z",
+    "buildId": "LbkXerigrUUa2dxt6",
+    "buildNumber": "1.0.32",
+    "options": {
+      "build": "1.0.32",
+      "timeoutSecs": 180,
+      "memoryMbytes": 1024,
+      "maxTotalChargeUsd": 0.5,
+      "restartOnError": false,
+      "maxItems": 230,
+      "isMaxTotalChargeUsdSetByUser": true,
+      "diskMbytes": 2048
+    },
+    "usageTotalUsd": 0.02871,
+    "defaultDatasetId": "h3SHK5QR7uYtn9t3l",
+    "defaultKeyValueStoreId": "jOgk4L24FKKKVLRh2"
+  },
+  "ownerMatches": true,
+  "input": {
+    "usernames": [
+      "goodpeoplefilms"
+    ]
+  },
+  "dispatches": [
+    {
+      "id": "i1BMlc37YnMhOfHrh",
+      "eventType": "ACTOR.RUN.SUCCEEDED",
+      "eventData": {
+        "actorId": "z1rvDd9bJrnT4LVee",
+        "actorRunId": "gYd3yRVWYdM3MO4th"
+      },
+      "status": "SUCCEEDED",
+      "createdAt": "2026-10-29T08:43:31.010Z",
+      "calls": [
+        {
+          "startedAt": "2026-10-29T08:43:34.415Z",
+          "finishedAt": "2026-10-29T08:43:35.402Z",
+          "responseStatus": 200
+        }
+      ]
+    }
+  ],
+  "childrenClosed": true
+}
